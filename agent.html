@@ -1032,12 +1032,12 @@ function stopRec() {
 }
 
 function sendToTelegram() {
-  if (!recordingBlob) return;
+  if (!recordingBlob) { alert('Нет записи!'); return; }
   const TG_TOKEN = '8586163814:AAGgGuAXpBKxU3iq6o374Qppdv-0v0v0i7w';
   const CHAT_ID = '180849598';
   const name = document.getElementById('clientName').value || 'клиент';
   const date = new Date().toLocaleDateString('ru');
-  const agentName = currentUser ? currentUser.name : 'Агент';
+  const agentName = currentAgent ? currentAgent.name : 'Агент';
   const status = document.getElementById('tgStatus');
   const btn = document.getElementById('tgRecBtn');
 
