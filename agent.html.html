@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Everia Life — Помощник агента</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #222536;
+    --border: #2e3248;
+    --gold: #c9a84c;
+    --gold2: #e8c97a;
+    --blue: #4a7cf7;
+    --green: #3dba7e;
+    --red: #e05c5c;
+    --text: #e8eaf0;
+    --muted: #8890a8;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+  }
+
+  /* ─── LOGIN ─── */
+  #loginScreen {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh;
+    background: radial-gradient(ellipse at 50% 30%, #1e2340 0%, #0f1117 70%);
+  }
+  .loginBox {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 40px 36px;
+    width: 340px;
+    text-align: center;
+  }
+  .loginLogo {
+    font-size: 22px; font-weight: 700; color: var(--gold);
+    letter-spacing: 1px; margin-bottom: 6px;
+  }
+  .loginSub { color: var(--muted); font-size: 13px; margin-bottom: 28px; }
+  .loginBox select, .loginBox input {
+    width: 100%; padding: 12px 14px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius); color: var(--text);
+    font-size: 15px; margin-bottom: 14px; outline: none;
+  }
+  .loginBox select:focus, .loginBox input:focus { border-color: var(--gold); }
+  .btnGold {
+    width: 100%; padding: 13px;
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    border: none; border-radius: var(--radius);
+    color: #111; font-size: 15px; font-weight: 700;
+    cursor: pointer; transition: opacity .2s;
+  }
+  .btnGold:hover { opacity: .88; }
+  .loginError { color: var(--red); font-size: 13px; margin-top: 10px; }
+
+  /* ─── MAIN LAYOUT ─── */
+  #appScreen { display: none; }
+  .topBar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .topBarLeft { display: flex; align-items: center; gap: 12px; }
+  .agentName { font-weight: 700; color: var(--gold); font-size: 14px; }
+  .timerBadge {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 20px; padding: 4px 12px;
+    font-size: 13px; font-family: monospace; color: var(--muted);
+  }
+  .timerBadge.running { color: var(--green); border-color: var(--green); }
+  .recBtn {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 20px; padding: 5px 12px;
+    font-size: 13px; cursor: pointer; color: var(--text);
+    transition: all .2s;
+  }
+  .recBtn.recording { background: rgba(224,92,92,.15); border-color: var(--red); color: var(--red); }
+  .recDot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+  .recBtn.recording .recDot { background: var(--red); animation: blink 1s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+  .topBarRight { display: flex; align-items: center; gap: 8px; }
+  .btnSmall {
+    background: none; border: 1px solid var(--border);
+    border-radius: 8px; padding: 5px 10px;
+    color: var(--muted); font-size: 12px; cursor: pointer;
+  }
+  .btnSmall:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* ─── PHASE TABS ─── */
+  .phaseTabs {
+    display: flex; overflow-x: auto; gap: 4px;
+    padding: 10px 12px; background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .phaseTabs::-webkit-scrollbar { display: none; }
+  .phaseTab {
+    flex-shrink: 0; padding: 7px 14px;
+    border-radius: 20px; font-size: 13px;
+    border: 1px solid var(--border); background: none;
+    color: var(--muted); cursor: pointer; transition: all .2s;
+    white-space: nowrap;
+  }
+  .phaseTab.active { background: var(--gold); color: #111; border-color: var(--gold); font-weight: 700; }
+  .phaseTab.done { border-color: var(--green); color: var(--green); }
+
+  /* ─── CONTENT ─── */
+  .content { padding: 14px 14px 100px; max-width: 700px; margin: 0 auto; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px; margin-bottom: 12px;
+  }
+  .cardTitle {
+    font-size: 12px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .8px; color: var(--gold); margin-bottom: 12px;
+  }
+
+  /* Prep form */
+  .formRow { margin-bottom: 12px; }
+  .formRow label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 5px; }
+  .formRow input, .formRow textarea, .formRow select {
+    width: 100%; padding: 10px 12px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text); font-size: 14px; outline: none;
+    resize: vertical;
+  }
+  .formRow input:focus, .formRow textarea:focus { border-color: var(--gold); }
+
+  /* Section within card */
+  .section { margin-bottom: 16px; }
+  .sectionTitle {
+    font-size: 13px; font-weight: 700; color: var(--blue);
+    margin-bottom: 8px; padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Question items */
+  .qItem {
+    background: var(--surface2); border-radius: 8px;
+    padding: 10px 12px; margin-bottom: 6px;
+    font-size: 14px; line-height: 1.5; cursor: pointer;
+    border: 1px solid transparent; transition: all .15s;
+    position: relative;
+  }
+  .qItem:hover { border-color: var(--gold); }
+  .qItem.copied { border-color: var(--green); }
+  .qCopied {
+    position: absolute; top: 6px; right: 8px;
+    font-size: 11px; color: var(--green); opacity: 0;
+    transition: opacity .3s;
+  }
+  .qItem.copied .qCopied { opacity: 1; }
+  .qTag {
+    display: inline-block; font-size: 10px; font-weight: 700;
+    padding: 2px 7px; border-radius: 10px; margin-right: 6px;
+    vertical-align: middle;
+  }
+  .tagS { background: rgba(74,124,247,.2); color: var(--blue); }
+  .tagP { background: rgba(224,92,92,.2); color: var(--red); }
+  .tagI { background: rgba(201,168,76,.2); color: var(--gold); }
+  .tagN { background: rgba(61,186,126,.2); color: var(--green); }
+
+  /* Accordion */
+  .accordion { margin-bottom: 8px; }
+  .accordionHead {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 11px 14px;
+    cursor: pointer; display: flex; justify-content: space-between;
+    align-items: center; font-size: 14px; font-weight: 600;
+    transition: border-color .2s;
+  }
+  .accordionHead:hover { border-color: var(--gold); }
+  .accordionHead.open { border-color: var(--gold); border-radius: 8px 8px 0 0; }
+  .accordionBody {
+    display: none; background: var(--surface2);
+    border: 1px solid var(--gold); border-top: none;
+    border-radius: 0 0 8px 8px; padding: 12px;
+  }
+  .accordionBody.show { display: block; }
+  .chevron { transition: transform .2s; font-size: 12px; color: var(--muted); }
+  .accordionHead.open .chevron { transform: rotate(180deg); }
+
+  /* Checklist */
+  .checkItem {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 8px 0; border-bottom: 1px solid var(--border);
+    cursor: pointer;
+  }
+  .checkItem:last-child { border-bottom: none; }
+  .checkBox {
+    width: 18px; height: 18px; flex-shrink: 0;
+    border: 2px solid var(--border); border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; margin-top: 1px; transition: all .15s;
+  }
+  .checkItem.checked .checkBox { background: var(--green); border-color: var(--green); color: white; }
+  .checkItem.checked .checkLabel { color: var(--muted); text-decoration: line-through; }
+  .checkLabel { font-size: 14px; line-height: 1.4; }
+
+  /* Objection cards */
+  .objCard {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; overflow: hidden; margin-bottom: 8px;
+  }
+  .objHead {
+    padding: 10px 12px; font-size: 13px; font-weight: 600;
+    cursor: pointer; display: flex; justify-content: space-between;
+    color: var(--red); background: rgba(224,92,92,.07);
+  }
+  .objBody {
+    display: none; padding: 10px 12px;
+    font-size: 13px; line-height: 1.6; color: var(--text);
+    border-top: 1px solid var(--border);
+  }
+  .objBody.show { display: block; }
+  .objStep {
+    margin-bottom: 8px; padding: 8px 10px;
+    background: var(--surface); border-radius: 6px;
+    border-left: 3px solid var(--gold);
+  }
+  .objStepTitle { font-size: 11px; color: var(--gold); font-weight: 700; margin-bottom: 4px; }
+
+  /* Notes */
+  .noteArea {
+    width: 100%; min-height: 80px; padding: 10px 12px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text); font-size: 14px;
+    resize: vertical; outline: none;
+  }
+  .noteArea:focus { border-color: var(--gold); }
+
+  /* Summary */
+  .summaryBox {
+    background: var(--surface2); border-radius: 8px;
+    padding: 14px; margin-bottom: 10px;
+  }
+  .summaryLabel { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .summaryValue { font-size: 15px; color: var(--text); }
+  .summaryGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* Result buttons */
+  .resultBtns { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+  .resultBtn {
+    flex: 1; min-width: 130px; padding: 10px;
+    border-radius: 8px; border: 2px solid var(--border);
+    background: none; color: var(--muted); cursor: pointer;
+    font-size: 13px; font-weight: 600; transition: all .2s;
+    text-align: center;
+  }
+  .resultBtn.sale { border-color: var(--green); color: var(--green); }
+  .resultBtn.meeting2 { border-color: var(--blue); color: var(--blue); }
+  .resultBtn.think { border-color: var(--gold); color: var(--gold); }
+  .resultBtn.refused { border-color: var(--red); color: var(--red); }
+  .resultBtn.active { filter: brightness(1.2); background: rgba(255,255,255,.05); }
+
+  /* Primary button */
+  .btnPrimary {
+    display: block; width: 100%; padding: 13px;
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    border: none; border-radius: var(--radius);
+    color: #111; font-size: 15px; font-weight: 700;
+    cursor: pointer; text-align: center; transition: opacity .2s;
+  }
+  .btnPrimary:hover { opacity: .88; }
+
+  .btnSecondary {
+    display: block; width: 100%; padding: 12px;
+    background: none; border: 1px solid var(--border);
+    border-radius: var(--radius); color: var(--muted);
+    font-size: 14px; cursor: pointer; text-align: center;
+    transition: border-color .2s; margin-top: 8px;
+  }
+  .btnSecondary:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* 3DA badge */
+  .badge3da {
+    display: inline-block; background: rgba(61,186,126,.15);
+    border: 1px solid var(--green); border-radius: 20px;
+    padding: 4px 12px; font-size: 12px; color: var(--green);
+    font-weight: 700; margin-bottom: 10px;
+  }
+
+  /* Download rec button */
+  #downloadRecBtn {
+    display: none; width: 100%;
+    margin-top: 8px; padding: 10px;
+    background: rgba(61,186,126,.15); border: 1px solid var(--green);
+    border-radius: 8px; color: var(--green); cursor: pointer;
+    font-size: 13px; text-align: center;
+  }
+
+  /* Phase hidden */
+  .phase { display: none; }
+  .phase.active { display: block; }
+
+  /* Info tip */
+  .tip {
+    background: rgba(74,124,247,.1); border: 1px solid rgba(74,124,247,.3);
+    border-radius: 8px; padding: 10px 12px;
+    font-size: 13px; color: #8baaf5; margin-bottom: 10px; line-height: 1.5;
+  }
+
+  /* Goal selector */
+  .goalBtns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .goalBtn {
+    flex: 1; min-width: 100px; padding: 9px 10px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: none; color: var(--muted); cursor: pointer;
+    font-size: 12px; text-align: center; transition: all .2s;
+  }
+  .goalBtn.active { border-color: var(--gold); color: var(--gold); background: rgba(201,168,76,.1); }
+
+  /* Phase indicator dots */
+  .phaseDots {
+    display: flex; gap: 4px; align-items: center;
+  }
+  .phaseDot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--border); transition: background .3s;
+  }
+  .phaseDot.done { background: var(--green); }
+  .phaseDot.active { background: var(--gold); width: 18px; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     LOGIN
+══════════════════════════════════════════ -->
+<div id="loginScreen">
+  <div class="loginBox">
+    <div class="loginLogo">everia life</div>
+    <div class="loginSub">Помощник агента на встрече</div>
+    <select id="agentSelect">
+      <option value="">— выбери имя —</option>
+    </select>
+    <input type="password" id="pinInput" placeholder="PIN-код" maxlength="4">
+    <button class="btnGold" onclick="doLogin()">Войти</button>
+    <div class="loginError" id="loginError"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     APP
+══════════════════════════════════════════ -->
+<div id="appScreen">
+
+  <!-- TOP BAR -->
+  <div class="topBar">
+    <div class="topBarLeft">
+      <div class="phaseDots" id="phaseDots"></div>
+      <div class="timerBadge" id="timerBadge">00:00</div>
+    </div>
+    <div class="agentName" id="agentLabel">Агент</div>
+    <div class="topBarRight">
+      <button class="recBtn" id="recBtn" onclick="toggleRec()">
+        <span class="recDot"></span>
+        <span id="recLabel">REC</span>
+      </button>
+      <button class="btnSmall" onclick="doLogout()">Выход</button>
+    </div>
+  </div>
+
+  <!-- PHASE TABS -->
+  <div class="phaseTabs" id="phaseTabs"></div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- ── PHASE 0: ПОДГОТОВКА ── -->
+    <div class="phase active" id="phase0">
+      <div class="card">
+        <div class="cardTitle">📋 Подготовка к встрече</div>
+        <div class="formRow">
+          <label>Имя клиента</label>
+          <input type="text" id="clientName" placeholder="Например: Светлана">
+        </div>
+        <div class="formRow">
+          <label>Возраст / Профессия</label>
+          <input type="text" id="clientProfile" placeholder="Например: 52 года, заведующая детским садом">
+        </div>
+        <div class="formRow">
+          <label>Что знаю о клиенте</label>
+          <textarea id="clientNotes" rows="3" placeholder="Семья, интересы, что знаю заранее..."></textarea>
+        </div>
+        <div class="formRow">
+          <label>Цель встречи</label>
+          <div class="goalBtns">
+            <button class="goalBtn active" onclick="setGoal(this,'продажа')">💼 Продажа</button>
+            <button class="goalBtn" onclick="setGoal(this,'вторая встреча')">📅 Вторая встреча</button>
+            <button class="goalBtn" onclick="setGoal(this,'вскрыть потребность')">🔍 Вскрыть потребность</button>
+          </div>
+        </div>
+      </div>
+      <button class="btnPrimary" onclick="startMeeting()">▶ Начать встречу</button>
+    </div>
+
+    <!-- ── PHASE 1: УСТАНОВЛЕНИЕ КОНТАКТА ── -->
+    <div class="phase" id="phase1">
+      <div class="tip">Цель — создать доверие и комфорт. Клиент должен расслабиться и захотеть говорить.</div>
+      <div class="card">
+        <div class="cardTitle">🤝 Установление контакта</div>
+        <div class="section">
+          <div class="sectionTitle">Фразы для входа</div>
+          <div class="qItem" onclick="copyQ(this)">Рада тебя видеть! Как добралась / как дела?<span class="qCopied">✓ скопировано</span></div>
+          <div class="qItem" onclick="copyQ(this)">Я хочу рассказать тебе об одной теме, которая сейчас очень актуальна. Мне важно услышать твоё мнение.<span class="qCopied">✓ скопировано</span></div>
+          <div class="qItem" onclick="copyQ(this)">Если наша встреча будет полезна — ты порекомендуешь меня кому-то из знакомых?<span class="qCopied">✓ скопировано</span></div>
+        </div>
+        <div class="section">
+          <div class="sectionTitle">Чек-лист</div>
+          <div class="checkItem" onclick="toggleCheck(this)">
+            <div class="checkBox">✓</div>
+            <div class="checkLabel">Создала комфортную атмосферу</div>
+          </div>
+          <div class="checkItem" onclick="toggleCheck(this)">
+            <div class="checkBox">✓</div>
+            <div class="checkLabel">Обозначила цель встречи</div>
+          </div>
+          <div class="checkItem" onclick="toggleCheck(this)">
+            <div class="checkBox">✓</div>
+            <div class="checkLabel">Договорилась о рекомендациях заранее</div>
+          </div>
+          <div class="checkItem" onclick="toggleCheck(this)">
+            <div class="checkBox">✓</div>
+            <div class="checkLabel">Клиент настроен на разговор</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btnSecondary" style="flex:1" onclick="goPhase(0)">← Назад</button>
+        <button class="btnPrimary" style="flex:2" onclick="goPhase(2)">Перейти к вскрытию →</button>
+      </div>
+    </div>
+
+    <!-- ── PHASE 2: ВСКРЫТИЕ ПОТРЕБНОСТЕЙ ── -->
+    <div class="phase" id="phase2">
+      <div class="tip">Сначала собираем информацию о клиенте, семье и финансах — затем вскрываем 4 темы через СПИН.</div>
+      <div class="card">
+        <div class="cardTitle">🔍 Шаг 1 — Сбор информации</div>
+
+        <div class="accordion">
+          <div class="accordionHead" onclick="toggleAcc(this)">
+            👤 О клиенте <span class="chevron">▼</span>
+          </div>
+          <div class="accordionBody">
+            <div class="qItem" onclick="copyQ(this)"><span class="qTag tagS">С</span>Сколько Вам лет, кем работаете, чем занимаетесь в свободное время?<span class="qCopied">✓</span></div>
+            <div class="qItem" onclick="copyQ(this)"><span class="qTag tagS">С</span>Ваша работа связана с рисками? Как защищает работодатель?<span class="qCopied">✓</span></div>
+            <div class="qItem" onclick="copyQ(this)"><span class="qTag tagS">С</span>Какими видами страхования уже пользуетесь?<span class="qCopied">✓</span></div>
+          </div>
+        </div>
+
+        <div class="accordion">
+          <div class="accordionHead" onclick="toggleAcc(this)">
+            👨‍👩‍👧 О семье и близких <span class="chevron">▼</span>
+          </div>
+          <div class="accordionBody">
+            <div class="qItem" onclick="copyQ(this)"><span class="qTag tagS">С</span>Ваша семья — это кто? Расскажите о них подробнее.<span class="qCopied">✓</span></div>
+            <div class="qItem" onclick="copyQ(this)"><span class="qTag tagS">С</span>У детей есть платные секции? Об образовании думали?<span class="qCopied">✓</span></div>
+            <div class="qItem" onclick="copyQ(this)"><span class="qTag tagS">С</span>Родителям помогаете? Как они на пенсию живут — сами так хотите?<span class="qCopied">✓</span></div>
+          </div>
+        </div>
+
+        <div class="accordion">
+          <div class="accordionHead" onclick="toggleAcc(this)">
+            💰 О финансах <span class="chevron">▼</span>
+          </div>
+          <div class="accordionBody">
+            <div class="qItem" onclick="copyQ(this)"><span class="qTag tagS">С</span>Из чего формируется ежемесячный бюджет кроме зарплаты?<span class="qCopied">✓</span></div>
+            <div class="qItem" onclick="copyQ(this)"><span class="qTag tagS">С</span>Есть ли сумма, про которую можно сказать «уходит в песок»?<span class="qCopied">✓</span></div>
+            <div class="qItem" onclick="copyQ(this)"><span class="qTag tagS">С</span>Какие есть долгосрочные цели и планы?<span class="qCopied">✓</span></div>
+            <div class="qItem" onclick="copyQ(this)"><span class="qTag tagS">С</span>Как в семье принимаются важные финансовые решения?<span class="qCopied">✓</span></div>
+            <div class="qItem" onclick="copyQ(this)"><span class="qTag tagS">С</span>В рамках какой суммы можете принять решение самостоятельно?<span class="qCopied">✓</span></div>
+          </div>
+        </div>
+
+        <div class="formRow" style="margin-top:10px">
+          <label>Заметки о клиенте</label>
+          <textarea class="noteArea" id="noteInfoClient" placeholder="Что узнала на этом шаге..."></textarea>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="cardTitle">🎯 Шаг 2 — Вскрытие через СПИН</div>
+
+        <!-- ТЕМА 1: ДЕТИ -->
+        <div class="accordion">
+          <div class="accordionHead" onclick="toggleAcc(this)">
+            👶 Дети — обеспечение будущего <span class="chevron">▼</span>
+          </div>
+          <div class="accordionBody">
+            <div class="qItem" onclick="copyQ(this)"><span class="qTag tagS">С</span>Чего хотите для детей в будущем? Планируете помочь стартовать в жизни?<span class="qCopied">✓</span></div>
+            <div class="qItem" onclick="copyQ(this)"><span class="qTag tagS">С</span>Что сейчас делаете для решения финансовой стороны этого вопроса?<span class="qCopied">✓</span></div>
+            <div class="qItem" onclick="copyQ(this)"><span class="qTag tagP">П</span>Что может помешать осуществлению ваших планов?<span class="qCopied">✓</span></div>
+            <div class="qItem" onclick="copyQ(this)"><span class="qTag tagP">П</span>Может ли состояние здоровья повлиять на реализацию цели?<span class="qCopied">✓</span></div>
+            <div class="qItem" onclick="copyQ(this)"><span class="qTag tagI">И</span>А если ваш план не сработает? От чего придётся отказаться?<span class="qCopied">✓</span></div>
+            <div class="qItem" onclick="copyQ(this)"><span class="qTag tagI">И</span>Как вы будете себя чувствовать в этой ситуации?<span class="qCopied">✓</span></div>
+            <div class="qItem" onclick="copyQ(this)"><span class="qTag tagN">Н</span>Если покажу вам решение — готовы обсудить?<span class="qCopied">✓</span></div>
+          </div>
+        </div>
+
+        <!-- ТЕМА 2: ПЕНСИЯ -->
+        <div class="accordion">
+          <div class="accordionHead" onclick="toggleAcc(this)">
+            🏦 Пенсия — создание капитала <span class="chevron">▼</span>
+          </div>
+          <div class="accordionBody">
+            <div class="qItem" onclick="copyQ(this)"><span class="qTag tagS">С</span>В каком возрасте не захотите работать с прежней интенсивностью?<span class="qCopied">✓</span></div>
+            <div class="qItem" onclick="copyQ(this)"><span class="qTag tagS">С</span>Из чего будет складываться доход в этот период? Этой суммы достаточно?<span class="qCopied">✓</span></div>
+            <div class="qItem" onclick="copyQ(this)"><span class="qTag tagS">С</span>Какие мечты хотите осуществить в пенсионном возрасте?<span class="qCopied">✓</span></div>
+            <div class="qItem" onclick="copyQ(this)"><span class="qTag tagP">П</span>Что может нарушить ваши планы? Что будет со здоровьем?<span class="qCopied">✓</span></div>
+            <div class="qItem" onclick="copyQ(this)"><span class="qTag tagP">П</span>Какой бабушкой хотелось бы быть — праздником или обузой?<span class="qCopied">✓</span></div>
+            <div class="qItem" onclick="copyQ(this)"><span class="qTag tagI">И</span>Как будет выглядеть ситуация без финансовой поддержки? Что придётся сократить?<span class="qCopied">✓</span></div>
+            <div class="qItem" onclick="copyQ(this)"><span class="qTag tagN">Н</span>Для вас важно жить в достатке на пенсии? Давайте покажу решение.<span class="qCopied">✓</span></div>
+          </div>
+        </div>
+
+        <!-- ТЕМА 3: ЗДОРОВЬЕ -->
+        <div class="accordion">
+          <div class="accordionHead" onclick="toggleAcc(this)">
+            🏥 Здоровье — защита дохода <span class="chevron">▼</span>
+          </div>
+          <div class="accordionBody">
+            <div class="qItem" onclick="copyQ(this)"><span class="qTag tagS">С</span>Для вас понятия здоровье, доход и работа взаимосвязаны? Как?<span class="qCopied">✓</span></div>
+            <div class="qItem" onclick="copyQ(this)"><span class="qTag tagP">П</span>Что могло бы помешать достижению ваших целей? Может ли здоровье повлиять?<span class="qCopied">✓</span></div>
+            <div class="qItem" onclick="copyQ(this)"><span class="qTag tagP">П</span>Если человек попал в непредвиденную ситуацию — что будет с его доходом?<span class="qCopied">✓</span></div>
+            <div class="qItem" onclick="copyQ(this)"><span class="qTag tagI">И</span>Из какого источника будете брать деньги? Как долго смогут помогать?<span class="qCopied">✓</span></div>
+            <div class="qItem" onclick="copyQ(this)"><span class="qTag tagI">И</span>Придётся эти деньги отдавать? Как будете себя чувствовать?<span class="qCopied">✓</span></div>
+            <div class="qItem" onclick="copyQ(this)"><span class="qTag tagN">Н</span>Хотелось бы в этой ситуации быть финансово защищённой? Давайте покажу решение.<span class="qCopied">✓</span></div>
+          </div>
+        </div>
+
+        <!-- ТЕМА 4: КОРМИЛЕЦ -->
+        <div class="accordion">
+          <div class="accordionHead" onclick="toggleAcc(this)">
+            🛡️ Семья при потере кормильца <span class="chevron">▼</span>
+          </div>
+          <div class="accordionBody">
+            <div class="qItem" onclick="copyQ(this)"><span class="qTag tagS">С</span>Сейчас вы — основной кормилец, от вас зависит благополучие семьи. Это так?<span class="qCopied">✓</span></div>
+            <div class="qItem" onclick="copyQ(this)"><span class="qTag tagP">П</span>Что может повлиять на жизнь и здоровье кормильца?<span class="qCopied">✓</span></div>
+            <div class="qItem" onclick="copyQ(this)"><span class="qTag tagP">П</span>Если этого дохода не станет — как долго семья сохранит привычный уровень жизни?<span class="qCopied">✓</span></div>
+            <div class="qItem" onclick="copyQ(this)"><span class="qTag tagI">И</span>На чью помощь можете рассчитывать? Как долго? Этого достаточно?<span class="qCopied">✓</span></div>
+            <div class="qItem" onclick="copyQ(this)"><span class="qTag tagN">Н</span>Для вас важно позаботиться о семье в самых непредвиденных обстоятельствах?<span class="qCopied">✓</span></div>
+          </div>
+        </div>
+
+        <!-- 3 ДА -->
+        <div style="margin-top:14px;">
+          <div class="badge3da">✓ Финал — получить 3 ДА</div>
+          <div class="qItem" onclick="copyQ(this)">Мы обсудили важные вопросы: обеспечение детей, капитал к пенсии, защита здоровья, поддержка семьи. Эти вопросы важны для вас? (Да) Решать их нужно? (Да) Если покажу способ решения — вам было бы интересно? (Да)<span class="qCopied">✓</span></div>
+          <div class="qItem" onclick="copyQ(this)">Хотите решать эти вопросы в комплексе или начать с наиболее важного?<span class="qCopied">✓</span></div>
+        </div>
+
+        <div class="formRow" style="margin-top:12px">
+          <label>Что выявила (приоритетная тема)</label>
+          <textarea class="noteArea" id="noteNeedPriority" placeholder="Пенсия / Дети / Здоровье / Кормилец..."></textarea>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px">
+        <button class="btnSecondary" style="flex:1" onclick="goPhase(1)">← Назад</button>
+        <button class="btnPrimary" style="flex:2" onclick="goPhase(3)">К презентации →</button>
+      </div>
+    </div>
+
+    <!-- ── PHASE 3: ПРЕЗЕНТАЦИЯ ── -->
+    <div class="phase" id="phase3">
+      <div class="tip">Показываем как работает программа через логику: взнос → защита → накопления. Сначала общее, потом конкретное.</div>
+
+      <div class="card">
+        <div class="cardTitle">💡 Общее решение — знакомство с программой</div>
+
+        <div class="section">
+          <div class="sectionTitle">Три составляющих программы</div>
+          <div class="qItem" onclick="copyQ(this)">Давай покажу, как работает страховой полис. Есть три основных составляющих: взнос — защита — накопления. Сделал первый взнос — компания сразу даёт защиту в полном объёме. Эта сумма в десятки раз превышает взнос.<span class="qCopied">✓</span></div>
+        </div>
+
+        <div class="section">
+          <div class="sectionTitle">Риски защиты</div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkLabel">Травмы (любые, 24/7)</div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkLabel">Хирургическая операция по НС</div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkLabel">Госпитализация по НС (с 3-го дня)</div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkLabel">СОЗ — смертельно опасные заболевания</div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkLabel">Инвалидность I, II, III группы</div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkLabel">Смерть по любой причине (с 00:00 после первого взноса)</div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkLabel">Освобождение от взносов при инвалидности I, II группы</div></div>
+        </div>
+
+        <div class="section">
+          <div class="sectionTitle">Накопления и бонусы</div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkLabel">Накопления к концу срока + инвестиционный доход</div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkLabel">Индексация — защита от инфляции</div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkLabel">Налоговый вычет 13% ежегодно</div></div>
+        </div>
+
+        <div class="qItem" onclick="copyQ(this)">Как тебе такое решение? Поможет решить твои вопросы?<span class="qCopied">✓</span></div>
+      </div>
+
+      <div class="card">
+        <div class="cardTitle">🧮 Конкретное решение — цифры</div>
+        <div class="tip">Подбираем взнос от реальных возможностей клиента. Предлагаем варианты оплаты.</div>
+        <div class="qItem" onclick="copyQ(this)">Какую сумму в год готовы вкладывать в решение вопроса финансовой защиты?<span class="qCopied">✓</span></div>
+        <div class="qItem" onclick="copyQ(this)">Взнос можно оплачивать раз в год, раз в полгода или ежеквартально. Чем дробнее — тем выше общая сумма. Какой вариант удобен?<span class="qCopied">✓</span></div>
+        <div class="formRow" style="margin-top:10px">
+          <label>Комфортный взнос / периодичность</label>
+          <input type="text" id="noteContrib" placeholder="Например: 8 000 руб. в квартал">
+        </div>
+        <div class="formRow">
+          <label>Срок программы (до возраста)</label>
+          <input type="text" id="noteTerm" placeholder="Например: до 65 лет">
+        </div>
+        <div class="qItem" onclick="copyQ(this)">Наполнение программы и размер страховых сумм по рискам устраивает?<span class="qCopied">✓</span></div>
+        <div class="qItem" onclick="copyQ(this)">Ежегодный налоговый вычет — фактическая стоимость полиса будет ещё меньше. Как вам такое решение?<span class="qCopied">✓</span></div>
+      </div>
+
+      <div style="display:flex;gap:8px">
+        <button class="btnSecondary" style="flex:1" onclick="goPhase(2)">← Назад</button>
+        <button class="btnPrimary" style="flex:2" onclick="goPhase(4)">К закрытию →</button>
+      </div>
+    </div>
+
+    <!-- ── PHASE 4: ЗАКРЫТИЕ ── -->
+    <div class="phase" id="phase4">
+      <div class="tip">Цель — согласие, заявление, первый взнос и рекомендации.</div>
+
+      <div class="card">
+        <div class="cardTitle">✍️ Оформление и оплата</div>
+        <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkLabel">Заполнила заявление (без ошибок, сверила с паспортом)</div></div>
+        <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkLabel">Скачала клиенту мобильное приложение «Эверия Лайф»</div></div>
+        <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkLabel">Показала Памятку по оплате первого взноса</div></div>
+        <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkLabel">Помогла оплатить первый взнос</div></div>
+        <div class="qItem" style="margin-top:10px" onclick="copyQ(this)">Первый взнос можно оплатить полностью или тремя равными частями в течение 29 дней. Какой вариант удобен?<span class="qCopied">✓</span></div>
+        <div class="qItem" onclick="copyQ(this)">Рекомендую оплатить полностью — не придётся держать в голове необходимость вовремя вносить части.<span class="qCopied">✓</span></div>
+      </div>
+
+      <div class="card">
+        <div class="cardTitle">🌟 Взятие рекомендаций</div>
+        <div class="qItem" onclick="copyQ(this)">Наша встреча была полезна для тебя? Какие выгоды увидела для себя?<span class="qCopied">✓</span></div>
+        <div class="qItem" onclick="copyQ(this)">Помнишь мою просьбу в начале? Если встреча была полезна — порекомендуй, с кем из друзей или коллег я могу провести такую же встречу.<span class="qCopied">✓</span></div>
+        <div class="qItem" onclick="copyQ(this)">Можешь предупредить её о моём звонке? Скажи: у меня есть хорошая подруга, теперь ещё и личный финансовый консультант. Тема важная, найди время!<span class="qCopied">✓</span></div>
+        <div class="qItem" onclick="copyQ(this)">С кем ещё из знакомых мне стоит встретиться? Есть среди коллег похожие на тебя — ответственные, заботливые?<span class="qCopied">✓</span></div>
+        <div class="formRow" style="margin-top:10px">
+          <label>Рекомендации (имена, контакты)</label>
+          <textarea class="noteArea" id="noteRecs" placeholder="Ольга, тел. xxx..."></textarea>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px">
+        <button class="btnSecondary" style="flex:1" onclick="goPhase(3)">← Назад</button>
+        <button class="btnPrimary" style="flex:2" onclick="goPhase(5)">К итогу →</button>
+      </div>
+    </div>
+
+    <!-- ── PHASE 5: ВОЗРАЖЕНИЯ ── -->
+    <div class="phase" id="phase5">
+      <div class="tip">Возражения — знак интереса. Алгоритм: присоединиться → уточнить → ответить аргументами → проверить реакцию.</div>
+
+      <div class="card">
+        <div class="cardTitle">🛑 Работа с возражениями</div>
+
+        <div class="objCard">
+          <div class="objHead" onclick="toggleObj(this)">«Надо посоветоваться» <span>▼</span></div>
+          <div class="objBody">
+            <div class="objStep"><div class="objStepTitle">Уточнить</div>С кем? Какого совета ожидаете?</div>
+            <div class="objStep"><div class="objStepTitle">Вариант А</div>Предлагаю встретиться всем вместе — я сама всё расскажу. Когда удобно?</div>
+            <div class="objStep"><div class="objStepTitle">Вариант Б</div>Тогда тезисно запишем ключевые моменты, чтобы правильно передали. Или наберите меня вечером — передам по телефону.</div>
+            <div class="objStep"><div class="objStepTitle">Вариант В (если избегает)</div>В начале встречи вы говорили, что решения принимаете самостоятельно. Вероятно, остались вопросы — готова ответить!</div>
+          </div>
+        </div>
+
+        <div class="objCard">
+          <div class="objHead" onclick="toggleObj(this)">«Долгий срок — где гарантии?» <span>▼</span></div>
+          <div class="objBody">
+            <div class="objStep"><div class="objStepTitle">Присоединиться</div>Согласна, вопрос гарантий очень важный. А что для вас является гарантией надёжности?</div>
+            <div class="objStep"><div class="objStepTitle">Факты о компании</div>Эверия Лайф — российская страховая компания. Работаем с 2002 года, пережили не один кризис. Деятельность контролирует ЦБ РФ. Всегда выполняем обязательства перед клиентами.</div>
+            <div class="objStep"><div class="objStepTitle">Вернуться</div>Давайте вернёмся к заявлению — кто будет выгодоприобретателем по вашему договору?</div>
+          </div>
+        </div>
+
+        <div class="objCard">
+          <div class="objHead" onclick="toggleObj(this)">«Сложное время, давайте позже» <span>▼</span></div>
+          <div class="objBody">
+            <div class="objStep"><div class="objStepTitle">Присоединиться</div>Согласна, ситуация влияет на нас. Что конкретно имеете в виду?</div>
+            <div class="objStep"><div class="objStepTitle">Вернуться к потребности</div>Помните, мы говорили — непредвиденные ситуации могут случиться когда угодно. И именно тогда нужны деньги. Согласны?</div>
+            <div class="objStep"><div class="objStepTitle">Выход</div>Давайте вернёмся к сумме взноса — какая будет комфортной именно сейчас?</div>
+          </div>
+        </div>
+
+        <div class="objCard">
+          <div class="objHead" onclick="toggleObj(this)">«Есть депозит / другие накопления» <span>▼</span></div>
+          <div class="objBody">
+            <div class="objStep"><div class="objStepTitle">Прояснить ошибку</div>Вероятно, я не совсем верно донесла идею — вы восприняли это как инструмент инвестирования.</div>
+            <div class="objStep"><div class="objStepTitle">Уточнить идею</div>Прежде всего страхование жизни — это защита в ситуациях, связанных с жизнью и здоровьем. Депозит тратить не придётся.</div>
+            <div class="objStep"><div class="objStepTitle">Вернуться</div>Давайте ещё раз посмотрим на важные для вас вопросы — покажу, как страхование поможет их решить.</div>
+          </div>
+        </div>
+
+        <div class="objCard">
+          <div class="objHead" onclick="toggleObj(this)">«Надо подумать» <span>▼</span></div>
+          <div class="objBody">
+            <div class="objStep"><div class="objStepTitle">Зафиксировать дату</div>Понимаю и принимаю. Сколько времени вам необходимо? Предлагаю сразу назначить следующую встречу.</div>
+            <div class="objStep"><div class="objStepTitle">Если не назначает</div>Тогда приглашу вас на ближайшее мероприятие в офисе — финансовая игра, семинар. Это поможет принять решение.</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px">
+        <button class="btnSecondary" style="flex:1" onclick="goPhase(4)">← К закрытию</button>
+        <button class="btnPrimary" style="flex:2" onclick="goPhase(6)">Итог встречи →</button>
+      </div>
+    </div>
+
+    <!-- ── PHASE 6: ВТОРАЯ ВСТРЕЧА / ОТКАЗ ── -->
+    <div class="phase" id="phase6">
+      <div class="tip">Не каждая встреча заканчивается продажей — это нормально. Главное: сохранить отношения и назначить следующий шаг.</div>
+
+      <div class="card">
+        <div class="cardTitle">📅 Если переходим ко второй встрече</div>
+        <div class="section">
+          <div class="sectionTitle">Подготовка ко 2-й встрече</div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkLabel">Сделала расчёт на калькуляторе (несколько вариантов)</div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkLabel">Обсудила с менеджером — подобрали программу</div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkLabel">Повторила потребности клиента из первой встречи</div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkLabel">Проиграла в РИ: как буду презентовать конкретное решение</div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkLabel">Проверила папку агента (инфографика, лицензия, документы)</div></div>
+        </div>
+        <div class="section">
+          <div class="sectionTitle">Алгоритм второй встречи</div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkLabel">Приветствие, короткий разговор</div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkLabel">Вернулись к важным вопросам первой встречи</div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkLabel">Презентовали конкретное решение на цифрах</div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkLabel">Отработали возражения</div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkLabel">Оформили заявление, помогли оплатить взнос</div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkLabel">Взяли рекомендации</div></div>
+        </div>
+        <div class="qItem" onclick="copyQ(this)">Катя, привет! Рада снова встретиться. Давай ещё раз вспомним — какая у тебя была цель?<span class="qCopied">✓</span></div>
+      </div>
+
+      <div class="card">
+        <div class="cardTitle">🤝 Если получили отказ</div>
+        <div class="tip">Отказ — не повод вычеркнуть клиента навсегда. Сохраняем отношения.</div>
+        <div class="qItem" onclick="copyQ(this)">Понимаю и принимаю ваше решение. Сколько времени вам необходимо, чтобы дать точный ответ? Предлагаю сразу назначить дату следующей встречи.<span class="qCopied">✓</span></div>
+        <div class="qItem" onclick="copyQ(this)">Хочет посоветоваться с супругом/юристом? — Предлагаю встретиться всем вместе. Они не знают нюансов, я быстро и профессионально отвечу на все вопросы.<span class="qCopied">✓</span></div>
+        <div class="qItem" onclick="copyQ(this)">Если не готов назначить встречу — приглашаю на мероприятие в офисе: финансовая игра, семинар, день клиента.<span class="qCopied">✓</span></div>
+        <div class="section">
+          <div class="sectionTitle">После отказа — поддерживать связь</div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkLabel">Поздравляем с праздниками</div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkLabel">Приглашаем на мероприятия</div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkLabel">Берём рекомендации даже при отказе</div></div>
+        </div>
+      </div>
+
+      <button class="btnPrimary" onclick="goPhase(7)">Завершить встречу →</button>
+    </div>
+
+    <!-- ── PHASE 7: ИТОГИ ── -->
+    <div class="phase" id="phase7">
+      <div class="card">
+        <div class="cardTitle">🏁 Итоги встречи</div>
+        <div class="summaryGrid" id="summaryGrid">
+          <div class="summaryBox">
+            <div class="summaryLabel">Клиент</div>
+            <div class="summaryValue" id="sumClient">—</div>
+          </div>
+          <div class="summaryBox">
+            <div class="summaryLabel">Время встречи</div>
+            <div class="summaryValue" id="sumTime">—</div>
+          </div>
+          <div class="summaryBox">
+            <div class="summaryLabel">Комфортный взнос</div>
+            <div class="summaryValue" id="sumContrib">—</div>
+          </div>
+          <div class="summaryBox">
+            <div class="summaryLabel">Срок программы</div>
+            <div class="summaryValue" id="sumTerm">—</div>
+          </div>
+        </div>
+        <div class="summaryBox" style="margin-top:8px">
+          <div class="summaryLabel">Приоритетная тема</div>
+          <div class="summaryValue" id="sumNeed">—</div>
+        </div>
+        <div class="summaryBox" style="margin-top:8px">
+          <div class="summaryLabel">Рекомендации</div>
+          <div class="summaryValue" id="sumRecs">—</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="cardTitle">📊 Результат встречи</div>
+        <div class="resultBtns">
+          <button class="resultBtn sale" onclick="setResult(this,'✅ Продажа')">✅ Продажа</button>
+          <button class="resultBtn meeting2" onclick="setResult(this,'📅 Вторая встреча')">📅 Вторая встреча</button>
+          <button class="resultBtn think" onclick="setResult(this,'🤔 Думает')">🤔 Думает</button>
+          <button class="resultBtn refused" onclick="setResult(this,'❌ Отказ')">❌ Отказ</button>
+        </div>
+        <div class="formRow">
+          <label>Заметки по итогам</label>
+          <textarea class="noteArea" id="noteResult" rows="3" placeholder="Договорились о следующем шаге..."></textarea>
+        </div>
+      </div>
+
+      <button id="downloadRecBtn" onclick="downloadRec()" style="display:none">⬇ Скачать запись встречи</button>
+      <button id="tgRecBtn" onclick="sendToTelegram()" style="display:none;margin-top:8px;width:100%;padding:12px;background:rgba(41,182,246,.12);border:1px solid rgba(41,182,246,.4);border-radius:10px;color:#29b6f6;font-size:14px;font-weight:600;cursor:pointer;">📨 Отправить запись менеджеру</button>
+      <div id="tgStatus" style="display:none;font-size:12px;text-align:center;margin-top:6px;padding:8px;border-radius:8px;"></div>
+      <button class="btnPrimary" style="margin-top:12px" onclick="newMeeting()">🔄 Новая встреча</button>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /appScreen -->
+
+<script>
+// ─── AGENTS ───────────────────────────────
+const MANAGER_PIN = '0000';
+const MANAGER_NAME = 'Марина';
+const AGENTS_KEY = 'everia_app_agents';
+
+const DEFAULT_AGENTS = [
+  { name: 'Наталья', role: 'Агент', pin: '1234' },
+  { name: 'Марина',  role: 'Менеджер', pin: '0000' },
+];
+
+function loadAgents() {
+  try {
+    const d = localStorage.getItem(AGENTS_KEY);
+    return d ? JSON.parse(d) : DEFAULT_AGENTS;
+  } catch(e) { return DEFAULT_AGENTS; }
+}
+
+function saveAgents(agents) {
+  localStorage.setItem(AGENTS_KEY, JSON.stringify(agents));
+}
+
+let AGENTS = loadAgents();
+
+// ─── STATE ────────────────────────────────
+let currentAgent = null;
+let currentPhase = 0;
+let timerInterval = null;
+let timerSeconds = 0;
+let meetingStarted = false;
+let mediaRecorder = null;
+let audioChunks = [];
+let isRecording = false;
+let recordingBlob = null;
+let meetingGoal = 'продажа';
+
+const PHASES = [
+  { id: 'phase0', label: '📋 Подготовка' },
+  { id: 'phase1', label: '🤝 Контакт' },
+  { id: 'phase2', label: '🔍 Вскрытие' },
+  { id: 'phase3', label: '💡 Презентация' },
+  { id: 'phase4', label: '✍️ Закрытие' },
+  { id: 'phase5', label: '🛑 Возражения' },
+  { id: 'phase6', label: '📅 2-я встреча' },
+  { id: 'phase7', label: '🏁 Итоги' },
+];
+
+// ─── INIT ─────────────────────────────────
+window.onload = () => {
+  AGENTS = loadAgents();
+  refreshAgentSelect();
+  buildTabs();
+  buildDots();
+};
+
+function refreshAgentSelect() {
+  const sel = document.getElementById('agentSelect');
+  const current = sel.value;
+  sel.innerHTML = '';
+  AGENTS.forEach(a => {
+    const opt = document.createElement('option');
+    opt.value = a.name;
+    opt.textContent = a.name + ' (' + a.role + ')';
+    sel.appendChild(opt);
+  });
+  if (current) sel.value = current;
+}
+
+function buildTabs() {
+  const cont = document.getElementById('phaseTabs');
+  cont.innerHTML = '';
+  PHASES.forEach((p, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'phaseTab' + (i === currentPhase ? ' active' : '');
+    btn.textContent = p.label;
+    btn.onclick = () => goPhase(i);
+    btn.id = 'tab' + i;
+    cont.appendChild(btn);
+  });
+}
+
+function buildDots() {
+  const cont = document.getElementById('phaseDots');
+  cont.innerHTML = '';
+  PHASES.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'phaseDot' + (i === currentPhase ? ' active' : i < currentPhase ? ' done' : '');
+    d.id = 'dot' + i;
+    cont.appendChild(d);
+  });
+}
+
+// ─── LOGIN ────────────────────────────────
+function doLogin() {
+  const name = document.getElementById('agentSelect').value;
+  const pin  = document.getElementById('pinInput').value;
+  AGENTS = loadAgents();
+  const agent = AGENTS.find(a => a.name === name && a.pin === pin);
+  if (!agent) {
+    document.getElementById('loginError').textContent = 'Неверный PIN или агент не выбран';
+    return;
+  }
+  currentAgent = agent;
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appScreen').style.display = 'block';
+  document.getElementById('agentLabel').textContent = agent.name;
+  // показать кнопку управления агентами только менеджеру
+  const mgrBtn = document.getElementById('mgrAgentsBtn');
+  if (mgrBtn) mgrBtn.style.display = agent.role === 'Менеджер' ? 'inline-flex' : 'none';
+}
+
+function doLogout() {
+  if (isRecording) stopRec();
+  clearInterval(timerInterval);
+  timerSeconds = 0; meetingStarted = false;
+  currentPhase = 0;
+  document.getElementById('appScreen').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginError').textContent = '';
+  document.getElementById('pinInput').value = '';
+  goPhase(0);
+}
+
+// ─── PHASE NAV ────────────────────────────
+function goPhase(n) {
+  document.getElementById('phase' + currentPhase).classList.remove('active');
+  currentPhase = n;
+  document.getElementById('phase' + currentPhase).classList.add('active');
+
+  // update tabs
+  document.querySelectorAll('.phaseTab').forEach((t, i) => {
+    t.className = 'phaseTab' + (i === n ? ' active' : i < n ? ' done' : '');
+  });
+
+  // update dots
+  document.querySelectorAll('.phaseDot').forEach((d, i) => {
+    d.className = 'phaseDot' + (i === n ? ' active' : i < n ? ' done' : '');
+  });
+
+  // scroll to top
+  document.querySelector('.content').scrollTop = 0;
+  window.scrollTo(0, 0);
+
+  if (n === 7) fillSummary();
+}
+
+// ─── MEETING START ────────────────────────
+function startMeeting() {
+  meetingStarted = true;
+  startTimer();
+  goPhase(1);
+}
+
+function startTimer() {
+  clearInterval(timerInterval);
+  timerSeconds = 0;
+  const badge = document.getElementById('timerBadge');
+  badge.classList.add('running');
+  timerInterval = setInterval(() => {
+    timerSeconds++;
+    const m = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
+    const s = String(timerSeconds % 60).padStart(2, '0');
+    badge.textContent = m + ':' + s;
+  }, 1000);
+}
+
+function setGoal(btn, goal) {
+  meetingGoal = goal;
+  document.querySelectorAll('.goalBtn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ─── RECORDING ────────────────────────────
+async function toggleRec() {
+  if (!isRecording) {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioChunks = [];
+      mediaRecorder = new MediaRecorder(stream);
+      mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+      mediaRecorder.onstop = () => {
+        recordingBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        document.getElementById('downloadRecBtn').style.display = 'block';
+        document.getElementById('tgRecBtn').style.display = 'block';
+        document.getElementById('tgStatus').style.display = 'none';
+      };
+      mediaRecorder.start();
+      isRecording = true;
+      document.getElementById('recBtn').classList.add('recording');
+      document.getElementById('recLabel').textContent = 'СТОП';
+    } catch(e) {
+      alert('Нет доступа к микрофону');
+    }
+  } else {
+    stopRec();
+  }
+}
+
+function stopRec() {
+  if (mediaRecorder && isRecording) {
+    mediaRecorder.stop();
+    mediaRecorder.stream.getTracks().forEach(t => t.stop());
+  }
+  isRecording = false;
+  document.getElementById('recBtn').classList.remove('recording');
+  document.getElementById('recLabel').textContent = 'REC';
+}
+
+function sendToTelegram() {
+  if (!recordingBlob) return;
+  const TG_TOKEN = '8586163814:AAGgGuAXpBKxU3iq6o374Qppdv-0v0v0i7w';
+  const CHAT_ID = '180849598';
+  const name = document.getElementById('clientName').value || 'клиент';
+  const date = new Date().toLocaleDateString('ru');
+  const agentName = currentUser ? currentUser.name : 'Агент';
+  const status = document.getElementById('tgStatus');
+  const btn = document.getElementById('tgRecBtn');
+
+  btn.textContent = '⏳ Отправляю...';
+  btn.disabled = true;
+  status.style.display = 'block';
+  status.style.background = 'rgba(201,168,76,.1)';
+  status.style.color = '#c9a84c';
+  status.textContent = 'Загружаю запись...';
+
+  const fileName = 'встреча_' + name + '_' + date.replace(/\./g,'-') + '.webm';
+  const caption = '🎙 Запись встречи\n👤 Агент: ' + agentName + '\n👥 Клиент: ' + name + '\n📅 ' + date;
+
+  const fd = new FormData();
+  fd.append('chat_id', CHAT_ID);
+  fd.append('audio', recordingBlob, fileName);
+  fd.append('caption', caption);
+
+  fetch('https://api.telegram.org/bot' + TG_TOKEN + '/sendAudio', {
+    method: 'POST',
+    body: fd
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.ok) {
+      status.style.background = 'rgba(62,207,142,.1)';
+      status.style.color = '#3ecf8e';
+      status.textContent = '✅ Запись отправлена менеджеру!';
+      btn.textContent = '✅ Отправлено';
+    } else {
+      status.style.background = 'rgba(245,96,96,.1)';
+      status.style.color = '#f56060';
+      status.textContent = '❌ Ошибка: ' + (data.description || 'попробуй ещё раз');
+      btn.textContent = '📨 Отправить снова';
+      btn.disabled = false;
+    }
+  })
+  .catch(() => {
+    status.style.background = 'rgba(245,96,96,.1)';
+    status.style.color = '#f56060';
+    status.textContent = '❌ Нет сети — попробуй позже';
+    btn.textContent = '📨 Отправить снова';
+    btn.disabled = false;
+  });
+}
+
+function downloadRec() {
+  if (!recordingBlob) return;
+  const name = document.getElementById('clientName').value || 'клиент';
+  const date = new Date().toLocaleDateString('ru').replace(/\./g, '-');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(recordingBlob);
+  a.download = 'встреча_' + name + '_' + date + '.webm';
+  a.click();
+}
+
+// ─── UI HELPERS ───────────────────────────
+function copyQ(el) {
+  const text = el.innerText.replace('✓ скопировано','').replace('✓','').trim();
+  navigator.clipboard.writeText(text).catch(() => {});
+  el.classList.add('copied');
+  setTimeout(() => el.classList.remove('copied'), 1500);
+}
+
+function toggleCheck(el) {
+  el.classList.toggle('checked');
+}
+
+function toggleAcc(head) {
+  head.classList.toggle('open');
+  head.nextElementSibling.classList.toggle('show');
+}
+
+function toggleObj(head) {
+  const body = head.nextElementSibling;
+  body.classList.toggle('show');
+  const arrow = head.querySelector('span:last-child');
+  if (arrow) arrow.textContent = body.classList.contains('show') ? '▲' : '▼';
+}
+
+function setResult(btn, result) {
+  document.querySelectorAll('.resultBtn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ─── SUMMARY ──────────────────────────────
+function fillSummary() {
+  if (isRecording) stopRec();
+  clearInterval(timerInterval);
+  document.getElementById('timerBadge').classList.remove('running');
+
+  const m = Math.floor(timerSeconds / 60);
+  const s = timerSeconds % 60;
+
+  document.getElementById('sumClient').textContent = document.getElementById('clientName').value || '—';
+  document.getElementById('sumTime').textContent = m + ' мин ' + s + ' сек';
+  document.getElementById('sumContrib').textContent = document.getElementById('noteContrib').value || '—';
+  document.getElementById('sumTerm').textContent = document.getElementById('noteTerm').value || '—';
+  document.getElementById('sumNeed').textContent = document.getElementById('noteNeedPriority').value || '—';
+  document.getElementById('sumRecs').textContent = document.getElementById('noteRecs').value || '—';
+}
+
+function newMeeting() {
+  // reset fields
+  ['clientName','clientProfile','clientNotes','noteInfoClient',
+   'noteNeedPriority','noteContrib','noteTerm','noteRecs','noteResult'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  // reset checks
+  document.querySelectorAll('.checkItem').forEach(c => c.classList.remove('checked'));
+  // reset result btns
+  document.querySelectorAll('.resultBtn').forEach(b => b.classList.remove('active'));
+  // reset goal
+  document.querySelectorAll('.goalBtn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.goalBtn')[0].classList.add('active');
+  meetingGoal = 'продажа';
+  // reset recording
+  recordingBlob = null;
+  document.getElementById('downloadRecBtn').style.display = 'none';
+  // reset timer
+  timerSeconds = 0;
+  meetingStarted = false;
+  document.getElementById('timerBadge').textContent = '00:00';
+  document.getElementById('timerBadge').classList.remove('running');
+  // go to prep
+  goPhase(0);
+}
+</script>
+</body>
+</html>

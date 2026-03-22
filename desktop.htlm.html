@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Everia Life — Рабочий стол</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Raleway:wght@300;400;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f7f4ef; --surface:#fff; --border:#e8e2d9; --dark:#1a1612; --brown:#6b4f3a;
+  --gold:#c8952a; --gold-light:#fdf3dc; --green:#2d6a4f; --green-light:#d8f3dc;
+  --red:#9b2335; --red-light:#fce4e7; --blue:#1d3557; --blue-light:#e8f0f7;
+  --warn:#856404; --warn-light:#fff3cd; --muted:#9e8e7e; --text:#1a1612;
+  --rose:#c0394b; --rose-light:#fceef0;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Raleway',sans-serif;min-height:100vh;}
+.topbar{height:4px;background:linear-gradient(90deg,var(--rose),var(--gold),var(--brown));}
+
+/* ── LOGIN ─────────────────────────────────────────────── */
+#loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;}
+.login-box{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:52px 44px;width:360px;text-align:center;box-shadow:0 12px 60px rgba(0,0,0,.08);}
+.login-logo-icon{font-size:44px;margin-bottom:12px;display:block;}
+.login-brand{font-size:10px;font-weight:700;letter-spacing:.25em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;}
+.login-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;color:var(--dark);margin-bottom:32px;}
+.login-inp{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:13px 16px;font-family:'Raleway',sans-serif;font-size:15px;color:var(--text);outline:none;text-align:center;transition:border-color .2s;margin-bottom:12px;}
+.login-inp:focus{border-color:var(--gold);}
+.login-btn{width:100%;background:var(--dark);color:white;border:none;border-radius:12px;padding:14px;font-family:'Raleway',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;}
+.login-btn:hover{background:var(--brown);}
+.login-err{color:var(--rose);font-size:13px;margin-top:10px;min-height:18px;}
+
+/* ── SHARED HEADER ─────────────────────────────────────── */
+.app-shell{display:none;}
+.app-header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:0;height:56px;position:sticky;top:0;z-index:50;}
+.app-header-brand{font-family:'Playfair Display',serif;font-size:18px;font-weight:900;color:var(--dark);margin-right:24px;white-space:nowrap;}
+.app-header-brand span{color:var(--gold);}
+.app-nav{display:flex;align-items:center;gap:2px;flex:1;}
+.nav-btn{background:none;border:none;padding:8px 16px;font-family:'Raleway',sans-serif;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;border-radius:8px;transition:all .2s;display:flex;align-items:center;gap:6px;}
+.nav-btn:hover{background:var(--bg);color:var(--dark);}
+.nav-btn.active{background:var(--dark);color:white;}
+.nav-btn .nb-icon{font-size:15px;}
+.header-logout{margin-left:auto;background:none;border:1.5px solid var(--border);border-radius:8px;padding:5px 12px;font-family:'Raleway',sans-serif;font-size:12px;color:var(--muted);cursor:pointer;transition:all .2s;}
+.header-logout:hover{border-color:var(--rose);color:var(--rose);}
+
+/* ── HOME SCREEN ───────────────────────────────────────── */
+#screenHome{display:none;}
+.home-wrap{max-width:900px;margin:0 auto;padding:40px 20px;}
+.home-greeting{font-family:'Playfair Display',serif;font-size:clamp(26px,5vw,42px);font-weight:900;color:var(--dark);margin-bottom:8px;}
+.home-sub{font-size:14px;color:var(--muted);margin-bottom:40px;}
+.home-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;}
+.home-card{background:var(--surface);border:2px solid var(--border);border-radius:20px;padding:28px;cursor:pointer;transition:all .25s;position:relative;overflow:hidden;}
+.home-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;}
+.home-card.bonus::before{background:linear-gradient(90deg,var(--gold),#e8b84b);}
+.home-card.bday::before{background:linear-gradient(90deg,var(--rose),#e05570);}
+.home-card:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,.1);}
+.home-card.bonus:hover{border-color:var(--gold);}
+.home-card.bday:hover{border-color:var(--rose);}
+.hc-icon{font-size:40px;margin-bottom:16px;display:block;}
+.hc-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--dark);margin-bottom:8px;}
+.hc-desc{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:20px;}
+.hc-btn{display:inline-flex;align-items:center;gap:6px;background:var(--dark);color:white;border:none;border-radius:10px;padding:10px 20px;font-family:'Raleway',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;}
+.home-card.bonus .hc-btn:hover{background:var(--gold);}
+.home-card.bday .hc-btn:hover{background:var(--rose);}
+
+.home-today{background:linear-gradient(135deg,var(--rose),#e05570);color:white;border-radius:16px;padding:18px 22px;margin-bottom:24px;display:none;}
+.home-today.show{display:flex;align-items:center;gap:14px;}
+.ht-icon{font-size:32px;}
+.ht-label{font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;opacity:.85;margin-bottom:4px;}
+.ht-names{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;}
+
+@keyframes fu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── BONUS TRACKER ─────────────────────────────────────── */
+#screenBonus{display:none;}
+.bwrap{max-width:1200px;margin:0 auto;padding:24px 16px;}
+.bonus-ref{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:18px;overflow-x:auto;}
+.ref-title{font-size:10px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+.blevels{display:flex;gap:7px;flex-wrap:wrap;}
+.bl{flex:1;min-width:110px;background:var(--bg);border:1px solid var(--border);border-top:3px solid;border-radius:10px;padding:10px 12px;}
+.bl-n{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:var(--dark);}
+.bl-s{font-size:11px;color:var(--muted);margin:2px 0 6px;}
+.bl-tags{display:flex;gap:4px;flex-wrap:wrap;}
+.tag{font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;}
+.tfl{background:var(--blue-light);color:var(--blue);}
+.tip{background:var(--green-light);color:var(--green);}
+.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:20px;}
+.sc{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;animation:fu .4s ease both;}
+.sc-l{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+.sc-v{font-family:'JetBrains Mono',monospace;font-size:21px;font-weight:700;color:var(--dark);}
+.sc-v.g{color:var(--green);}.sc-v.gold{color:var(--gold);}
+.add-bar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.sec-t{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--brown);margin-right:4px;}
+.inp{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:7px 11px;font-family:'Raleway',sans-serif;font-size:13px;color:var(--text);outline:none;transition:border-color .2s;}
+.inp:focus{border-color:var(--gold);}
+.sel{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:7px 11px;font-family:'Raleway',sans-serif;font-size:13px;color:var(--text);cursor:pointer;outline:none;}
+.btn{background:var(--dark);color:white;border:none;border-radius:8px;padding:7px 14px;font-family:'Raleway',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;}
+.btn:hover{background:var(--brown);}
+.btn.sm{font-size:12px;padding:5px 10px;}
+.btn.gold-btn{background:var(--gold);}
+.btn.gold-btn:hover{background:#b8851a;}
+.agents-list{display:flex;flex-direction:column;gap:10px;}
+.acard-b{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;animation:fu .35s ease both;}
+.acard-b.earned{border-left:4px solid var(--gold);}
+.acard-b.one{border-left:4px solid #e8b84b;}
+.acard-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;cursor:pointer;gap:12px;flex-wrap:wrap;}
+.acard-head:hover{background:rgba(200,149,42,.03);}
+.aname-row{display:flex;align-items:center;gap:8px;}
+.aname{font-size:15px;font-weight:800;color:var(--dark);}
+.tbadge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;}
+.tfl2{background:var(--blue-light);color:var(--blue);}
+.tip2{background:var(--green-light);color:var(--green);}
+.anote{font-size:11px;color:var(--muted);margin-top:2px;}
+.acard-right{display:flex;align-items:center;gap:12px;}
+.abonus{text-align:right;}
+.bamt{font-family:'JetBrains Mono',monospace;font-size:19px;font-weight:700;color:var(--gold);}
+.blbl{font-size:10px;color:var(--muted);font-weight:600;}
+.bnone{font-size:12px;color:var(--muted);}
+.bprog{font-size:11px;color:var(--warn);font-weight:700;}
+.month-pills{display:flex;gap:6px;}
+.mpill{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;}
+.mp-ok{background:var(--green-light);color:var(--green);}
+.mp-no{background:var(--border);color:var(--muted);}
+.mp-pt{background:var(--warn-light);color:var(--warn);}
+.del{background:none;border:1px solid var(--border);border-radius:6px;width:24px;height:24px;cursor:pointer;color:var(--muted);font-size:12px;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
+.del:hover{background:var(--red-light);color:var(--red);border-color:var(--red);}
+.acard-body{display:none;border-top:1px solid var(--border);padding:16px;}
+.acard-body.open{display:block;}
+.months-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;}
+.mblock{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;}
+.mblock.m-ok{border-color:var(--green);background:#f0fbf4;}
+.mblock.m-pt{border-color:#e8b84b;background:#fffbf0;}
+.mb-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.mb-name{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--brown);}
+.mb-status{font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;}
+.mbs-ok{background:var(--green-light);color:var(--green);}
+.mbs-pt{background:var(--warn-light);color:var(--warn);}
+.mbs-no{background:var(--red-light);color:var(--red);}
+.mbs-em{background:var(--border);color:var(--muted);}
+.mb-totals{display:flex;gap:12px;margin-bottom:10px;}
+.mb-total{flex:1;background:var(--surface);border-radius:8px;padding:8px 10px;text-align:center;border:1px solid var(--border);}
+.mb-total-val{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:var(--dark);}
+.mb-total-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;}
+.deals-list{display:flex;flex-direction:column;gap:4px;margin-bottom:8px;max-height:160px;overflow-y:auto;}
+.deal-row{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;}
+.deal-date{color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:11px;min-width:50px;}
+.deal-c{font-weight:700;color:var(--blue);min-width:40px;}
+.deal-s{font-weight:700;color:var(--green);flex:1;}
+.deal-note{color:var(--muted);font-size:11px;flex:1;}
+.deal-del{background:none;border:none;cursor:pointer;color:var(--muted);font-size:13px;padding:0 2px;transition:color .2s;}
+.deal-del:hover{color:var(--red);}
+.add-deal-form{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.mini-inp{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text);outline:none;transition:border-color .2s;}
+.mini-inp:focus{border-color:var(--gold);}
+.afoot{padding:0 16px 10px;display:flex;align-items:center;gap:10px;}
+.pb{flex:1;height:3px;background:var(--border);border-radius:4px;overflow:hidden;}
+.pbf{height:100%;border-radius:4px;transition:width .6s cubic-bezier(.34,1.56,.64,1);}
+.pbnote{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;white-space:nowrap;}
+.empty-note{text-align:center;color:var(--muted);padding:32px;font-size:14px;}
+.bqnav{display:flex;align-items:center;gap:6px;}
+.bqbtn{background:var(--surface);border:1px solid var(--border);border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:16px;color:var(--brown);display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.bqbtn:hover{background:var(--gold-light);border-color:var(--gold);}
+.bqlabel{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:var(--dark);background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:5px 14px;min-width:200px;text-align:center;}
+.sync-status{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px;}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);}
+.sync-dot.ok{background:var(--green);}
+.sync-dot.loading{background:var(--gold);animation:pulse 1s infinite;}
+.sync-dot.err{background:var(--red);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.bonus-subheader{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;}
+/* Settings */
+#screenSettings{display:none;}
+.swrap{max-width:700px;margin:0 auto;padding:24px 16px;}
+.settings-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:16px;}
+.settings-card-head{padding:14px 18px;background:var(--bg);border-bottom:1px solid var(--border);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--brown);}
+.level-editor{padding:16px 18px;display:flex;flex-direction:column;gap:12px;}
+.level-header-row{display:grid;grid-template-columns:28px 1fr 1fr 1fr 1fr;gap:10px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.level-header-row span{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:right;}
+.level-header-row span:first-child{text-align:center;}
+.level-row{display:grid;grid-template-columns:28px 1fr 1fr 1fr 1fr;gap:10px;align-items:center;}
+.level-num{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--muted);text-align:center;}
+.level-inp-wrap{display:flex;flex-direction:column;gap:3px;}
+.level-inp{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text);outline:none;width:100%;transition:border-color .2s;text-align:right;}
+.level-inp:focus{border-color:var(--gold);background:white;}
+.save-settings-btn{width:100%;background:var(--gold);color:white;border:none;border-radius:10px;padding:13px;font-family:'Raleway',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;}
+.save-settings-btn:hover{background:#b8851a;}
+.settings-saved{text-align:center;font-size:13px;color:var(--green);font-weight:600;margin-top:10px;min-height:20px;}
+.page-title{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--dark);margin-bottom:20px;}
+
+/* ── BIRTHDAY TRACKER ──────────────────────────────────── */
+#screenBday{display:none;}
+.bdwrap{max-width:1100px;margin:0 auto;padding:24px 16px;}
+.today-banner{background:linear-gradient(135deg,var(--rose),#e05570);color:white;border-radius:16px;padding:16px 22px;margin-bottom:18px;display:none;}
+.today-banner.show{display:flex;align-items:center;gap:14px;}
+.tb-icon{font-size:32px;}
+.tb-label{font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;opacity:.85;margin-bottom:4px;}
+.tb-names{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;}
+.upcoming{background:var(--gold-light);border:1.5px solid #e8d59a;border-radius:16px;padding:14px 18px;margin-bottom:18px;}
+.up-title{font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--brown);margin-bottom:10px;}
+.up-list{display:flex;flex-wrap:wrap;gap:8px;}
+.up-chip{background:var(--surface);border:1.5px solid #e8d59a;border-radius:30px;padding:5px 14px;font-size:13px;font-weight:600;color:var(--dark);display:flex;align-items:center;gap:6px;}
+.up-chip .days{font-size:11px;color:var(--gold);font-family:'JetBrains Mono',monospace;font-weight:700;}
+.add-form-bd{background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:18px 20px;margin-bottom:18px;display:none;}
+.add-form-title{font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--brown);margin-bottom:12px;}
+.add-form-fields{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;}
+.field-wrap{display:flex;flex-direction:column;gap:4px;}
+.field-label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+.finp{background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-family:'Raleway',sans-serif;font-size:13px;color:var(--text);outline:none;transition:border-color .2s;}
+.finp:focus{border-color:var(--gold);}
+.fsel{background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-family:'Raleway',sans-serif;font-size:13px;color:var(--text);cursor:pointer;outline:none;}
+.abtn{background:var(--dark);color:white;border:none;border-radius:8px;padding:9px 18px;font-family:'Raleway',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.abtn:hover{background:var(--brown);}
+.bd-tabs{display:flex;gap:4px;margin-bottom:18px;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:4px;width:fit-content;}
+.bd-tab{padding:7px 18px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;color:var(--muted);border:none;background:none;font-family:'Raleway',sans-serif;}
+.bd-tab.active{background:var(--dark);color:white;}
+.month-section{margin-bottom:16px;}
+.month-header-bd{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.month-name-bd{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--dark);}
+.month-count-bd{font-size:12px;color:var(--muted);font-weight:600;}
+.agent-grid{display:flex;flex-direction:column;gap:8px;}
+.bd-acard{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:14px;transition:all .2s;animation:fu .3s ease both;}
+.bd-acard:hover{border-color:var(--gold);box-shadow:0 4px 20px rgba(200,149,42,.08);}
+.bd-acard.bd-today{border-color:var(--rose);background:var(--rose-light);}
+.bd-acard.bd-soon{border-color:var(--gold);background:var(--gold-light);}
+.bd-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:white;flex-shrink:0;}
+.bd-info{flex:1;min-width:0;}
+.bd-name{font-size:15px;font-weight:800;color:var(--dark);margin-bottom:2px;}
+.bd-bday{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);}
+.bday-today{color:var(--rose);font-weight:700;}
+.bday-soon{color:var(--gold);font-weight:700;}
+.bd-age{font-size:11px;color:var(--muted);margin-left:6px;}
+.bd-contacts{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.contact-btn{display:flex;align-items:center;gap:5px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:5px 10px;font-size:12px;font-weight:600;color:var(--dark);text-decoration:none;cursor:pointer;transition:all .2s;font-family:'Raleway',sans-serif;}
+.contact-btn:hover{background:var(--surface);border-color:var(--gold);}
+.contact-btn.call:hover{background:#d4edda;border-color:var(--green);}
+.contact-btn.mail:hover{background:var(--blue-light);border-color:var(--blue);}
+.contact-btn.congrat:hover{background:var(--rose-light);border-color:var(--rose);}
+.days-badge{background:var(--rose);color:white;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace;white-space:nowrap;}
+.days-badge.soon{background:var(--gold);}
+.bd-del{background:none;border:1.5px solid var(--border);border-radius:8px;width:28px;height:28px;cursor:pointer;color:var(--muted);font-size:13px;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
+.bd-del:hover{background:var(--rose-light);color:var(--rose);border-color:var(--rose);}
+.no-bd{text-align:center;color:var(--muted);padding:32px;font-size:14px;}
+.bd-mnav{display:flex;align-items:center;gap:6px;margin-bottom:18px;}
+.bd-mnbtn{background:var(--surface);border:1.5px solid var(--border);border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:16px;color:var(--brown);display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.bd-mnbtn:hover{background:var(--gold-light);border-color:var(--gold);}
+.bd-mnlabel{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--dark);min-width:150px;text-align:center;background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:5px 12px;}
+.bd-today-btn{background:none;border:1.5px solid var(--border);border-radius:8px;padding:5px 12px;font-family:'Raleway',sans-serif;font-size:12px;color:var(--muted);cursor:pointer;transition:all .2s;}
+.bd-today-btn:hover{border-color:var(--rose);color:var(--rose);}
+/* Congrat modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;}
+.modal-overlay.show{display:flex;}
+.modal{background:var(--surface);border-radius:20px;padding:32px;width:90%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,.15);animation:fu .3s ease;}
+.modal-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--dark);margin-bottom:6px;}
+.modal-sub{font-size:13px;color:var(--muted);margin-bottom:20px;}
+.congrat-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
+.congrat-card{border:2px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;transition:all .2s;text-align:center;}
+.congrat-card:hover,.congrat-card.selected{border-color:var(--rose);background:var(--rose-light);}
+.congrat-card .ci{font-size:28px;margin-bottom:6px;}
+.congrat-card .ct{font-size:12px;font-weight:700;color:var(--dark);}
+.modal-text{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:12px;font-family:'Raleway',sans-serif;font-size:14px;color:var(--text);outline:none;resize:vertical;min-height:100px;transition:border-color .2s;margin-bottom:14px;}
+.modal-text:focus{border-color:var(--gold);}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end;}
+.modal-cancel{background:none;border:1.5px solid var(--border);border-radius:8px;padding:9px 18px;font-family:'Raleway',sans-serif;font-size:13px;color:var(--muted);cursor:pointer;}
+.modal-send{background:var(--rose);color:white;border:none;border-radius:8px;padding:9px 20px;font-family:'Raleway',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;}
+.modal-send:hover{background:#a52d3f;}
+
+@media(max-width:700px){
+  .months-grid{grid-template-columns:1fr;}
+  .acard-right{flex-wrap:wrap;}
+  .app-nav{gap:0;}
+  .nav-btn{padding:6px 8px;font-size:12px;}
+  .bd-acard{flex-wrap:wrap;}
+  .add-form-fields{flex-direction:column;}
+}
+</style>
+</head>
+<body>
+<div class="topbar"></div>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <span class="login-logo-icon">🏢</span>
+    <div class="login-brand">Everia Life · Омск</div>
+    <div class="login-title">Рабочий стол</div>
+    <input class="login-inp" type="password" id="pwdInput" placeholder="Введите пароль..." onkeydown="if(event.key==='Enter')tryLogin()">
+    <button class="login-btn" onclick="tryLogin()">Войти</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- APP SHELL -->
+<div class="app-shell" id="appShell">
+  <div class="app-header">
+    <div class="app-header-brand">Everia <span>Life</span></div>
+    <nav class="app-nav">
+      <button class="nav-btn active" id="navHome" onclick="showScreen('home')"><span class="nb-icon">🏠</span>Главная</button>
+      <button class="nav-btn" id="navBonus" onclick="showScreen('bonus')"><span class="nb-icon">🏆</span>Бонусы</button>
+      <button class="nav-btn" id="navBday" onclick="showScreen('bday')"><span class="nb-icon">🎂</span>Дни рождения</button>
+      <button class="nav-btn" id="navSettings" onclick="showScreen('settings')"><span class="nb-icon">⚙️</span>Настройки</button>
+    </nav>
+    <button class="header-logout" onclick="logout()">Выйти</button>
+  </div>
+
+  <!-- HOME -->
+  <div id="screenHome">
+    <div class="home-wrap">
+      <div class="home-today" id="homeTodayBanner">
+        <div class="ht-icon">🎉</div>
+        <div>
+          <div class="ht-label">Сегодня день рождения!</div>
+          <div class="ht-names" id="homeTodayNames"></div>
+        </div>
+      </div>
+      <div class="home-greeting" id="homeGreeting"></div>
+      <div class="home-sub" id="homeDate"></div>
+      <div class="home-cards">
+        <div class="home-card bonus" onclick="showScreen('bonus')">
+          <span class="hc-icon">🏆</span>
+          <div class="hc-title">Бонусный трекер</div>
+          <div class="hc-desc">Отслеживай выполнение плана по агентам. Плавающие кварталы, журнал сделок, автоматический расчёт бонусов.</div>
+          <button class="hc-btn">Открыть →</button>
+        </div>
+        <div class="home-card bday" onclick="showScreen('bday')">
+          <span class="hc-icon">🎂</span>
+          <div class="hc-title">Дни рождения</div>
+          <div class="hc-desc">Не пропускай дни рождения агентов. Календарь по месяцам, напоминания, быстрый звонок и поздравление.</div>
+          <button class="hc-btn">Открыть →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BONUS TRACKER -->
+  <div id="screenBonus">
+    <div class="bwrap">
+      <div class="bonus-subheader">
+        <div class="bqnav">
+          <button class="bqbtn" onclick="shiftQ(-1)">‹</button>
+          <div class="bqlabel" id="bqlabel"></div>
+          <button class="bqbtn" onclick="shiftQ(1)">›</button>
+        </div>
+        <div class="sync-status"><div class="sync-dot" id="syncDot"></div><span id="syncText">—</span></div>
+      </div>
+      <div class="bonus-ref">
+        <div class="ref-title">Уровни бонуса · ≥2 выполненных месяца из 3 · уровень по итогу квартала</div>
+        <div class="blevels" id="blevels"></div>
+      </div>
+      <div class="summary" id="bsummary"></div>
+      <div class="add-bar">
+        <span class="sec-t">Агенты</span>
+        <input class="inp" id="bNewName" style="width:160px" placeholder="Имя агента..." onkeydown="if(event.key==='Enter')bAddAgent()">
+        <select class="sel" id="bNewType">
+          <option value="ФЛ">ФЛ — физлицо</option>
+          <option value="ИП">ИП</option>
+        </select>
+        <button class="btn" onclick="bAddAgent()">+ Добавить</button>
+        <button class="btn" id="bLoadDefaultsBtn" onclick="bLoadDefaults()" style="background:var(--brown)">↺ Загрузить список</button>
+      </div>
+      <div class="agents-list" id="agentsList"></div>
+    </div>
+  </div>
+
+  <!-- BIRTHDAY TRACKER -->
+  <div id="screenBday">
+    <div class="bdwrap">
+      <div class="today-banner" id="bdTodayBanner">
+        <div class="tb-icon">🎉</div>
+        <div>
+          <div class="tb-label">Сегодня день рождения!</div>
+          <div class="tb-names" id="bdTodayNames"></div>
+        </div>
+      </div>
+      <div class="upcoming" id="bdUpcoming" style="display:none">
+        <div class="up-title">🎁 Скоро в этом месяце</div>
+        <div class="up-list" id="bdUpList"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:18px;flex-wrap:wrap;">
+        <div class="bd-mnav" style="margin-bottom:0">
+          <button class="bd-mnbtn" onclick="bdShiftMonth(-1)">‹</button>
+          <div class="bd-mnlabel" id="bdMnLabel"></div>
+          <button class="bd-mnbtn" onclick="bdShiftMonth(1)">›</button>
+        </div>
+        <button class="bd-today-btn" onclick="bdGoToday()">Сегодня</button>
+      </div>
+      <div class="bd-tabs">
+        <button class="bd-tab active" id="bdTabMonth" onclick="bdSwitchTab('month')">По месяцу</button>
+        <button class="bd-tab" id="bdTabAll" onclick="bdSwitchTab('all')">Все агенты</button>
+        <button class="bd-tab" id="bdTabAdd" onclick="bdSwitchTab('add')">+ Добавить</button>
+      </div>
+      <div class="add-form-bd" id="bdAddForm">
+        <div class="add-form-title">Новый агент</div>
+        <div class="add-form-fields">
+          <div class="field-wrap"><div class="field-label">Фамилия И.О.</div><input class="finp" id="bdNewName" placeholder="Иванова И.П." style="width:170px"></div>
+          <div class="field-wrap"><div class="field-label">Дата рождения</div><input class="finp" id="bdNewBday" type="date" style="width:150px"></div>
+          <div class="field-wrap"><div class="field-label">Телефон</div><input class="finp" id="bdNewPhone" placeholder="9001234567" style="width:140px"></div>
+          <div class="field-wrap"><div class="field-label">Email</div><input class="finp" id="bdNewEmail" placeholder="agent@mail.ru" style="width:180px"></div>
+          <div class="field-wrap"><div class="field-label">Тип</div><select class="fsel" id="bdNewType"><option value="ФЛ">ФЛ</option><option value="ИП">ИП</option></select></div>
+          <button class="abtn" onclick="bdAddAgent()">+ Добавить</button>
+        </div>
+      </div>
+      <div id="bdContent"></div>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div id="screenSettings">
+    <div class="swrap">
+      <div class="page-title">⚙️ Настройки бонусов</div>
+      <div class="settings-card">
+        <div class="settings-card-head">Уровни бонуса</div>
+        <div class="level-editor">
+          <div class="level-header-row">
+            <span>#</span><span>Договоры</span><span>Сумма, ₽</span><span>ФЛ, ₽</span><span>ИП, ₽</span>
+          </div>
+          <div id="levelEditorRows"></div>
+        </div>
+      </div>
+      <button class="save-settings-btn" onclick="saveSettings()">💾 Сохранить</button>
+      <div class="settings-saved" id="settingsSaved"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CONGRAT MODAL -->
+<div class="modal-overlay" id="congratModal">
+  <div class="modal">
+    <div class="modal-title" id="congratTitle">Поздравить 🎂</div>
+    <div class="modal-sub" id="congratSub"></div>
+    <div class="congrat-options">
+      <div class="congrat-card selected" onclick="selectCongrat(this,'sms')" data-type="sms"><div class="ci">📱</div><div class="ct">WhatsApp / SMS</div></div>
+      <div class="congrat-card" onclick="selectCongrat(this,'email')" data-type="email"><div class="ci">📧</div><div class="ct">Email</div></div>
+    </div>
+    <textarea class="modal-text" id="congratText"></textarea>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeModal()">Отмена</button>
+      <button class="modal-send" onclick="sendCongrat()">Отправить 🎉</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════
+// CONFIG
+// ════════════════════════════════════════════
+const PASSWORD = 'Gorodok2026$';
+const BIN_ID   = '69a4177743b1c97be9a8fdc0';
+const API_KEY  = '$2a$10$jTJi6YH/vOucrHVOz4jTfup7LMTzw2MnYJTEqArJB6W/nlEH8Tcb.';
+const API_URL  = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+
+const MFULL  = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const MSHORT = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
+const AVATAR_COLORS = ['#c0394b','#c8952a','#2d6a4f','#1d4e89','#7a5c42','#6b3fa0','#1a7a5e','#c05a20'];
+const today = new Date();
+
+// ════════════════════════════════════════════
+// AUTH
+// ════════════════════════════════════════════
+function tryLogin() {
+  if (document.getElementById('pwdInput').value === PASSWORD) {
+    sessionStorage.setItem('ev_auth','1');
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('appShell').style.display='block';
+    initApp();
+  } else {
+    document.getElementById('loginErr').textContent='Неверный пароль';
+    document.getElementById('pwdInput').value='';
+  }
+}
+function logout() { sessionStorage.removeItem('ev_auth'); location.reload(); }
+
+// ════════════════════════════════════════════
+// SCREEN NAVIGATION
+// ════════════════════════════════════════════
+let currentScreen = 'home';
+function showScreen(name) {
+  ['home','bonus','bday','settings'].forEach(s => {
+    document.getElementById('screen'+s.charAt(0).toUpperCase()+s.slice(1)).style.display='none';
+    document.getElementById('nav'+s.charAt(0).toUpperCase()+s.slice(1)).classList.remove('active');
+  });
+  document.getElementById('screen'+name.charAt(0).toUpperCase()+name.slice(1)).style.display='block';
+  document.getElementById('nav'+name.charAt(0).toUpperCase()+name.slice(1)).classList.add('active');
+  currentScreen = name;
+  if (name==='bonus') bRender();
+  if (name==='bday') bdRender();
+  if (name==='settings') renderLevelEditor();
+  if (name==='home') renderHome();
+}
+
+// ════════════════════════════════════════════
+// HOME
+// ════════════════════════════════════════════
+function renderHome() {
+  const h = today.getHours();
+  const gr = h<12?'Доброе утро':'h<18'?'Добрый день':'Добрый вечер';
+  const greet = h<12?'Доброе утро':'Добрый день';
+  document.getElementById('homeGreeting').textContent = greet + ', Марина!';
+  document.getElementById('homeDate').textContent =
+    today.toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const todayBd = bdAgents.filter(a=>bdIsToday(a.bday));
+  const hb = document.getElementById('homeTodayBanner');
+  if (todayBd.length) {
+    hb.classList.add('show');
+    document.getElementById('homeTodayNames').textContent = todayBd.map(a=>a.name).join(', ');
+  }
+}
+
+// ════════════════════════════════════════════
+// ══ BONUS TRACKER ═══════════════════════════
+// ════════════════════════════════════════════
+const DEFAULT_LEVELS = [
+  {c:3,s:55000,fl:10000,ip:12500},{c:6,s:105000,fl:14000,ip:16500},
+  {c:9,s:210000,fl:16000,ip:18500},{c:12,s:315000,fl:20000,ip:24500},
+  {c:15,s:420000,fl:25000,ip:30000},
+];
+let LEVELS = JSON.parse(localStorage.getItem('ev_levels')||'null')||DEFAULT_LEVELS.map(l=>({...l}));
+const LEVEL_COLORS = ['#e0c97a','#c8952a','#b8860b','#8b6914','#5c4a1e'];
+
+let bAgents = [];
+let bNextId = 1;
+let bExpanded = {};
+let bQOff = 0;
+let bSaveTimer = null;
+
+function bDefaultAgents() {
+  return [{"id":1,"name":"Бабенко Т.А.","type":"ФЛ","deals":{}},{"id":2,"name":"Борисова Л.С.","type":"ИП","deals":{}},{"id":3,"name":"Власова К.А.","type":"ФЛ","deals":{}},{"id":4,"name":"Головина Е.В.","type":"ИП","deals":{}},{"id":5,"name":"Гулов О.П.","type":"ФЛ","deals":{}},{"id":6,"name":"Доценко Е.В.","type":"ФЛ","deals":{}},{"id":7,"name":"Егорова И.Л.","type":"ФЛ","deals":{}},{"id":8,"name":"Иванова И.П.","type":"ФЛ","deals":{}},{"id":9,"name":"Карамышева Л.А.","type":"ФЛ","deals":{}},{"id":10,"name":"Карамышева Т.Ю.","type":"ФЛ","deals":{}},{"id":11,"name":"Козяков П.А.","type":"ФЛ","deals":{}},{"id":12,"name":"Колотилова Н.В.","type":"ФЛ","deals":{}},{"id":13,"name":"Короткевич М.А.","type":"ФЛ","deals":{}},{"id":14,"name":"Кудашова Т.В.","type":"ФЛ","deals":{}},{"id":15,"name":"Кудрявцева Д.Р.","type":"ФЛ","deals":{}},{"id":16,"name":"Куликова Т.П.","type":"ФЛ","deals":{}},{"id":17,"name":"Курумбаева К.Б.","type":"ФЛ","deals":{}},{"id":18,"name":"Лучина Н.Н.","type":"ФЛ","deals":{}},{"id":19,"name":"Маликова Н.И.","type":"ФЛ","deals":{}},{"id":20,"name":"Мартынцова Н.В.","type":"ФЛ","deals":{}},{"id":21,"name":"Пономарева С.А.","type":"ФЛ","deals":{}},{"id":22,"name":"Прокопова А.П.","type":"ФЛ","deals":{}},{"id":23,"name":"Рендаревский И.И.","type":"ФЛ","deals":{}},{"id":24,"name":"Сабакарь О.И.","type":"ФЛ","deals":{}},{"id":25,"name":"Санникова Л.В.","type":"ФЛ","deals":{}},{"id":26,"name":"Сахиянова В.А.","type":"ФЛ","deals":{}},{"id":27,"name":"Серегина И.А.","type":"ФЛ","deals":{}},{"id":28,"name":"Темиртекова Е.М.","type":"ФЛ","deals":{}},{"id":29,"name":"Токарева М.В.","type":"ФЛ","deals":{}},{"id":30,"name":"Токарев А.В.","type":"ФЛ","deals":{}},{"id":31,"name":"Томилова Т.А.","type":"ФЛ","deals":{}},{"id":32,"name":"Чернова А.А.","type":"ФЛ","deals":{}},{"id":33,"name":"Шляпникова Ю.С.","type":"ИП","deals":{}},{"id":34,"name":"Юрикова В.Л.","type":"ИП","deals":{}}];
+}
+function bLoadDefaults() {
+  if (!confirm('Загрузить стандартный список из 34 агентов?')) return;
+  bAgents = bDefaultAgents();
+  bNextId = bAgents.length+1;
+  bScheduleSave(); bRender();
+  document.getElementById('bLoadDefaultsBtn').style.display='none';
+}
+function setSyncStatus(state,text) {
+  document.getElementById('syncDot').className='sync-dot '+state;
+  document.getElementById('syncText').textContent=text;
+}
+async function bLoadFromCloud() {
+  setSyncStatus('loading','Загрузка...');
+  try {
+    const r = await fetch(API_URL+'/latest',{headers:{'X-Master-Key':API_KEY}});
+    const j = await r.json();
+    const d = j.record;
+    if (d && d.agents && d.agents.length>0) {
+      bAgents = d.agents;
+      bNextId = bAgents.reduce((m,a)=>Math.max(m,a.id),0)+1;
+      document.getElementById('bLoadDefaultsBtn').style.display='none';
+    } else { bAgents = []; }
+    setSyncStatus('ok','Синхронизировано');
+  } catch(e) { setSyncStatus('err','Ошибка загрузки'); bAgents=[]; }
+  bRender();
+}
+async function bSaveToCloud() {
+  setSyncStatus('loading','Сохранение...');
+  try {
+    await fetch(API_URL,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':API_KEY},body:JSON.stringify({agents:bAgents})});
+    setSyncStatus('ok','Сохранено');
+  } catch(e){setSyncStatus('err','Ошибка сохранения');}
+}
+function bScheduleSave(){if(bSaveTimer)clearTimeout(bSaveTimer);bSaveTimer=setTimeout(bSaveToCloud,1200);}
+function bActiveQ(){return((today.getMonth()+bQOff)%12+12)%12;}
+function bQMonths(qi){return[0,1,2].map(i=>{const abs=qi+i;return{month:abs%12,year:today.getFullYear()+Math.floor(abs/12)};});}
+function bmk(y,m){return`${y}_${m}`;}
+function bGetDeals(a,y,m){return(a.deals&&a.deals[bmk(y,m)])||[];}
+function bMonthTotals(a,y,m){const d=bGetDeals(a,y,m);return{c:d.reduce((s,x)=>s+(parseInt(x.c)||0),0),s:d.reduce((s,x)=>s+(parseFloat(x.s)||0),0)};}
+function bmOk(c,s){return c>=1;}
+function bmStatus(c,s){if(c===0&&s===0)return'em';if(c>=1&&s>0)return'ok';if(c>=1||s>0)return'pt';return'no';}
+function bCalcBonus(agent,months){
+  let okM=0,tc=0,ts=0;
+  months.forEach(({year,month})=>{const t=bMonthTotals(agent,year,month);if(bmOk(t.c,t.s))okM++;tc+=t.c;ts+=t.s;});
+  let level=null;
+  for(let i=LEVELS.length-1;i>=0;i--){if(ts>=LEVELS[i].s&&tc>=LEVELS[i].c){level=LEVELS[i];break;}}
+  const eligible=okM>=2&&level!==null;
+  const bonus=eligible?(agent.type==='ИП'?level.ip:level.fl):0;
+  return{eligible,okM,tc,ts,bonus,level};
+}
+function bAddDeal(id,y,m){
+  const c=parseInt(document.getElementById(`dc_${id}_${y}_${m}`).value)||0;
+  const s=parseFloat(document.getElementById(`ds_${id}_${y}_${m}`).value)||0;
+  const n=document.getElementById(`dn_${id}_${y}_${m}`).value.trim();
+  if(!c&&!s)return;
+  const a=bAgents.find(x=>x.id===id);
+  if(!a.deals)a.deals={};
+  const k=bmk(y,m);
+  if(!a.deals[k])a.deals[k]=[];
+  const now=new Date();
+  a.deals[k].push({id:Date.now(),date:`${now.getDate().toString().padStart(2,'0')}.${(now.getMonth()+1).toString().padStart(2,'0')}`,c,s,n});
+  document.getElementById(`dc_${id}_${y}_${m}`).value='';
+  document.getElementById(`ds_${id}_${y}_${m}`).value='';
+  document.getElementById(`dn_${id}_${y}_${m}`).value='';
+  bScheduleSave();bRender();
+}
+function bDelDeal(id,y,m,did){const a=bAgents.find(x=>x.id===id);const k=bmk(y,m);if(a.deals&&a.deals[k])a.deals[k]=a.deals[k].filter(d=>d.id!==did);bScheduleSave();bRender();}
+function bAddAgent(){
+  const name=document.getElementById('bNewName').value.trim();
+  if(!name)return;
+  const type=document.getElementById('bNewType').value;
+  bAgents.push({id:bNextId++,name,type,deals:{}});
+  bScheduleSave();bRender();
+  document.getElementById('bNewName').value='';
+}
+function bDelAgent(id){if(!confirm('Удалить агента?'))return;bAgents=bAgents.filter(a=>a.id!==id);bScheduleSave();bRender();}
+function bToggle(id){bExpanded[id]=!bExpanded[id];bRender();}
+function shiftQ(d){bQOff=((bQOff+d)%12+12)%12;bRender();}
+function bfn(n){return new Intl.NumberFormat('ru-RU').format(n);}
+
+function bRenderLevels(){
+  document.getElementById('blevels').innerHTML=LEVELS.map((l,i)=>`
+    <div class="bl" style="border-top-color:${LEVEL_COLORS[i]}">
+      <div class="bl-n">${l.c} шт.</div><div class="bl-s">${bfn(l.s)} ₽</div>
+      <div class="bl-tags"><span class="tag tfl">ФЛ ${bfn(l.fl)} ₽</span><span class="tag tip">ИП ${bfn(l.ip)} ₽</span></div>
+    </div>`).join('');
+}
+function bRender(){
+  const qi=bActiveQ();
+  const months=bQMonths(qi);
+  document.getElementById('bqlabel').textContent=`${MSHORT[months[0].month]} — ${MSHORT[months[1].month]} — ${MSHORT[months[2].month]}  ${months[0].year}`;
+  bRenderLevels();
+  let total=0,earned=0,prog=0,fund=0;
+  bAgents.forEach(a=>{total++;const r=bCalcBonus(a,months);if(r.eligible){earned++;fund+=r.bonus;}else if(r.okM===1)prog++;});
+  document.getElementById('bsummary').innerHTML=`
+    <div class="sc"><div class="sc-l">Агентов</div><div class="sc-v">${total}</div></div>
+    <div class="sc"><div class="sc-l">Получили бонус</div><div class="sc-v g">${earned}</div></div>
+    <div class="sc"><div class="sc-l">Идут к бонусу</div><div class="sc-v gold">${prog}</div></div>
+    <div class="sc"><div class="sc-l">Бонусный фонд</div><div class="sc-v gold">${bfn(fund)} ₽</div></div>`;
+
+  const el=document.getElementById('agentsList');
+  if(!bAgents.length){el.innerHTML='<div class="empty-note">Нажми "↺ Загрузить список" или добавь агента вручную</div>';return;}
+  el.innerHTML=bAgents.map((agent,ai)=>{
+    const res=bCalcBonus(agent,months);
+    const cls=res.eligible?'acard-b earned':res.okM===1?'acard-b one':'acard-b';
+    const isOpen=!!bExpanded[agent.id];
+    const pills=months.map(({year,month})=>{const t=bMonthTotals(agent,year,month);const st=bmStatus(t.c,t.s);const pc={ok:'mp-ok',pt:'mp-pt',no:'mp-no',em:'mp-no'}[st];return`<span class="mpill ${pc}">${MSHORT[month]}</span>`;}).join('');
+    let bhtml=res.eligible?`<div class="bamt">🏆 ${bfn(res.bonus)} ₽</div><div class="blbl">${res.level.c} шт. / ${bfn(res.level.s)} ₽</div>`:res.okM===1?`<div class="bprog">1 из 2 мес. ✓</div><div class="bnone">нужен ещё 1 мес.</div>`:`<div class="bnone">бонус не начислен</div>`;
+    const mhtml=months.map(({year,month})=>{
+      const t=bMonthTotals(agent,year,month);const st=bmStatus(t.c,t.s);
+      const bcls=st==='ok'?'mblock m-ok':st==='pt'?'mblock m-pt':'mblock';
+      const stcls={ok:'mb-status mbs-ok',pt:'mb-status mbs-pt',no:'mb-status mbs-no',em:'mb-status mbs-em'}[st];
+      const stxt={ok:'✓ Выполнен',pt:'Частично',no:'Не выполнен',em:'Нет данных'}[st];
+      const deals=bGetDeals(agent,year,month);
+      const dhtml=deals.length?deals.map(d=>`<div class="deal-row"><span class="deal-date">${d.date}</span><span class="deal-c">${d.c} дог.</span><span class="deal-s">${bfn(d.s)} ₽</span><span class="deal-note">${d.n||''}</span><button class="deal-del" onclick="bDelDeal(${agent.id},${year},${month},${d.id})">×</button></div>`).join(''):'<div style="font-size:11px;color:var(--muted);padding:4px 0">Нет сделок</div>';
+      return`<div class="${bcls}"><div class="mb-head"><div class="mb-name">${MFULL[month]}</div><div class="${stcls}">${stxt}</div></div><div class="mb-totals"><div class="mb-total"><div class="mb-total-val">${t.c}</div><div class="mb-total-label">договоров</div></div><div class="mb-total"><div class="mb-total-val">${bfn(t.s)}</div><div class="mb-total-label">рублей</div></div></div><div class="deals-list">${dhtml}</div><div class="add-deal-form"><input class="mini-inp" id="dc_${agent.id}_${year}_${month}" type="number" min="0" placeholder="Дог." style="width:58px"><input class="mini-inp" id="ds_${agent.id}_${year}_${month}" type="number" min="0" placeholder="Сумма ₽" style="width:100px"><input class="mini-inp" id="dn_${agent.id}_${year}_${month}" placeholder="Примечание" style="width:110px;font-family:'Raleway',sans-serif;"><button class="btn gold-btn sm" onclick="bAddDeal(${agent.id},${year},${month})">+ Сделка</button></div></div>`;
+    }).join('');
+    const pct=Math.min(Math.round(res.okM/2*100),100);
+    const pc=res.eligible?'var(--gold)':res.okM===1?'#e8b84b':'var(--muted)';
+    return`<div class="${cls}" style="animation-delay:${ai*.03}s"><div class="acard-head" onclick="bToggle(${agent.id})"><div><div class="aname-row"><div class="aname">${agent.name}</div><span class="tbadge ${agent.type==='ФЛ'?'tfl2':'tip2'}">${agent.type}</span></div><div class="anote">${res.okM}/3 мес. · ${bfn(res.tc)} дог. · ${bfn(res.ts)} ₽</div></div><div class="acard-right"><div class="month-pills">${pills}</div><div class="abonus">${bhtml}</div><button class="del" onclick="event.stopPropagation();bDelAgent(${agent.id})">×</button></div></div><div class="acard-body ${isOpen?'open':''}"><div class="months-grid">${mhtml}</div></div><div class="afoot"><div class="pb"><div class="pbf" style="width:${pct}%;background:${pc}"></div></div><div class="pbnote">${res.okM}/2 мес. для бонуса</div></div></div>`;
+  }).join('');
+}
+
+// ════════════════════════════════════════════
+// ══ BIRTHDAY TRACKER ════════════════════════
+// ════════════════════════════════════════════
+const BD_DEFAULT = [
+  {id:1,name:"Бабенко Т.А.",bday:"1982-04-29",phone:"9088072301",email:"tatluk55@mail.ru",type:"ФЛ"},
+  {id:2,name:"Борисова Л.С.",bday:"1983-06-26",phone:"9513942989",email:"borisovaludmila00@mail.ru",type:"ИП"},
+  {id:3,name:"Власова К.А.",bday:"1987-02-09",phone:"9128138031",email:"kristina.keivaby.ru@mail.ru",type:"ФЛ"},
+  {id:4,name:"Головина Е.В.",bday:"1965-02-10",phone:"9136473257",email:"egolovina65@yandex.ru",type:"ИП"},
+  {id:5,name:"Гулов О.П.",bday:"1966-09-05",phone:"9137353675",email:"viktoriy199@yandex.ru",type:"ФЛ"},
+  {id:6,name:"Доценко Е.В.",bday:"1972-10-18",phone:"9331833975",email:"valya541202@gmail.com",type:"ФЛ"},
+  {id:7,name:"Егорова И.Л.",bday:"1975-07-26",phone:"9134712985",email:"yarteni@list.ru",type:"ФЛ"},
+  {id:8,name:"Иванова И.П.",bday:"1959-05-04",phone:"9043220296",email:"twoi@bk.ru",type:"ФЛ"},
+  {id:9,name:"Карамышева Л.А.",bday:"1974-09-03",phone:"9537843227",email:"9130196258@mail.ru",type:"ФЛ"},
+  {id:10,name:"Карамышева Т.Ю.",bday:"1983-06-04",phone:"9137496766",email:"tanyaa.karamysheva@mail.ru",type:"ФЛ"},
+  {id:11,name:"Козяков П.А.",bday:"1970-03-20",phone:"9043214282",email:"kozyakov.p@mail.ru",type:"ФЛ"},
+  {id:12,name:"Колотилова Н.В.",bday:"1972-12-10",phone:"9136822152",email:"lapkca@yandex.ru",type:"ФЛ"},
+  {id:13,name:"Короткевич М.А.",bday:"1969-10-22",phone:"9139710086",email:"korotkevicmarina4@mail.ru",type:"ФЛ"},
+  {id:14,name:"Кудашова Т.В.",bday:"1977-08-25",phone:"9132082012",email:"tatanakudasova25@gmail.com",type:"ФЛ"},
+  {id:15,name:"Кудрявцева Д.Р.",bday:"1984-09-25",phone:"9236721284",email:"diana-i@inbox.ru",type:"ФЛ"},
+  {id:16,name:"Куликова Т.П.",bday:"1983-01-16",phone:"9538098539",email:"kulikova16011983@mail.ru",type:"ФЛ"},
+  {id:17,name:"Курумбаева К.Б.",bday:"1993-11-21",phone:"9658720903",email:"slushash64@gmail.com",type:"ФЛ"},
+  {id:18,name:"Лучина Н.Н.",bday:"1958-09-10",phone:"9043284346",email:"cor621@mail.ru",type:"ФЛ"},
+  {id:19,name:"Маликова Н.И.",bday:"1959-03-26",phone:"9137304883",email:"malikova.nata@list.ru",type:"ФЛ"},
+  {id:20,name:"Мартынцова Н.В.",bday:"1985-05-28",phone:"9537965948",email:"nmartynzova@mail.ru",type:"ФЛ"},
+  {id:21,name:"Пономарева С.А.",bday:"1975-11-08",phone:"9139751549",email:"ponomareva75@inbox.ru",type:"ФЛ"},
+  {id:22,name:"Прокопова А.П.",bday:"1967-11-02",phone:"9039272536",email:"albina_pro@mail.ru",type:"ФЛ"},
+  {id:23,name:"Рендаревский И.И.",bday:"1987-06-27",phone:"9237800506",email:"rendarevskaya77@mail.ru",type:"ФЛ"},
+  {id:24,name:"Сабакарь О.И.",bday:"1971-08-01",phone:"9045837514",email:"",type:"ФЛ"},
+  {id:25,name:"Санникова Л.В.",bday:"1985-05-28",phone:"9538646195",email:"L.sannikova85@mail.ru",type:"ФЛ"},
+  {id:26,name:"Сахиянова В.А.",bday:"1978-04-29",phone:"9184758905",email:"sahianovavenera@yandex.ru",type:"ФЛ"},
+  {id:27,name:"Серегина И.А.",bday:"1980-11-13",phone:"9697044007",email:"irishka.s.a@mail.ru",type:"ФЛ"},
+  {id:28,name:"Темиртекова Е.М.",bday:"1973-04-23",phone:"9538838479",email:"temirtekovaelena@gmail.com",type:"ФЛ"},
+  {id:29,name:"Токарева М.В.",bday:"1961-03-08",phone:"9136519589",email:"marinatokareva@yandex.ru",type:"ФЛ"},
+  {id:30,name:"Токарев А.В.",bday:"1986-01-08",phone:"9139737370",email:"sprinn2015@gmail.com",type:"ФЛ"},
+  {id:31,name:"Томилова Т.А.",bday:"1971-03-30",phone:"9237111971",email:"tanya.tomilova71@mail.ru",type:"ФЛ"},
+  {id:32,name:"Чернова А.А.",bday:"2004-01-31",phone:"9136112378",email:"chernova.omsk182@mail.ru",type:"ФЛ"},
+  {id:33,name:"Шляпникова Ю.С.",bday:"1985-04-07",phone:"9139435042",email:"sdfg19857@mail.ru",type:"ИП"},
+  {id:34,name:"Юрикова В.Л.",bday:"1982-08-31",phone:"9134607775",email:"yurikova1982@yandex.ru",type:"ИП"},
+];
+
+let bdAgents = [];
+let bdNextId = 1;
+let bdViewMonth = today.getMonth();
+let bdViewYear = today.getFullYear();
+let bdActiveTab = 'month';
+let congratTarget = null;
+let congratType = 'sms';
+
+function bdLoadAgents(){
+  const s=localStorage.getItem('bd_agents');
+  if(s){bdAgents=JSON.parse(s);bdNextId=bdAgents.reduce((m,a)=>Math.max(m,a.id),0)+1;}
+  else{bdAgents=BD_DEFAULT.map(a=>({...a}));bdNextId=bdAgents.length+1;bdSaveAgents();}
+}
+function bdSaveAgents(){localStorage.setItem('bd_agents',JSON.stringify(bdAgents));}
+function bdDaysUntil(bday){const d=new Date(bday);const next=new Date(today.getFullYear(),d.getMonth(),d.getDate());if(next<today)next.setFullYear(today.getFullYear()+1);return Math.round((next-today)/(1000*60*60*24));}
+function bdIsToday(bday){const d=new Date(bday);return d.getMonth()===today.getMonth()&&d.getDate()===today.getDate();}
+function bdCalcAge(bday){const d=new Date(bday);let age=today.getFullYear()-d.getFullYear();if(today<new Date(today.getFullYear(),d.getMonth(),d.getDate()))age--;return age;}
+function bdFmtDate(bday){const d=new Date(bday);return`${d.getDate().toString().padStart(2,'0')}.${(d.getMonth()+1).toString().padStart(2,'0')}.${d.getFullYear()}`;}
+function bdAvatarColor(name){return AVATAR_COLORS[name.charCodeAt(0)%AVATAR_COLORS.length];}
+
+function bdAddAgent(){
+  const name=document.getElementById('bdNewName').value.trim();
+  const bday=document.getElementById('bdNewBday').value;
+  const phone=document.getElementById('bdNewPhone').value.trim();
+  const email=document.getElementById('bdNewEmail').value.trim();
+  const type=document.getElementById('bdNewType').value;
+  if(!name||!bday){alert('Заполни имя и дату рождения');return;}
+  bdAgents.push({id:bdNextId++,name,bday,phone,email,type});
+  bdSaveAgents();bdRender();
+  document.getElementById('bdNewName').value='';document.getElementById('bdNewBday').value='';
+  document.getElementById('bdNewPhone').value='';document.getElementById('bdNewEmail').value='';
+}
+function bdDelAgent(id){if(!confirm('Удалить агента?'))return;bdAgents=bdAgents.filter(a=>a.id!==id);bdSaveAgents();bdRender();}
+function bdShiftMonth(d){bdViewMonth+=d;if(bdViewMonth>11){bdViewMonth=0;bdViewYear++;}if(bdViewMonth<0){bdViewMonth=11;bdViewYear--;}bdRender();}
+function bdGoToday(){bdViewMonth=today.getMonth();bdViewYear=today.getFullYear();bdRender();}
+function bdSwitchTab(t){
+  bdActiveTab=t;
+  ['Month','All','Add'].forEach(x=>document.getElementById('bdTab'+x).classList.remove('active'));
+  document.getElementById('bdTab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.add('active');
+  document.getElementById('bdAddForm').style.display=t==='add'?'block':'none';
+  bdRender();
+}
+
+function openCongrat(agent){
+  congratTarget=agent;
+  document.getElementById('congratTitle').textContent=`Поздравить ${agent.name} 🎂`;
+  const age=bdCalcAge(agent.bday);
+  document.getElementById('congratSub').textContent=`${bdFmtDate(agent.bday)} · исполняется ${age+1} лет`;
+  document.getElementById('congratText').value=`Дорогая(ой) ${agent.name.split(' ')[0]}!\n\nОт всей команды Everia Life поздравляем вас с днём рождения! 🎉\n\nЖелаем крепкого здоровья, успехов и только довольных клиентов!\n\nС уважением,\nМарина Токарева`;
+  document.getElementById('congratModal').classList.add('show');
+}
+function selectCongrat(el,type){document.querySelectorAll('.congrat-card').forEach(c=>c.classList.remove('selected'));el.classList.add('selected');congratType=type;}
+function closeModal(){document.getElementById('congratModal').classList.remove('show');}
+function sendCongrat(){
+  if(!congratTarget)return;
+  const text=encodeURIComponent(document.getElementById('congratText').value);
+  if(congratType==='sms'&&congratTarget.phone)window.open(`https://wa.me/7${congratTarget.phone}?text=${text}`,'_blank');
+  else if(congratType==='email'&&congratTarget.email)window.location.href=`mailto:${congratTarget.email}?subject=С Днём Рождения!&body=${text}`;
+  else{alert('Нет контактных данных');return;}
+  closeModal();
+}
+
+function bdRenderCard(agent,idx){
+  const days=bdDaysUntil(agent.bday);
+  const tod=bdIsToday(agent.bday);
+  const soon=!tod&&days<=14;
+  const cls=tod?'bd-acard bd-today':soon?'bd-acard bd-soon':'bd-acard';
+  const d=new Date(agent.bday);
+  const age=bdCalcAge(agent.bday);
+  let bdayCls='',badge='';
+  const bdayStr=`${d.getDate()} ${MFULL[d.getMonth()]}`;
+  if(tod){bdayCls='bday-today';badge=`<span class="days-badge">🎂 Сегодня!</span>`;}
+  else if(soon){bdayCls='bday-soon';badge=`<span class="days-badge soon">через ${days} дн.</span>`;}
+  const phoneBtn=agent.phone?`<a class="contact-btn call" href="tel:+7${agent.phone}">📞 ${agent.phone}</a>`:'';
+  const emailBtn=agent.email?`<a class="contact-btn mail" href="mailto:${agent.email}">✉️ Email</a>`:'';
+  const congBtn=`<button class="contact-btn congrat" onclick="openCongrat(bdAgents.find(a=>a.id==${agent.id}))">🎉 Поздравить</button>`;
+  return`<div class="${cls}" style="animation-delay:${idx*.03}s">
+    <div class="bd-avatar" style="background:${bdAvatarColor(agent.name)}">${agent.name.charAt(0)}</div>
+    <div class="bd-info">
+      <div class="bd-name">${agent.name} <span style="font-size:10px;background:${agent.type==='ИП'?'var(--green-light)':'var(--blue-light)'};color:${agent.type==='ИП'?'var(--green)':'var(--blue)'};padding:1px 6px;border-radius:4px;font-weight:700">${agent.type}</span></div>
+      <div class="bd-bday"><span class="${bdayCls}">${bdayStr}</span><span class="bd-age">${bdFmtDate(agent.bday)} · ${age} лет</span></div>
+    </div>
+    <div class="bd-contacts">${phoneBtn}${emailBtn}${congBtn}${badge}</div>
+    <button class="bd-del" onclick="bdDelAgent(${agent.id})">×</button>
+  </div>`;
+}
+
+function bdRender(){
+  document.getElementById('bdMnLabel').textContent=`${MFULL[bdViewMonth]} ${bdViewYear}`;
+  const todayPpl=bdAgents.filter(a=>bdIsToday(a.bday));
+  const banner=document.getElementById('bdTodayBanner');
+  if(todayPpl.length&&bdViewMonth===today.getMonth()){banner.classList.add('show');document.getElementById('bdTodayNames').textContent=todayPpl.map(a=>a.name).join(', ');}
+  else banner.classList.remove('show');
+  const upBlock=document.getElementById('bdUpcoming');
+  const upcoming=bdAgents.filter(a=>{const d=new Date(a.bday);return d.getMonth()===bdViewMonth&&!bdIsToday(a.bday)&&bdDaysUntil(a.bday)<=14;}).sort((a,b)=>bdDaysUntil(a.bday)-bdDaysUntil(b.bday));
+  if(upcoming.length&&bdViewMonth===today.getMonth()){
+    upBlock.style.display='block';
+    document.getElementById('bdUpList').innerHTML=upcoming.map(a=>`<div class="up-chip">🎂 ${a.name} <span class="days">${bdDaysUntil(a.bday)}д.</span></div>`).join('');
+  } else upBlock.style.display='none';
+
+  const el=document.getElementById('bdContent');
+  if(bdActiveTab==='month'||bdActiveTab==='add'){
+    const group=bdAgents.filter(a=>new Date(a.bday).getMonth()===bdViewMonth).sort((a,b)=>new Date(a.bday).getDate()-new Date(b.bday).getDate());
+    el.innerHTML=group.length?`<div class="month-header-bd"><div class="month-name-bd">${MFULL[bdViewMonth]}</div><div class="month-count-bd">${group.length}</div></div><div class="agent-grid">${group.map((a,i)=>bdRenderCard(a,i)).join('')}</div>`:`<div class="no-bd">В ${MFULL[bdViewMonth].toLowerCase()} дней рождения нет 🙂</div>`;
+  } else {
+    let html='';
+    for(let m=0;m<12;m++){
+      const g=bdAgents.filter(a=>new Date(a.bday).getMonth()===m).sort((a,b)=>new Date(a.bday).getDate()-new Date(b.bday).getDate());
+      if(!g.length)continue;
+      html+=`<div class="month-section"><div class="month-header-bd"><div class="month-name-bd">${MFULL[m]}</div><div class="month-count-bd">${g.length}</div></div><div class="agent-grid">${g.map((a,i)=>bdRenderCard(a,i)).join('')}</div></div>`;
+    }
+    el.innerHTML=html||`<div class="no-bd">Нет агентов</div>`;
+  }
+}
+
+// ════════════════════════════════════════════
+// SETTINGS
+// ════════════════════════════════════════════
+function renderLevelEditor(){
+  document.getElementById('levelEditorRows').innerHTML=LEVELS.map((l,i)=>`
+    <div class="level-row">
+      <div class="level-num" style="color:${LEVEL_COLORS[i]}">${i+1}</div>
+      <div class="level-inp-wrap"><input class="level-inp" id="lc_${i}" type="number" value="${l.c}" min="1"></div>
+      <div class="level-inp-wrap"><input class="level-inp" id="ls_${i}" type="number" value="${l.s}" min="0"></div>
+      <div class="level-inp-wrap"><input class="level-inp" id="lfl_${i}" type="number" value="${l.fl}" min="0"></div>
+      <div class="level-inp-wrap"><input class="level-inp" id="lip_${i}" type="number" value="${l.ip}" min="0"></div>
+    </div>`).join('');
+}
+function saveSettings(){
+  for(let i=0;i<LEVELS.length;i++){
+    LEVELS[i].c=parseInt(document.getElementById(`lc_${i}`).value)||LEVELS[i].c;
+    LEVELS[i].s=parseFloat(document.getElementById(`ls_${i}`).value)||LEVELS[i].s;
+    LEVELS[i].fl=parseFloat(document.getElementById(`lfl_${i}`).value)||LEVELS[i].fl;
+    LEVELS[i].ip=parseFloat(document.getElementById(`lip_${i}`).value)||LEVELS[i].ip;
+  }
+  localStorage.setItem('ev_levels',JSON.stringify(LEVELS));
+  bRenderLevels();bRender();
+  document.getElementById('settingsSaved').textContent='✓ Сохранено!';
+  setTimeout(()=>document.getElementById('settingsSaved').textContent='',3000);
+}
+
+// ════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════
+function initApp(){
+  bdLoadAgents();
+  bLoadFromCloud();
+  showScreen('home');
+}
+
+if(sessionStorage.getItem('ev_auth')==='1'){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('appShell').style.display='block';
+  initApp();
+}
+</script>
+</body>
+</html>

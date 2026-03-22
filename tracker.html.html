@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Трекер агентов — Everia Life</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700&family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d0f14;--surface:#161920;--surface2:#1e2230;--border:#2a2f42;--gold:#c9a84c;--text:#e8eaf0;--tdim:#7a8099;--green:#3ecf8e;--yellow:#f5c842;--red:#f56060;--blue:#4f9cf9;--purple:#6b5ce7;--recruit:#6b5ce7;--dok:#4f9cf9;--start:#f5a623;--sales:#3ecf8e;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:"Golos Text",sans-serif;min-height:100vh;}
+#ls{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 30% 50%,#1a1f35 0%,var(--bg) 70%);}
+.lc{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:48px 40px;width:360px;box-shadow:0 40px 80px rgba(0,0,0,.5);position:relative;}
+.lc::before{content:"";position:absolute;top:0;left:20%;right:20%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+.ll{font-family:"Unbounded",sans-serif;font-size:10px;font-weight:700;letter-spacing:4px;color:var(--gold);text-align:center;margin-bottom:6px;text-transform:uppercase;}
+.lt{font-family:"Unbounded",sans-serif;font-size:18px;font-weight:700;text-align:center;margin-bottom:32px;}
+.lbl{font-size:10px;font-weight:600;letter-spacing:2px;color:var(--tdim);text-transform:uppercase;margin-bottom:7px;display:block;}
+select.li,input.li{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:"Golos Text",sans-serif;font-size:14px;padding:11px 13px;margin-bottom:18px;outline:none;-webkit-appearance:none;appearance:none;}
+select.li:focus,input.li:focus{border-color:var(--gold);}
+.lb{width:100%;background:var(--gold);color:#0d0f14;border:none;border-radius:8px;font-family:"Unbounded",sans-serif;font-size:12px;font-weight:700;padding:13px;cursor:pointer;}
+.le{color:var(--red);font-size:12px;text-align:center;margin-top:10px;min-height:18px;}
+#app{display:none;}
+.hdr{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.hl{display:flex;align-items:center;gap:16px;}
+.hlogo{font-family:"Unbounded",sans-serif;font-size:10px;font-weight:700;letter-spacing:3px;color:var(--gold);text-transform:uppercase;}
+.hdiv{width:1px;height:20px;background:var(--border);}
+.htitle{font-family:"Unbounded",sans-serif;font-size:12px;font-weight:600;}
+.ubadge{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:5px 13px;font-size:12px;color:var(--tdim);}
+.ubadge span{color:var(--gold);font-weight:600;}
+.outbtn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--tdim);font-size:12px;padding:5px 11px;cursor:pointer;}
+.syncbadge{font-size:11px;padding:4px 10px;border-radius:12px;font-weight:600;}
+.syncbadge.ok{background:rgba(62,207,142,.15);color:var(--green);}
+.syncbadge.err{background:rgba(245,96,96,.15);color:var(--red);}
+.syncbadge.loading{background:rgba(201,168,76,.15);color:var(--gold);}
+.main{padding:28px;max-width:1400px;margin:0 auto;}
+.sr{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+.sc{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 22px;position:relative;overflow:hidden;}
+.sc::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;}
+.sc.s1::before{background:var(--recruit)}.sc.s2::before{background:var(--dok)}.sc.s3::before{background:var(--start)}.sc.s4::before{background:var(--sales)}
+.slbl{font-size:10px;font-weight:600;letter-spacing:2px;color:var(--tdim);text-transform:uppercase;margin-bottom:6px;}
+.sval{font-family:"Unbounded",sans-serif;font-size:30px;font-weight:700;line-height:1;}
+.s1 .sval{color:var(--recruit)}.s2 .sval{color:var(--dok)}.s3 .sval{color:var(--start)}.s4 .sval{color:var(--sales)}
+.filters{margin-bottom:18px;display:flex;flex-direction:column;gap:8px;}
+.frow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.flbl{font-size:10px;font-weight:600;letter-spacing:1.5px;color:var(--tdim);text-transform:uppercase;white-space:nowrap;min-width:60px;}
+.fb{background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--tdim);font-size:12px;font-weight:500;padding:6px 12px;cursor:pointer;}
+.fb.on{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,.06);}
+.fb.lon{border-color:var(--blue);color:var(--blue);background:rgba(79,156,249,.06);}
+.fb.eon{border-color:var(--green);color:var(--green);background:rgba(62,207,142,.06);}
+.tbr{display:flex;gap:10px;align-items:center;margin-bottom:18px;justify-content:flex-end;}
+.addbtn{background:var(--gold);border:none;border-radius:8px;color:#0d0f14;font-family:"Unbounded",sans-serif;font-size:11px;font-weight:700;padding:9px 18px;cursor:pointer;}
+.selbtn{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--tdim);font-size:12px;padding:9px 14px;cursor:pointer;}
+.selbtn.on{border-color:var(--red);color:var(--red);background:rgba(245,96,96,.07);}
+.dbar{display:none;background:rgba(245,96,96,.1);border:1px solid rgba(245,96,96,.3);border-radius:10px;padding:12px 18px;margin-bottom:16px;align-items:center;justify-content:space-between;gap:12px;}
+.dbar.show{display:flex;}
+.dbl{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.dcnt{font-size:13px;font-weight:600;color:var(--red);}
+.sab,.csb{background:none;border:1px solid var(--border);border-radius:6px;color:var(--tdim);font-size:12px;padding:5px 11px;cursor:pointer;}
+.delbtn{background:var(--red);border:none;border-radius:8px;color:#fff;font-family:"Unbounded",sans-serif;font-size:11px;font-weight:700;padding:9px 18px;cursor:pointer;}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;position:relative;}
+.card.sel{border-color:var(--red);background:#1a1418;}
+.selmode .card{cursor:pointer;}
+.chk{position:absolute;top:14px;left:14px;z-index:10;display:none;}
+.chk input{width:18px;height:18px;accent-color:var(--red);cursor:pointer;}
+.selmode .chk{display:flex;}
+.ct{padding:18px 18px 12px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+.selmode .ct{padding-left:42px;}
+.av{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:"Unbounded",sans-serif;font-size:14px;font-weight:700;flex-shrink:0;color:#0d0f14;}
+.ai{flex:1;}
+.an{font-family:"Unbounded",sans-serif;font-size:13px;font-weight:600;margin-bottom:5px;}
+.am{display:flex;gap:5px;align-items:center;flex-wrap:wrap;}
+.ca{display:flex;gap:5px;align-items:center;}
+.ib{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--tdim);font-size:13px;padding:5px 7px;cursor:pointer;line-height:1;}
+.mdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.mdot.hot{background:var(--green)}.mdot.ok{background:var(--yellow)}.mdot.pause{background:var(--blue)}.mdot.risk{background:var(--red)}
+.tag{font-size:9px;font-weight:600;letter-spacing:.5px;border-radius:4px;padding:2px 7px;text-transform:uppercase;}
+.tag.full{background:rgba(62,207,142,.15);color:var(--green);}
+.tag.part{background:rgba(245,166,35,.15);color:var(--start);}
+.tag.office{background:rgba(79,156,249,.15);color:var(--blue);}
+.tag.remote{background:rgba(107,92,231,.15);color:var(--purple);}
+.sb{padding:0 18px 12px;}
+.st{display:flex;gap:3px;margin-bottom:6px;}
+.ss{flex:1;height:3px;border-radius:2px;background:var(--surface2);}
+.ss.done{background:var(--gold)}.ss.cur{background:var(--gold);opacity:.45}
+.sls{display:flex;justify-content:space-between;}
+.sl{font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--tdim);font-weight:600;}
+.sl.on{color:var(--gold)}
+.zr{padding:8px 18px 12px;border-top:1px solid var(--border);}
+.zl{font-size:9px;font-weight:600;letter-spacing:1.5px;color:var(--tdim);text-transform:uppercase;margin-bottom:2px;}
+.zt{font-size:12px;color:var(--text);line-height:1.5;}
+.ze{color:var(--tdim);font-style:italic;}
+.nr{padding:8px 18px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.nl{font-size:11px;color:var(--tdim);}
+.nd{font-size:11px;font-weight:600;color:var(--yellow);background:rgba(245,200,66,.1);border-radius:5px;padding:2px 9px;}
+.nd.ov{color:var(--red);background:rgba(245,96,96,.1)}
+.empty{text-align:center;padding:70px 20px;color:var(--tdim);}
+.ei{font-size:44px;margin-bottom:14px;}
+.et{font-family:"Unbounded",sans-serif;font-size:15px;font-weight:600;margin-bottom:6px;color:var(--text);}
+.sv{max-width:560px;margin:36px auto;}
+.svh{text-align:center;margin-bottom:28px;}
+.svn{font-family:"Unbounded",sans-serif;font-size:22px;font-weight:700;margin-bottom:6px;}
+.svs{font-size:12px;color:var(--tdim);}
+.svc{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px;}
+.sec{padding:22px;border-bottom:1px solid var(--border);}
+.sec:last-child{border-bottom:none;}
+.secl{font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--tdim);margin-bottom:10px;}
+.ssn{font-family:"Unbounded",sans-serif;font-size:18px;font-weight:700;margin-top:10px;}
+.szt{font-size:14px;line-height:1.7;}
+.snx{display:flex;align-items:center;justify-content:space-between;font-size:13px;}
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200;align-items:center;justify-content:center;padding:16px;}
+.mo.open{display:flex;}
+.md2{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:540px;max-height:92vh;overflow-y:auto;position:relative;}
+.md2::before{content:"";position:absolute;top:0;left:20%;right:20%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+.mh{padding:26px 26px 18px;display:flex;align-items:center;justify-content:space-between;}
+.mtitle{font-family:"Unbounded",sans-serif;font-size:15px;font-weight:700;}
+.mcl{background:none;border:1px solid var(--border);border-radius:6px;color:var(--tdim);font-size:16px;width:30px;height:30px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.mb{padding:0 26px 26px;}
+.fg{margin-bottom:17px;}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:17px;}
+.fl{display:block;font-size:10px;font-weight:600;letter-spacing:1.5px;color:var(--tdim);text-transform:uppercase;margin-bottom:7px;}
+input.fi,select.fi,textarea.fi{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:"Golos Text",sans-serif;font-size:13px;padding:10px 13px;outline:none;-webkit-appearance:none;appearance:none;}
+input.fi:focus,select.fi:focus,textarea.fi:focus{border-color:var(--gold);}
+textarea.fi{resize:vertical;min-height:75px;}
+.ma{display:flex;gap:10px;justify-content:flex-end;margin-top:22px;}
+.bcn{background:none;border:1px solid var(--border);border-radius:8px;color:var(--tdim);font-family:"Golos Text",sans-serif;font-size:13px;padding:9px 18px;cursor:pointer;}
+.bsv{background:var(--gold);border:none;border-radius:8px;color:#0d0f14;font-family:"Unbounded",sans-serif;font-size:11px;font-weight:700;padding:9px 22px;cursor:pointer;}
+.bdl{background:rgba(245,96,96,.1);border:1px solid rgba(245,96,96,.3);border-radius:8px;color:var(--red);font-size:12px;padding:9px 14px;cursor:pointer;margin-right:auto;}
+@media(max-width:720px){.main{padding:14px;}.sr{grid-template-columns:repeat(2,1fr);}.grid{grid-template-columns:1fr;}.hdr{padding:10px 14px;}.fg2{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div id="ls">
+  <div class="lc">
+    <div class="ll">Everia Life</div>
+    <div class="lt">Трекер агентов</div>
+    <label class="lbl">Ваше имя</label>
+    <select class="li" id="lsel"></select>
+    <label class="lbl">PIN-код</label>
+    <input class="li" type="password" id="lpin" maxlength="6" placeholder="••••" inputmode="numeric">
+    <button class="lb" onclick="doLogin()">Войти</button>
+    <div class="le" id="lerr"></div>
+  </div>
+</div>
+<div id="app">
+  <div class="hdr">
+    <div class="hl">
+      <div class="hlogo">Everia Life</div>
+      <div class="hdiv"></div>
+      <div class="htitle">Трекер агентов</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span class="syncbadge loading" id="syncbadge">...</span>
+      <div class="ubadge">Вы: <span id="uname"></span></div>
+      <button class="outbtn" onclick="doImport()">⬆️ Загрузить агентов</button>
+      <button class="outbtn" onclick="doExport()">📋 Экспорт</button>
+      <button class="outbtn" onclick="doLogout()">Выйти</button>
+    </div>
+  </div>
+  <div class="main" id="main"></div>
+</div>
+<div class="mo" id="mo">
+  <div class="md2">
+    <div class="mh"><div class="mtitle" id="mtitle">Агент</div><button class="mcl" onclick="closeMod()">X</button></div>
+    <div class="mb">
+      <input type="hidden" id="fid">
+      <div class="fg"><label class="fl">Фамилия И.О.</label><input class="fi" id="fname" placeholder="Например: Петрова Н.И."></div>
+      <div class="fg2">
+        <div><label class="fl">Занятость</label>
+          <select class="fi" id="femp"><option value="full">Фулл-тайм</option><option value="part">Совместитель</option></select>
+        </div>
+        <div><label class="fl">Локация</label>
+          <select class="fi" id="floc"><option value="office">Офис</option><option value="remote">Удалённый</option></select>
+        </div>
+      </div>
+      <div class="fg"><label class="fl">Дата начала</label><input class="fi" type="date" id="fstart"></div>
+      <div class="fg"><label class="fl">Этап</label>
+        <select class="fi" id="fstage">
+          <option value="recruit">Рекрутинг</option>
+          <option value="dok">ДОК / Обучение</option>
+          <option value="start">Старт</option>
+          <option value="sales">Самостоятельные продажи</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Зона роста</label><textarea class="fi" id="fzone" placeholder="Что конкретно отрабатываем..."></textarea></div>
+      <div class="fg"><label class="fl">Следующее действие</label><input class="fi" id="faction" placeholder="Например: ролевая игра по закрытию"></div>
+      <div class="fg"><label class="fl">Дата следующего действия</label><input class="fi" type="date" id="fdate"></div>
+      <div class="fg"><label class="fl">Мотивация</label>
+        <select class="fi" id="fmotiv"><option value="hot">🟢 Горит — активный</option><option value="ok">🟡 Норма — работает</option><option value="pause">⏸ На паузе</option><option value="risk">🔴 Риск ухода</option></select>
+      </div>
+      <div class="fg"><label class="fl">PIN-код агента (4-6 цифр)</label><input class="fi" id="fpin" maxlength="6" placeholder="Агент войдёт по этому коду" inputmode="numeric"></div>
+      <div id="ferr" style="display:none;color:var(--red);font-size:12px;margin-top:12px;padding:10px 14px;background:rgba(245,96,96,.1);border-radius:8px;"></div>
+      <div id="delconfirm" style="display:none;background:rgba(245,96,96,.12);border:1px solid rgba(245,96,96,.4);border-radius:10px;padding:14px 16px;margin-top:16px;">
+        <div style="font-size:13px;font-weight:600;color:var(--red);margin-bottom:10px;">Удалить этого агента? Отменить нельзя.</div>
+        <div style="display:flex;gap:10px;">
+          <button onclick="delOne()" style="background:var(--red);border:none;border-radius:8px;color:#fff;font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;padding:9px 20px;cursor:pointer;flex:1;">Да, удалить</button>
+          <button onclick="hideDelConfirm()" style="background:none;border:1px solid var(--border);border-radius:8px;color:var(--tdim);font-size:13px;padding:9px 20px;cursor:pointer;flex:1;">Отмена</button>
+        </div>
+      </div>
+      <div class="ma">
+        <button class="bdl" id="bdel" style="display:none" onclick="showDelConfirm()">Удалить</button>
+        <button class="bcn" onclick="closeMod()">Закрыть</button>
+        <button class="bsv" onclick="saveAg()">Сохранить</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+var IMP=[{"id":"imp_1297403_1","num":"1297403","name":"Родионова Н.И.","phone":"9139462470","email":"nadehzda.rodionova.1973@mail.ru","startDate":"2026-03-11","superior":"Борисова Людмила Сергеевна","type":"full","stage":"recruit","zone":"","action":"","nextDate":"","motiv":"ok","pin":"","loc":"office","emp":"full"},{"id":"imp_1296829_2","num":"1296829","name":"Мартынцова Н.В.","phone":"9537965948","email":"nmartynzova@mail.ru","startDate":"2026-02-25","superior":"Борисова Людмила Сергеевна","type":"full","stage":"recruit","zone":"","action":"","nextDate":"","motiv":"ok","pin":"","loc":"office","emp":"full"},{"id":"imp_1296689_3","num":"1296689","name":"Темиртекова Е.М.","phone":"9538838479","email":"temirtekovaelena@gmail.com","startDate":"2026-02-20","superior":"Токарева Марина Владимировна","type":"full","stage":"recruit","zone":"","action":"","nextDate":"","motiv":"ok","pin":"","loc":"office","emp":"full"},{"id":"imp_1296465_4","num":"1296465","name":"Санникова Л.В.","phone":"9538646195","email":"L.sannikova85@mail.ru","startDate":"2026-02-16","superior":"Борисова Людмила Сергеевна","type":"full","stage":"recruit","zone":"","action":"","nextDate":"","motiv":"ok","pin":"","loc":"office","emp":"full"},{"id":"imp_1295919_5","num":"1295919","name":"Кудашова Т.В.","phone":"9132082012","email":"tatanakudasova25@gmail.com","startDate":"2026-01-29","superior":"Борисова Людмила Сергеевна","type":"full","stage":"recruit","zone":"","action":"","nextDate":"","motiv":"ok","pin":"","loc":"office","emp":"full"},{"id":"imp_1284705_6","num":"1284705","name":"Борисова Л.С.","phone":"9513942989","email":"borisovaludmila006@gmail.com","startDate":"2026-01-01","superior":"Токарева Марина Владимировна","type":"full","stage":"recruit","zone":"","action":"","nextDate":"","motiv":"ok","pin":"","loc":"office","emp":"full"},{"id":"imp_1293329_7","num":"1293329","name":"Маликова Н.И.","phone":"9137304883","email":"malikova.nata@list.ru","startDate":"2025-12-05","superior":"Токарева Марина Владимировна","type":"full","stage":"recruit","zone":"","action":"","nextDate":"","motiv":"ok","pin":"","loc":"office","emp":"full"},{"id":"imp_1292776_8","num":"1292776","name":"Гулов О.П.","phone":"9137353675","email":"viktoriy199@yandex.ru","startDate":"2025-11-28","superior":"Токарева Марина Владимировна","type":"full","stage":"recruit","zone":"","action":"","nextDate":"","motiv":"ok","pin":"","loc":"office","emp":"full"},{"id":"imp_1291859_9","num":"1291859","name":"Томилова Т.А.","phone":"9237111971","email":"tanya.tomilova71@bk.ru","startDate":"2025-11-21","superior":"Борисова Людмила Сергеевна","type":"full","stage":"recruit","zone":"","action":"","nextDate":"","motiv":"ok","pin":"","loc":"office","emp":"full"},{"id":"imp_1291446_10","num":"1291446","name":"Сахиянова В.А.","phone":"9184758905","email":"sahianovavenera@yandex.ru","startDate":"2025-11-07","superior":"Токарева Марина Владимировна","type":"full","stage":"recruit","zone":"","action":"","nextDate":"","motiv":"ok","pin":"","loc":"office","emp":"full"},{"id":"imp_1290536_11","num":"1290536","name":"Карамышева Л.А.","phone":"9537843227","email":"9130196258@mail.ru","startDate":"2025-10-21","superior":"Токарева Марина Владимировна","type":"full","stage":"recruit","zone":"","action":"","nextDate":"","motiv":"ok","pin":"","loc":"office","emp":"full"},{"id":"imp_1290039_12","num":"1290039","name":"Бабенко Т.А.","phone":"9088072301","email":"tatluk55@mail.ru","startDate":"2025-09-29","superior":"Борисова Людмила Сергеевна","type":"full","stage":"recruit","zone":"","action":"","nextDate":"","motiv":"ok","pin":"","loc":"office","emp":"full"},{"id":"imp_1289136_13","num":"1289136","name":"Егорова И.Л.","phone":"9134712985","email":"yarteni@list.ru","startDate":"2025-09-04","superior":"Борисова Людмила Сергеевна","type":"full","stage":"recruit","zone":"","action":"","nextDate":"","motiv":"ok","pin":"","loc":"office","emp":"full"},{"id":"imp_1288079_14","num":"1288079","name":"Рендаревский И.И.","phone":"9237800506","email":"rendarevskaya77@gmail.com","startDate":"2025-08-15","superior":"Борисова Людмила Сергеевна","type":"full","stage":"recruit","zone":"","action":"","nextDate":"","motiv":"ok","pin":"","loc":"office","emp":"full"},{"id":"imp_1287834_15","num":"1287834","name":"Чернова А.А.","phone":"9136112378","email":"chernova.omsk182@gmail.com","startDate":"2025-08-05","superior":"Токарева Марина Владимировна","type":"full","stage":"recruit","zone":"","action":"","nextDate":"","motiv":"ok","pin":"","loc":"office","emp":"full"},{"id":"imp_1287239_16","num":"1287239","name":"Куликова Т.П.","phone":"9538098539","email":"kulikova16011983@mail.ru","startDate":"2025-07-24","superior":"Токарева Марина Владимировна","type":"full","stage":"recruit","zone":"","action":"","nextDate":"","motiv":"ok","pin":"","loc":"office","emp":"full"},{"id":"imp_1283466_18","num":"1283466","name":"Власова К.А.","phone":"9128138031","email":"kristina.keivaby.ru@yandex.ru","startDate":"2025-03-21","superior":"Токарева Марина Владимировна","type":"full","stage":"recruit","zone":"","action":"","nextDate":"","motiv":"ok","pin":"","loc":"office","emp":"full"},{"id":"imp_1272581_19","num":"1272581","name":"Карамышева Т.Ю.","phone":"9137496766","email":"tanyaa.karamysheva.1983@mail.ru","startDate":"2024-02-21","superior":"Токарева Марина Владимировна","type":"full","stage":"recruit","zone":"","action":"","nextDate":"","motiv":"ok","pin":"","loc":"office","emp":"full"},{"id":"imp_1271531_20","num":"1271531","name":"Доценко Е.В.","phone":"9331833975","email":"valya541202@gmail.com","startDate":"2024-01-17","superior":"Токарева Марина Владимировна","type":"full","stage":"recruit","zone":"","action":"","nextDate":"","motiv":"ok","pin":"","loc":"office","emp":"full"},{"id":"imp_1268752_21","num":"1268752","name":"Юрикова В.Л.","phone":"9134607775","email":"yurikova1982@yandex.ru","startDate":"2023-10-20","superior":"Токарева Марина Владимировна","type":"full","stage":"recruit","zone":"","action":"","nextDate":"","motiv":"ok","pin":"","loc":"office","emp":"full"},{"id":"imp_1260394_22","num":"1260394","name":"Лучина Н.Н.","phone":"9043284346","email":"cor621@mail.ru","startDate":"2023-01-19","superior":"Токарева Марина Владимировна","type":"full","stage":"recruit","zone":"","action":"","nextDate":"","motiv":"ok","pin":"","loc":"office","emp":"full"},{"id":"imp_1256880_23","num":"1256880","name":"Курумбаева К.Б.","phone":"9658720903","email":"slushash64@gmail.com","startDate":"2022-10-17","superior":"Токарева Марина Владимировна","type":"full","stage":"recruit","zone":"","action":"","nextDate":"","motiv":"ok","pin":"","loc":"office","emp":"full"},{"id":"imp_1254178_24","num":"1254178","name":"Иванова И.П.","phone":"9043220296","email":"twoi@bk.ru","startDate":"2022-08-01","superior":"Токарева Марина Владимировна","type":"full","stage":"recruit","zone":"","action":"","nextDate":"","motiv":"ok","pin":"","loc":"office","emp":"full"},{"id":"imp_1253639_25","num":"1253639","name":"Шляпникова Ю.С.","phone":"9139435042","email":"sdfg19857@mail.ru","startDate":"2022-07-22","superior":"Токарева Марина Владимировна","type":"full","stage":"recruit","zone":"","action":"","nextDate":"","motiv":"ok","pin":"","loc":"office","emp":"full"},{"id":"imp_1249432_26","num":"1249432","name":"Серегина И.А.","phone":"9697044007","email":"irishka.s.a@mail.ru","startDate":"2022-03-22","superior":"Токарева Марина Владимировна","type":"full","stage":"recruit","zone":"","action":"","nextDate":"","motiv":"ok","pin":"","loc":"office","emp":"full"},{"id":"imp_1237490_27","num":"1237490","name":"Короткевич М.А.","phone":"9139710086","email":"korotkevicmarina435@gmail.com","startDate":"2021-06-25","superior":"Токарева Марина Владимировна","type":"full","stage":"recruit","zone":"","action":"","nextDate":"","motiv":"ok","pin":"","loc":"office","emp":"full"},{"id":"imp_1235866_28","num":"1235866","name":"Кудрявцева Д.Р.","phone":"9236721284","email":"diana-i@inbox.ru","startDate":"2021-05-24","superior":"Токарева Марина Владимировна","type":"full","stage":"recruit","zone":"","action":"","nextDate":"","motiv":"ok","pin":"","loc":"office","emp":"full"},{"id":"imp_1231351_29","num":"1231351","name":"Козяков П.А.","phone":"9043214282","email":"kozyakov.p@mail.ru","startDate":"2021-01-22","superior":"Токарева Марина Владимировна","type":"full","stage":"recruit","zone":"","action":"","nextDate":"","motiv":"ok","pin":"","loc":"office","emp":"full"},{"id":"imp_1219290_30","num":"1219290","name":"Головина Е.В.","phone":"9136473257","email":"egolovina65@yandex.ru","startDate":"2020-06-18","superior":"Токарева Марина Владимировна","type":"full","stage":"recruit","zone":"","action":"","nextDate":"","motiv":"ok","pin":"","loc":"office","emp":"full"},{"id":"imp_1198206_31","num":"1198206","name":"Сабакарь О.И.","phone":"9045837514","email":"","startDate":"2019-06-20","superior":"Токарева Марина Владимировна","type":"full","stage":"recruit","zone":"","action":"","nextDate":"","motiv":"ok","pin":"","loc":"office","emp":"full"},{"id":"imp_1172131_32","num":"1172131","name":"Прокопова А.П.","phone":"9039272536","email":"albina_pro@mail.ru","startDate":"2018-03-30","superior":"Токарева Марина Владимировна","type":"full","stage":"recruit","zone":"","action":"","nextDate":"","motiv":"ok","pin":"","loc":"office","emp":"full"},{"id":"imp_1165376_33","num":"1165376","name":"Колотилова Н.В.","phone":"9136822152","email":"lapkca@yandex.ru","startDate":"2017-10-27","superior":"Токарева Марина Владимировна","type":"full","stage":"recruit","zone":"","action":"","nextDate":"","motiv":"ok","pin":"","loc":"office","emp":"full"},{"id":"imp_1154050_34","num":"1154050","name":"Токарев А.В.","phone":"9139737370","email":"sprinn2015@gmail.com","startDate":"2016-12-29","superior":"Токарева Марина Владимировна","type":"full","stage":"recruit","zone":"","action":"","nextDate":"","motiv":"ok","pin":"","loc":"office","emp":"full"},{"id":"imp_1152797_35","num":"1152797","name":"Пономарева С.А.","phone":"9139751549","email":"ponomareva75@inbox.ru","startDate":"2016-11-23","superior":"Токарева Марина Владимировна","type":"full","stage":"recruit","zone":"","action":"","nextDate":"","motiv":"ok","pin":"","loc":"office","emp":"full"}];
+var MGR=[{name:"Marina",pin:"0000"}];
+var LKEY="evtr7";
+var BIN_ID="69b4fe3ab7ec241ddc68ff70";
+var API_KEY="$2a$10$or/10uhY3Yz82p.8/QaAnO1IYrtaDRgEcGWgQ3mM1JkKdkKmQbTXm";
+var BIN_URL="https://api.jsonbin.io/v3/b/"+BIN_ID;
+
+var me=null,stageF="all",locF="all",empF="all",statusF="all",selMode=false,selMap={},agCache=null;
+
+function setSB(st,txt){var b=document.getElementById("syncbadge");if(b){b.className="syncbadge "+st;b.textContent=txt;}}
+function localLoad(){try{var d=localStorage.getItem(LKEY);return d?JSON.parse(d):null;}catch(e){return null;}}
+function localSave(a){try{localStorage.setItem(LKEY,JSON.stringify(a));}catch(e){}}
+
+function cloudLoad(cb){
+  if(BIN_ID==="ВСТАВЬ_BIN_ID_СЮДА"){
+    var d=localLoad();if(!d){d=IMP.slice();}agCache=d;setSB("ok","локально");cb(d);return;
+  }
+  setSB("loading","загрузка...");
+  var xhr=new XMLHttpRequest();
+  xhr.open("GET",BIN_URL+"/latest",true);
+  xhr.setRequestHeader("X-Master-Key",API_KEY);
+  xhr.setRequestHeader("X-Bin-Meta","false");
+  xhr.onload=function(){
+    if(xhr.status===200){
+      try{var data=JSON.parse(xhr.responseText);var ags=Array.isArray(data)?data:(data.agents||IMP.slice());agCache=ags;localSave(ags);setSB("ok","синхронизировано");cb(ags);}
+      catch(e){fallback(cb);}
+    } else {fallback(cb);}
+  };
+  xhr.onerror=function(){fallback(cb);};
+  xhr.send();
+}
+
+function cloudSave(ags,cb){
+  localSave(ags);agCache=ags;
+  if(BIN_ID==="ВСТАВЬ_BIN_ID_СЮДА"){setSB("ok","сохранено");if(cb)cb();return;}
+  setSB("loading","сохранение...");
+  var xhr=new XMLHttpRequest();
+  xhr.open("PUT",BIN_URL,true);
+  xhr.setRequestHeader("Content-Type","application/json");
+  xhr.setRequestHeader("X-Master-Key",API_KEY);
+  xhr.onload=function(){setSB(xhr.status===200?"ok":"err",xhr.status===200?"сохранено":"ошибка");if(cb)cb();};
+  xhr.onerror=function(){setSB("err","нет сети");if(cb)cb();};
+  xhr.send(JSON.stringify(ags));
+}
+
+function fallback(cb){setSB("err","нет связи");var d=localLoad()||IMP.slice();agCache=d;cb(d);}
+function getAg(){return agCache||(localLoad()||IMP.slice());}
+function uid2(){return Date.now().toString(36)+Math.random().toString(36).slice(2);}
+
+var STAGES=[
+  {key:"recruit",lbl:"Рекрутинг",col:"var(--recruit)"},
+  {key:"dok",lbl:"ДОК",col:"var(--dok)"},
+  {key:"start",lbl:"Старт",col:"var(--start)"},
+  {key:"sales",lbl:"Продажи",col:"var(--sales)"}
+];
+function stIdx(k){for(var i=0;i<STAGES.length;i++)if(STAGES[i].key===k)return i;return 0;}
+var AVC=["#6b5ce7","#4f9cf9","#f5a623","#3ecf8e","#f56060","#c9a84c","#f56eb5","#52c4b9"];
+function avc(n){var h=0;for(var i=0;i<n.length;i++)h=(h*31+n.charCodeAt(i))%AVC.length;return AVC[h];}
+function ini(n){return n.split(" ").map(function(p){return p[0]||"";}).join("").slice(0,2).toUpperCase();}
+function fmtD(s){if(!s)return"";return new Date(s).toLocaleDateString("ru-RU",{day:"numeric",month:"short"});}
+function isOv(s){if(!s)return false;var t=new Date();t.setHours(0,0,0,0);return new Date(s)<t;}
+
+function buildSel(){
+  var s=document.getElementById("lsel");
+  s.innerHTML="<option value=\"\">— выберите —</option>";
+  MGR.forEach(function(m){s.innerHTML+="<option value=\"mgr:"+m.name+"\">"+m.name+" (Менеджер)</option>";});
+  getAg().forEach(function(a){s.innerHTML+="<option value=\"agt:"+a.id+"\">"+a.name+" (Агент)</option>";});
+}
+
+function doLogin(){
+  var val=document.getElementById("lsel").value;
+  var pin=document.getElementById("lpin").value.trim();
+  var err=document.getElementById("lerr");
+  err.textContent="";
+  if(!val){err.textContent="Выберите имя";return;}
+  if(!pin){err.textContent="Введите PIN";return;}
+  if(val.indexOf("mgr:")==0){
+    var nm=val.slice(4),found=null;
+    MGR.forEach(function(m){if(m.name===nm&&m.pin===pin)found=m;});
+    if(!found){err.textContent="Неверный PIN";return;}
+    me={name:found.name,role:"manager"};
+  } else {
+    var aid=val.slice(4),found=null;
+    getAg().forEach(function(a){if(a.id===aid&&a.pin===pin)found=a;});
+    if(!found){err.textContent="Неверный PIN";return;}
+    me={name:found.name,role:"agent",aid:found.id};
+  }
+  document.getElementById("ls").style.display="none";
+  document.getElementById("app").style.display="block";
+  document.getElementById("uname").textContent=me.name;
+  cloudLoad(function(ags){agCache=ags;buildSel();render();});
+}
+
+function doLogout(){
+  me=null;selMode=false;selMap={};
+  document.getElementById("ls").style.display="flex";
+  document.getElementById("app").style.display="none";
+  document.getElementById("lpin").value="";
+  document.getElementById("lerr").textContent="";
+  buildSel();
+}
+
+function render(){if(me.role==="manager")renderMgr();else renderAgt();}
+function selCnt(){return Object.keys(selMap).length;}
+
+function renderMgr(){
+  var ags=getAg();
+  var cnt={recruit:0,dok:0,start:0,sales:0};
+  ags.forEach(function(a){if(cnt[a.stage]!==undefined)cnt[a.stage]++;});
+
+  var shown=ags.filter(function(a){
+    if(stageF!=="all"&&a.stage!==stageF)return false;
+    if(locF!=="all"&&(a.loc||"office")!==locF)return false;
+    if(empF!=="all"&&(a.emp||"full")!==empF)return false;
+    if(statusF!=="all"&&(a.motiv||"ok")!==statusF)return false;
+    return true;
+  });
+
+  var h="";
+  h+="<div class=\"sr\">";
+  h+="<div class=\"sc s1\"><div class=\"slbl\">Рекрутинг</div><div class=\"sval\">"+cnt.recruit+"</div></div>";
+  h+="<div class=\"sc s2\"><div class=\"slbl\">ДОК</div><div class=\"sval\">"+cnt.dok+"</div></div>";
+  h+="<div class=\"sc s3\"><div class=\"slbl\">Старт</div><div class=\"sval\">"+cnt.start+"</div></div>";
+  h+="<div class=\"sc s4\"><div class=\"slbl\">Продажи</div><div class=\"sval\">"+cnt.sales+"</div></div>";
+  h+="</div>";
+
+  // Filters
+  h+="<div class=\"filters\">";
+  h+="<div class=\"frow\"><span class=\"flbl\">Этап</span>";
+  var tabs=[["all","Все ("+ags.length+")"],["recruit","Рекрутинг"],["dok","ДОК"],["start","Старт"],["sales","Продажи"]];
+  tabs.forEach(function(t){h+="<button class=\"fb"+(stageF===t[0]?" on":"")+"\" onclick=\"setF('s','"+t[0]+"')\">"+t[1]+"</button>";});
+  h+="</div>";
+  h+="<div class=\"frow\"><span class=\"flbl\">Локация</span>";
+  var locs=[["all","Все"],["office","Офис"],["remote","Удалённые"]];
+  locs.forEach(function(t){h+="<button class=\"fb"+(locF===t[0]?" lon":"")+"\" onclick=\"setF('l','"+t[0]+"')\">"+t[1]+"</button>";});
+  h+="</div>";
+  h+="<div class=\"frow\"><span class=\"flbl\">Занятость</span>";
+  var emps=[["all","Все"],["full","Фулл-тайм"],["part","Совместители"]];
+  emps.forEach(function(t){h+="<button class=\"fb"+(empF===t[0]?" eon":"")+"\" onclick=\"setF('e','"+t[0]+"')\">"+t[1]+"</button>";});
+  h+="</div>";
+  h+="<div class=\"frow\"><span class=\"flbl\">\u0421\u0442\u0430\u0442\u0443\u0441</span>";
+  var stats=[["all","\u0412\u0441\u0435"],["hot","\u0413\u043e\u0440\u0438\u0442"],["ok","\u041d\u043e\u0440\u043c\u0430"],["pause","\u041f\u0430\u0443\u0437\u0430"],["risk","\u0420\u0438\u0441\u043a"]];
+  stats.forEach(function(t){h+="<button class=\"fb"+(statusF===t[0]?" on":"")+"\" onclick=\"setF('st','"+t[0]+"')\">"+t[1]+"</button>";});
+  h+="</div></div>";
+
+  h+="<div class=\"tbr\">';";
+  h+="<button class=\"selbtn"+(selMode?" on":"")+"\" onclick=\"toggleSel()\">"+(selMode?"Отмена":"Выбрать для удаления")+"</button>";
+  h+="<button class=\"addbtn\" onclick=\"openMod()\">+ Добавить</button>";
+  h+="</div>";
+
+  h+="<div class=\"dbar"+(selMode?" show":"")+"\">";
+  h+="<div class=\"dbl\"><span class=\"dcnt\" id=\"dcnt\">Выбрано: "+selCnt()+"</span>";
+  h+="<button class=\"sab\" onclick=\"selAll()\">Выбрать всех</button>";
+  h+="<button class=\"csb\" onclick=\"clrSel()\">Снять выбор</button></div>";
+  h+="<button class=\"delbtn\" onclick=\"bulkDel()\">Удалить выбранных</button></div>";
+
+  if(shown.length===0){
+    h+="<div class=\"empty\"><div class=\"ei\">👥</div><div class=\"et\">"+(ags.length===0?"Агентов пока нет":"Нет по выбранным фильтрам")+"</div></div>";
+  } else {
+    h+="<div class=\"grid"+(selMode?" selmode":"")+"\">";
+    shown.forEach(function(a){h+=cardHTML(a);});
+    h+="</div>";
+  }
+  document.getElementById("main").innerHTML=h;
+}
+
+function cardHTML(a){
+  var si=stIdx(a.stage),col=avc(a.name);
+  var emp=a.emp||"full",loc=a.loc||"office";
+  var empLbl=emp==="full"?"Фулл-тайм":"Совместитель";
+  var locLbl=loc==="remote"?"Удалённый":"Офис";
+  var bar="";STAGES.forEach(function(s,i){bar+="<div class=\"ss"+(i<si?" done":i===si?" cur":"")+"\"></div>";});
+  var lbls="";STAGES.forEach(function(s,i){lbls+="<div class=\"sl"+(i===si?" on":"")+"\">"+s.lbl+"</div>";});
+  var dl=a.nextDate?fmtD(a.nextDate):"не задана";
+  var isSel=!!selMap[a.id];
+  var h="<div class=\"card"+(isSel?" sel":"")+"\" id=\"c"+a.id+"\" onclick=\"hCard('"+a.id+"')\">";
+  h+="<div class=\"chk\"><input type=\"checkbox\" "+(isSel?"checked ":"")+"onchange=\"chk('"+a.id+"')\" onclick=\"event.stopPropagation()\"></div>";
+  h+="<div class=\"ct\">";
+  h+="<div class=\"av\" style=\"background:"+col+"\">"+ini(a.name)+"</div>";
+  h+="<div class=\"ai\"><div class=\"an\">"+a.name+"</div>";
+  h+="<div class=\"am\">";
+  h+="<span class=\"tag "+emp+"\">"+empLbl+"</span>";
+  h+="<span class=\"tag "+loc+"\">"+locLbl+"</span>";
+  h+=(a.startDate?"<span style=\"font-size:10px;color:var(--tdim)\">с "+fmtD(a.startDate)+"</span>":"");
+  h+="</div></div>";
+  h+="<div class=\"ca\"><div class=\"mdot "+(a.motiv||"ok")+"\"></div>";
+  h+="<button class=\"ib\" onclick=\"event.stopPropagation();openMod('"+a.id+"')\">&#9998;</button></div></div>";
+  h+="<div class=\"sb\"><div class=\"st\">"+bar+"</div><div class=\"sls\">"+lbls+"</div></div>";
+  h+="<div class=\"zr\"><div class=\"zl\">Зона роста</div><div class=\"zt"+(a.zone?"":" ze")+"\">"+(a.zone||"не указана")+"</div></div>";
+  h+="<div class=\"nr\"><div class=\"nl\">"+(a.action||"Следующий шаг")+"</div><span class=\"nd"+(isOv(a.nextDate)?" ov":"")+"\">"+dl+"</span></div>";
+  h+="</div>";
+  return h;
+}
+
+function hCard(id){if(selMode)chk(id);}
+function toggleSel(){selMode=!selMode;selMap={};renderMgr();}
+function chk(id){
+  if(selMap[id])delete selMap[id];else selMap[id]=true;
+  var card=document.getElementById("c"+id);
+  if(card){
+    if(selMap[id])card.classList.add("sel");else card.classList.remove("sel");
+    var cb=card.querySelector("input[type=checkbox]");
+    if(cb)cb.checked=!!selMap[id];
+  }
+  var el=document.getElementById("dcnt");
+  if(el)el.textContent="Выбрано: "+selCnt();
+}
+function selAll(){
+  var ags=getAg().filter(function(a){
+    if(stageF!=="all"&&a.stage!==stageF)return false;
+    if(locF!=="all"&&(a.loc||"office")!==locF)return false;
+    if(empF!=="all"&&(a.emp||"full")!==empF)return false;
+    if(statusF!=="all"&&(a.motiv||"ok")!==statusF)return false;
+    return true;
+  });
+  ags.forEach(function(a){selMap[a.id]=true;});
+  renderMgr();
+}
+function clrSel(){selMap={};renderMgr();}
+function bulkDel(){
+  var n=selCnt();
+  if(n===0){return;}
+  var ags=getAg().filter(function(a){return !selMap[a.id];});
+  selMap={};selMode=false;
+  cloudSave(ags,function(){buildSel();renderMgr();});
+}
+function setF(type,val){
+  if(type==="s")stageF=val;
+  else if(type==="l")locF=val;
+  else if(type==="e")empF=val;
+  else if(type==="st")statusF=val;
+  renderMgr();
+}
+
+function renderAgt(){
+  var ag=null;getAg().forEach(function(x){if(x.id===me.aid)ag=x;});
+  if(!ag){document.getElementById("main").innerHTML="<div class=\"empty\"><div class=\"ei\">?</div><div class=\"et\">Данные не найдены</div></div>";return;}
+  var si=stIdx(ag.stage),sc=STAGES[si],col=avc(ag.name);
+  var bar="";STAGES.forEach(function(s,i){bar+="<div class=\"ss"+(i<si?" done":i===si?" cur":"")+"\"></div>";});
+  var lbls="";STAGES.forEach(function(s,i){lbls+="<div class=\"sl"+(i===si?" on":"")+"\">"+s.lbl+"</div>";});
+  var emp=ag.emp||"full",loc=ag.loc||"office";
+  var h="<div class=\"sv\"><div class=\"svh\">";
+  h+="<div class=\"av\" style=\"background:"+col+";width:60px;height:60px;font-size:22px;margin:0 auto 14px\">"+ini(ag.name)+"</div>";
+  h+="<div class=\"svn\">"+ag.name+"</div>";
+  h+="<div class=\"am\" style=\"justify-content:center;margin-bottom:6px\">";
+  h+="<span class=\"tag "+emp+"\">"+( emp==="full"?"Фулл-тайм":"Совместитель")+"</span>";
+  h+="<span class=\"tag "+loc+"\">"+( loc==="remote"?"Удалённый":"Офис")+"</span></div>";
+  h+="<div class=\"svs\">"+(ag.startDate?"в команде с "+fmtD(ag.startDate):"")+"</div></div>";
+  h+="<div class=\"svc\">";
+  h+="<div class=\"sec\"><div class=\"secl\">Текущий этап</div>";
+  h+="<div class=\"st\" style=\"margin-bottom:8px\">"+bar+"</div>";
+  h+="<div class=\"sls\" style=\"margin-bottom:10px\">"+lbls+"</div>";
+  h+="<div class=\"ssn\" style=\"color:"+sc.col+"\">"+sc.lbl+"</div></div>";
+  h+="<div class=\"sec\"><div class=\"secl\">Зона роста — работаем над этим</div>";
+  h+="<div class=\"szt\">"+(ag.zone||"<span style=\"color:var(--tdim);font-style:italic\">уточни у менеджера</span>")+"</div></div>";
+  h+="<div class=\"sec\"><div class=\"secl\">Следующий шаг</div>";
+  h+="<div class=\"snx\"><span>"+(ag.action||"<span style=\"color:var(--tdim)\">не задан</span>")+"</span>";
+  h+=(ag.nextDate?"<span class=\"nd"+(isOv(ag.nextDate)?" ov":"")+"\">"+ fmtD(ag.nextDate)+"</span>":"")+"</div></div></div></div>";
+  document.getElementById("main").innerHTML=h;
+}
+
+function openMod(id){
+  var ags=getAg();
+  if(id){
+    var ag=null;ags.forEach(function(x){if(x.id===id)ag=x;});
+    document.getElementById("mtitle").textContent="Редактировать агента";
+    document.getElementById("fid").value=ag.id;
+    document.getElementById("fname").value=ag.name;
+    document.getElementById("femp").value=ag.emp||"full";
+    document.getElementById("floc").value=ag.loc||"office";
+    document.getElementById("fstart").value=ag.startDate||"";
+    document.getElementById("fstage").value=ag.stage;
+    document.getElementById("fzone").value=ag.zone||"";
+    document.getElementById("faction").value=ag.action||"";
+    document.getElementById("fdate").value=ag.nextDate||"";
+    document.getElementById("fmotiv").value=ag.motiv||"ok";
+    document.getElementById("fpin").value=ag.pin||"";
+    document.getElementById("bdel").style.display="inline-flex";
+  } else {
+    document.getElementById("mtitle").textContent="Новый агент";
+    ["fid","fname","fzone","faction","fdate","fpin"].forEach(function(x){document.getElementById(x).value="";});
+    document.getElementById("femp").value="full";
+    document.getElementById("floc").value="office";
+    document.getElementById("fstart").value=new Date().toISOString().slice(0,10);
+    document.getElementById("fstage").value="recruit";
+    document.getElementById("fmotiv").value="ok";
+    document.getElementById("bdel").style.display="none";
+  }
+  hideDelConfirm();
+  hideFormErr();
+  document.getElementById("mo").classList.add("open");
+}
+function closeMod(){document.getElementById("mo").classList.remove("open");}
+function saveAg(){
+  hideFormErr();
+  var nm=document.getElementById("fname").value.trim();
+  var pin=document.getElementById("fpin").value.trim();
+  if(!nm){showFormErr("Введите имя агента");return;}
+  if(!pin){showFormErr("Введите PIN-код для агента");return;}
+  var ags=getAg();
+  var id=document.getElementById("fid").value;
+  var d={
+    id:id||uid2(),name:nm,
+    emp:document.getElementById("femp").value,
+    loc:document.getElementById("floc").value,
+    startDate:document.getElementById("fstart").value,
+    stage:document.getElementById("fstage").value,
+    zone:document.getElementById("fzone").value.trim(),
+    action:document.getElementById("faction").value.trim(),
+    nextDate:document.getElementById("fdate").value,
+    motiv:document.getElementById("fmotiv").value,
+    pin:pin
+  };
+  if(id){for(var i=0;i<ags.length;i++)if(ags[i].id===id){ags[i]=d;break;}}else{ags.push(d);}
+  cloudSave(ags,function(){closeMod();buildSel();render();});
+}
+function showFormErr(msg){var e=document.getElementById("ferr");if(e){e.textContent=msg;e.style.display="block";}}
+function hideFormErr(){var e=document.getElementById("ferr");if(e){e.style.display="none";}}
+function showDelConfirm(){document.getElementById("delconfirm").style.display="block";}
+function hideDelConfirm(){document.getElementById("delconfirm").style.display="none";}
+function delOne(){
+  var id=document.getElementById("fid").value;
+  var ags=getAg().filter(function(x){return x.id!==id;});
+  cloudSave(ags,function(){closeMod();buildSel();render();});
+}
+function doImport(){
+  if(!confirm("Загрузить всех агентов по умолчанию? Текущие данные будут заменены!"))return;
+  var ags=IMP.slice();
+  cloudSave(ags,function(){buildSel();render();alert("Готово! Загружено "+ags.length+" агентов.");});
+}
+document.getElementById("mo").addEventListener("click",function(e){if(e.target===document.getElementById("mo"))closeMod();});
+var lc=localLoad();if(lc)agCache=lc;
+buildSel();
+</script>
+<div class="mo" id="moexp">
+  <div class="md2" style="max-width:620px">
+    <div class="mh">
+      <div class="mtitle">Экспорт данных команды</div>
+      <button class="mcl" onclick="document.getElementById('moexp').classList.remove('open')">X</button>
+    </div>
+    <div class="mb">
+      <div style="font-size:12px;color:var(--tdim);margin-bottom:12px">Скопируй текст ниже и вставь в чат с Claude для анализа</div>
+      <textarea id="exporttext" class="fi" style="min-height:320px;font-size:11px;font-family:monospace;line-height:1.6" readonly></textarea>
+      <div class="ma" style="margin-top:16px">
+        <button class="bsv" onclick="copyExport()">Скопировать</button>
+        <div id="copymsg" style="font-size:12px;color:var(--green);align-self:center;display:none">Скопировано!</div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+function doExport(){
+  var ags=getAg();
+  var SLBL={recruit:"Рекрутинг",dok:"ДОК",start:"Старт",sales:"Продажи"};
+  var MLBL={hot:"Горит",ok:"Норма",pause:"Пауза",risk:"Риск"};
+  var ELBL={full:"Фулл-тайм",part:"Совместитель"};
+  var LLOC={office:"Офис",remote:"Удалённый"};
+  var lines=[];
+  lines.push("=== КОМАНДА EVERIA LIFE — ЭКСПОРТ ===");
+  lines.push("Дата: "+new Date().toLocaleDateString("ru-RU"));
+  lines.push("Всего агентов: "+ags.length);
+  lines.push("");
+
+  // stats
+  var cnt={recruit:0,dok:0,start:0,sales:0};
+  var mcnt={hot:0,ok:0,pause:0,risk:0};
+  var lcnt={office:0,remote:0};
+  var ecnt={full:0,part:0};
+  ags.forEach(function(a){
+    if(cnt[a.stage]!==undefined)cnt[a.stage]++;
+    var m=a.motiv||"ok"; if(mcnt[m]!==undefined)mcnt[m]++;
+    var l=a.loc||"office"; if(lcnt[l]!==undefined)lcnt[l]++;
+    var e=a.emp||"full"; if(ecnt[e]!==undefined)ecnt[e]++;
+  });
+  lines.push("--- СТАТИСТИКА ---");
+  lines.push("По этапу: Рекрутинг "+cnt.recruit+", ДОК "+cnt.dok+", Старт "+cnt.start+", Продажи "+cnt.sales);
+  lines.push("По статусу: Горит "+mcnt.hot+", Норма "+mcnt.ok+", Пауза "+mcnt.pause+", Риск "+mcnt.risk);
+  lines.push("По локации: Офис "+lcnt.office+", Удалённые "+lcnt.remote);
+  lines.push("По занятости: Фулл-тайм "+ecnt.full+", Совместители "+ecnt.part);
+  lines.push("");
+  lines.push("--- СПИСОК АГЕНТОВ ---");
+
+  // sort by motiv priority: risk first, then pause, ok, hot
+  var order={risk:0,pause:1,ok:2,hot:3};
+  var sorted=ags.slice().sort(function(a,b){
+    return (order[a.motiv||"ok"]||2)-(order[b.motiv||"ok"]||2);
+  });
+
+  sorted.forEach(function(a,i){
+    var m=a.motiv||"ok";
+    var e=a.emp||"full";
+    var l=a.loc||"office";
+    lines.push((i+1)+". "+a.name);
+    lines.push("   Этап: "+(SLBL[a.stage]||a.stage)+" | Статус: "+(MLBL[m]||m)+" | "+(ELBL[e]||e)+" / "+(LLOC[l]||l));
+    if(a.zone)lines.push("   Зона роста: "+a.zone);
+    if(a.action)lines.push("   Следующий шаг: "+a.action+(a.nextDate?" ("+new Date(a.nextDate).toLocaleDateString("ru-RU")+")":""));
+    if(a.startDate)lines.push("   В команде с: "+new Date(a.startDate).toLocaleDateString("ru-RU"));
+    lines.push("");
+  });
+
+  document.getElementById("exporttext").value=lines.join("\n");
+  document.getElementById("copymsg").style.display="none";
+  document.getElementById("moexp").classList.add("open");
+}
+
+function copyExport(){
+  var ta=document.getElementById("exporttext");
+  ta.select();
+  ta.setSelectionRange(0,99999);
+  try{
+    document.execCommand("copy");
+    document.getElementById("copymsg").style.display="inline";
+    setTimeout(function(){document.getElementById("copymsg").style.display="none";},2000);
+  }catch(e){}
+}
+
+document.getElementById("moexp").addEventListener("click",function(e){
+  if(e.target===document.getElementById("moexp"))document.getElementById("moexp").classList.remove("open");
+});
+</script>
+</body>
+</html>
