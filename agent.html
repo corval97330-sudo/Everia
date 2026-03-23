@@ -867,10 +867,7 @@ const DEFAULT_AGENTS = [
 ];
 
 function loadAgents() {
-  try {
-    const d = localStorage.getItem(AGENTS_KEY);
-    return d ? JSON.parse(d) : DEFAULT_AGENTS;
-  } catch(e) { return DEFAULT_AGENTS; }
+  return DEFAULT_AGENTS;
 }
 
 function saveAgents(agents) {
