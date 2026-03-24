@@ -369,6 +369,7 @@
     </div>
     <div class="agentName" id="agentLabel">Агент</div>
     <div class="topBarRight">
+      <button class="btnSmall" id="mgrAgentsBtn" style="display:none" onclick="openAgentsMgr()">👥 Агенты</button>
       <button class="recBtn" id="recBtn" onclick="toggleRec()">
         <span class="recDot"></span>
         <span id="recLabel">REC</span>
@@ -831,39 +832,39 @@ const AGENTS_KEY = 'everia_app_agents';
 
 const DEFAULT_AGENTS = [
   { name: 'Марина', role: 'Менеджер', pin: '0000' },
-  { name: 'Бабенко Т.А.', role: 'Агент', pin: '1212' },
-  { name: 'Борисова Л.С.', role: 'Агент', pin: '6666' },
-  { name: 'Власова К.А.', role: 'Агент', pin: '1818' },
-  { name: 'Головина Е.В.', role: 'Агент', pin: '3030' },
-  { name: 'Гулов О.П.', role: 'Агент', pin: '8888' },
-  { name: 'Доценко Е.В.', role: 'Агент', pin: '2020' },
-  { name: 'Егорова И.Л.', role: 'Агент', pin: '1313' },
-  { name: 'Иванова И.П.', role: 'Агент', pin: '2424' },
-  { name: 'Карамышева Л.А.', role: 'Агент', pin: '1111' },
-  { name: 'Карамышева Т.Ю.', role: 'Агент', pin: '1919' },
-  { name: 'Козяков П.А.', role: 'Агент', pin: '2929' },
-  { name: 'Колотилова Н.В.', role: 'Агент', pin: '3333' },
-  { name: 'Короткевич М.А.', role: 'Агент', pin: '2727' },
-  { name: 'Кудашова Т.В.', role: 'Агент', pin: '5555' },
-  { name: 'Кудрявцева Д.Р.', role: 'Агент', pin: '2828' },
-  { name: 'Куликова Т.П.', role: 'Агент', pin: '1616' },
-  { name: 'Курумбаева К.Б.', role: 'Агент', pin: '2323' },
-  { name: 'Лучина Н.Н.', role: 'Агент', pin: '2222' },
-  { name: 'Маликова Н.И.', role: 'Агент', pin: '7777' },
-  { name: 'Мартынцова Н.В.', role: 'Агент', pin: '2222' },
-  { name: 'Пономарева С.А.', role: 'Агент', pin: '3535' },
-  { name: 'Прокопова А.П.', role: 'Агент', pin: '3232' },
-  { name: 'Рендаревский И.И.', role: 'Агент', pin: '1414' },
-  { name: 'Сабакарь О.И.', role: 'Агент', pin: '3131' },
-  { name: 'Санникова Л.В.', role: 'Агент', pin: '4444' },
-  { name: 'Сахиянова В.А.', role: 'Агент', pin: '1010' },
-  { name: 'Серегина И.А.', role: 'Агент', pin: '2626' },
-  { name: 'Темиртекова Е.М.', role: 'Агент', pin: '3333' },
-  { name: 'Токарев А.В.', role: 'Агент', pin: '3434' },
-  { name: 'Томилова Т.А.', role: 'Агент', pin: '9999' },
-  { name: 'Чернова А.А.', role: 'Агент', pin: '1515' },
-  { name: 'Шляпникова Ю.С.', role: 'Агент', pin: '2525' },
-  { name: 'Юрикова В.Л.', role: 'Агент', pin: '2121' },
+  { name: 'Бабенко Т.А.', role: 'Агент', pin: '1234' },
+  { name: 'Борисова Л.С.', role: 'Агент', pin: '1234' },
+  { name: 'Власова К.А.', role: 'Агент', pin: '1234' },
+  { name: 'Головина Е.В.', role: 'Агент', pin: '1234' },
+  { name: 'Гулов О.П.', role: 'Агент', pin: '1234' },
+  { name: 'Доценко Е.В.', role: 'Агент', pin: '1234' },
+  { name: 'Егорова И.Л.', role: 'Агент', pin: '1234' },
+  { name: 'Иванова И.П.', role: 'Агент', pin: '1234' },
+  { name: 'Карамышева Л.А.', role: 'Агент', pin: '1234' },
+  { name: 'Карамышева Т.Ю.', role: 'Агент', pin: '1234' },
+  { name: 'Козяков П.А.', role: 'Агент', pin: '1234' },
+  { name: 'Колотилова Н.В.', role: 'Агент', pin: '1234' },
+  { name: 'Короткевич М.А.', role: 'Агент', pin: '1234' },
+  { name: 'Кудашова Т.В.', role: 'Агент', pin: '1234' },
+  { name: 'Кудрявцева Д.Р.', role: 'Агент', pin: '1234' },
+  { name: 'Куликова Т.П.', role: 'Агент', pin: '1234' },
+  { name: 'Курумбаева К.Б.', role: 'Агент', pin: '1234' },
+  { name: 'Лучина Н.Н.', role: 'Агент', pin: '1234' },
+  { name: 'Маликова Н.И.', role: 'Агент', pin: '1234' },
+  { name: 'Мартынцова Н.В.', role: 'Агент', pin: '1234' },
+  { name: 'Пономарева С.А.', role: 'Агент', pin: '1234' },
+  { name: 'Прокопова А.П.', role: 'Агент', pin: '1234' },
+  { name: 'Рендаревский И.И.', role: 'Агент', pin: '1234' },
+  { name: 'Сабакарь О.И.', role: 'Агент', pin: '1234' },
+  { name: 'Санникова Л.В.', role: 'Агент', pin: '1234' },
+  { name: 'Сахиянова В.А.', role: 'Агент', pin: '1234' },
+  { name: 'Серегина И.А.', role: 'Агент', pin: '1234' },
+  { name: 'Темиртекова Е.М.', role: 'Агент', pin: '1234' },
+  { name: 'Токарев А.В.', role: 'Агент', pin: '1234' },
+  { name: 'Томилова Т.А.', role: 'Агент', pin: '1234' },
+  { name: 'Чернова А.А.', role: 'Агент', pin: '1234' },
+  { name: 'Шляпникова Ю.С.', role: 'Агент', pin: '1234' },
+  { name: 'Юрикова В.Л.', role: 'Агент', pin: '1234' },
 ];
 
 function loadAgents() {
@@ -1196,5 +1197,21 @@ function newMeeting() {
   goPhase(0);
 }
 </script>
+
+<!-- AGENTS MANAGER MODAL -->
+<div id="agentsMgrModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;align-items:center;justify-content:center;padding:16px">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;padding:24px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-weight:700;font-size:15px;color:var(--gold)">👥 Управление агентами</div>
+      <button onclick="closeAgentsMgr()" style="background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);width:28px;height:28px;cursor:pointer">×</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <input id="newAgentName" placeholder="Фамилия И.О." style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;outline:none">
+      <button onclick="addNewAgent()" style="background:var(--gold);border:none;border-radius:8px;color:#111;font-weight:700;padding:8px 14px;cursor:pointer;font-size:13px">+ Добавить</button>
+    </div>
+    <div id="agentsMgrList" style="display:flex;flex-direction:column;gap:6px"></div>
+  </div>
+</div>
+
 </body>
 </html>
