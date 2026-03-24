@@ -1196,25 +1196,8 @@ function newMeeting() {
   // go to prep
   goPhase(0);
 }
-</script>
 
-<!-- AGENTS MANAGER MODAL -->
-<div id="agentsMgrModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;align-items:center;justify-content:center;padding:16px">
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;padding:24px">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-      <div style="font-weight:700;font-size:15px;color:var(--gold)">👥 Управление агентами</div>
-      <button onclick="closeAgentsMgr()" style="background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);width:28px;height:28px;cursor:pointer">×</button>
-    </div>
-    <div style="display:flex;gap:8px;margin-bottom:16px">
-      <input id="newAgentName" placeholder="Фамилия И.О." style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;outline:none">
-      <button onclick="addNewAgent()" style="background:var(--gold);border:none;border-radius:8px;color:#111;font-weight:700;padding:8px 14px;cursor:pointer;font-size:13px">+ Добавить</button>
-    </div>
-    <div id="agentsMgrList" style="display:flex;flex-direction:column;gap:6px"></div>
-  </div>
-</div>
-
-
-<script>
+// ─── AGENTS MANAGER ───────────────────────
 function openAgentsMgr() {
   renderAgentsMgrList();
   document.getElementById('agentsMgrModal').style.display = 'flex';
@@ -1250,6 +1233,24 @@ function removeAgent(name) {
   renderAgentsMgrList();
 }
 </script>
+
+<!-- AGENTS MANAGER MODAL -->
+<div id="agentsMgrModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;align-items:center;justify-content:center;padding:16px">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;padding:24px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-weight:700;font-size:15px;color:var(--gold)">👥 Управление агентами</div>
+      <button onclick="closeAgentsMgr()" style="background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);width:28px;height:28px;cursor:pointer">×</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <input id="newAgentName" placeholder="Фамилия И.О." style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;outline:none">
+      <button onclick="addNewAgent()" style="background:var(--gold);border:none;border-radius:8px;color:#111;font-weight:700;padding:8px 14px;cursor:pointer;font-size:13px">+ Добавить</button>
+    </div>
+    <div id="agentsMgrList" style="display:flex;flex-direction:column;gap:6px"></div>
+  </div>
+</div>
+
+
+
 
 </body>
 </html>
