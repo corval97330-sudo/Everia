@@ -369,11 +369,11 @@
     </div>
     <div class="agentName" id="agentLabel">Агент</div>
     <div class="topBarRight">
-      <button class="btnSmall" id="mgrAgentsBtn" style="display:none" onclick="openAgentsMgr()">👥 Агенты</button>
       <button class="recBtn" id="recBtn" onclick="toggleRec()">
         <span class="recDot"></span>
         <span id="recLabel">REC</span>
       </button>
+      <button class="btnSmall" id="mgrAgentsBtn" style="display:none" onclick="openAgentsMgr()">👥 Агенты</button>
       <button class="btnSmall" onclick="doLogout()">Выход</button>
     </div>
   </div>
@@ -868,20 +868,14 @@ const DEFAULT_AGENTS = [
 ];
 
 function loadAgents() {
-  // Всегда возвращаем DEFAULT_AGENTS как основу
-  // Проверяем есть ли добавленные агенты в localStorage
   try {
-    const saved = localStorage.getItem(AGENTS_KEY);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (parsed && parsed.length > 0) return parsed;
-    }
-  } catch(e) {}
-  return DEFAULT_AGENTS.slice();
+    const d = localStorage.getItem(AGENTS_KEY);
+    return d ? JSON.parse(d) : DEFAULT_AGENTS;
+  } catch(e) { return DEFAULT_AGENTS; }
 }
 
 function saveAgents(agents) {
-  try { localStorage.setItem(AGENTS_KEY, JSON.stringify(agents)); } catch(e) {}
+  localStorage.setItem(AGENTS_KEY, JSON.stringify(agents));
 }
 
 let AGENTS = loadAgents();
@@ -968,6 +962,8 @@ function doLogin() {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('appScreen').style.display = 'block';
   document.getElementById('agentLabel').textContent = agent.name;
+  const mgrBtn = document.getElementById('mgrAgentsBtn');
+  if (mgrBtn) mgrBtn.style.display = agent.role === 'Менеджер' ? 'inline-flex' : 'none';
   // показать кнопку управления агентами только менеджеру
   const mgrBtn = document.getElementById('mgrAgentsBtn');
   if (mgrBtn) mgrBtn.style.display = agent.role === 'Менеджер' ? 'inline-flex' : 'none';
@@ -1071,7 +1067,7 @@ function stopRec() {
 }
 
 function sendToTelegram() {
-  if (!recordingBlob) { alert('Нет записи!'); return; }
+  if (!recordingBlob) return;
   const TG_TOKEN = '8586163814:AAGgGuAXpBKxU3iq6o374Qppdv-0v0v0i7w';
   const CHAT_ID = '180849598';
   const name = document.getElementById('clientName').value || 'клиент';
@@ -1205,61 +1201,40 @@ function newMeeting() {
   // go to prep
   goPhase(0);
 }
-
-// ─── AGENTS MANAGER ───────────────────────
-function openAgentsMgr() {
-  renderAgentsMgrList();
-  document.getElementById('agentsMgrModal').style.display = 'flex';
-}
-function closeAgentsMgr() {
-  document.getElementById('agentsMgrModal').style.display = 'none';
-}
-function renderAgentsMgrList() {
-  const list = document.getElementById('agentsMgrList');
-  const agents = AGENTS.filter(a => a.role !== 'Менеджер');
-  list.innerHTML = agents.map(a => 
-    '<div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin-bottom:4px">' +
-    '<span style="font-size:13px">' + a.name + '</span>' +
-    '<button onclick="removeAgent('' + a.name + '')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:18px">×</button>' +
-    '</div>'
-  ).join('');
-}
-function addNewAgent() {
-  const name = document.getElementById('newAgentName').value.trim();
-  if (!name) return;
-  if (AGENTS.find(a => a.name === name)) { alert('Агент уже есть!'); return; }
-  AGENTS.push({ name: name, role: 'Агент', pin: '1234' });
-  saveAgents(AGENTS);
-  refreshAgentSelect();
-  document.getElementById('newAgentName').value = '';
-  renderAgentsMgrList();
-}
-function removeAgent(name) {
-  if (!confirm('Удалить ' + name + '?')) return;
-  AGENTS = AGENTS.filter(a => a.name !== name);
-  saveAgents(AGENTS);
-  refreshAgentSelect();
-  renderAgentsMgrList();
-}
 </script>
 
-<!-- AGENTS MANAGER MODAL -->
-<div id="agentsMgrModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;align-items:center;justify-content:center;padding:16px">
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;padding:24px">
+<div id="agentsMgrModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:999;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#1a1d27;border:1px solid #2e3248;border-radius:16px;width:100%;max-width:460px;max-height:85vh;overflow-y:auto;padding:24px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-      <div style="font-weight:700;font-size:15px;color:var(--gold)">👥 Управление агентами</div>
-      <button onclick="closeAgentsMgr()" style="background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);width:28px;height:28px;cursor:pointer">×</button>
+      <div style="font-weight:700;font-size:15px;color:#c9a84c">👥 Управление агентами</div>
+      <button onclick="document.getElementById('agentsMgrModal').style.display='none'" style="background:none;border:1px solid #2e3248;border-radius:6px;color:#8890a8;width:28px;height:28px;cursor:pointer;font-size:16px">×</button>
     </div>
     <div style="display:flex;gap:8px;margin-bottom:16px">
-      <input id="newAgentName" placeholder="Фамилия И.О." style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;outline:none">
-      <button onclick="addNewAgent()" style="background:var(--gold);border:none;border-radius:8px;color:#111;font-weight:700;padding:8px 14px;cursor:pointer;font-size:13px">+ Добавить</button>
+      <input id="newAgentName" placeholder="Фамилия И.О." style="flex:1;background:#222536;border:1px solid #2e3248;border-radius:8px;padding:8px 12px;color:#e8eaf0;font-size:13px;outline:none">
+      <button onclick="addNewAgent()" style="background:#c9a84c;border:none;border-radius:8px;color:#111;font-weight:700;padding:8px 14px;cursor:pointer;font-size:13px">+</button>
     </div>
-    <div id="agentsMgrList" style="display:flex;flex-direction:column;gap:6px"></div>
+    <div id="agentsMgrList"></div>
   </div>
 </div>
 
-
-
+<script>
+function openAgentsMgr() {
+  var list = document.getElementById('agentsMgrList');
+  list.innerHTML = DEFAULT_AGENTS.filter(function(a){return a.role !== 'Менеджер';}).map(function(a){
+    return '<div style="display:flex;align-items:center;justify-content:space-between;background:#222536;border-radius:8px;padding:8px 12px;margin-bottom:4px"><span style="font-size:13px;color:#e8eaf0">' + a.name + '</span></div>';
+  }).join('');
+  document.getElementById('agentsMgrModal').style.display = 'flex';
+}
+function addNewAgent() {
+  var name = document.getElementById('newAgentName').value.trim();
+  if (!name) return;
+  DEFAULT_AGENTS.push({ name: name, role: 'Агент', pin: '1234' });
+  AGENTS = DEFAULT_AGENTS.slice();
+  refreshAgentSelect();
+  document.getElementById('newAgentName').value = '';
+  openAgentsMgr();
+}
+</script>
 
 </body>
 </html>
