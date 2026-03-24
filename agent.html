@@ -1213,5 +1213,43 @@ function newMeeting() {
   </div>
 </div>
 
+
+<script>
+function openAgentsMgr() {
+  renderAgentsMgrList();
+  document.getElementById('agentsMgrModal').style.display = 'flex';
+}
+function closeAgentsMgr() {
+  document.getElementById('agentsMgrModal').style.display = 'none';
+}
+function renderAgentsMgrList() {
+  const list = document.getElementById('agentsMgrList');
+  const agents = AGENTS.filter(a => a.role !== 'Менеджер');
+  list.innerHTML = agents.map(a => 
+    '<div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin-bottom:4px">' +
+    '<span style="font-size:13px">' + a.name + '</span>' +
+    '<button onclick="removeAgent('' + a.name + '')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:18px">×</button>' +
+    '</div>'
+  ).join('');
+}
+function addNewAgent() {
+  const name = document.getElementById('newAgentName').value.trim();
+  if (!name) return;
+  if (AGENTS.find(a => a.name === name)) { alert('Агент уже есть!'); return; }
+  AGENTS.push({ name: name, role: 'Агент', pin: '1234' });
+  saveAgents(AGENTS);
+  refreshAgentSelect();
+  document.getElementById('newAgentName').value = '';
+  renderAgentsMgrList();
+}
+function removeAgent(name) {
+  if (!confirm('Удалить ' + name + '?')) return;
+  AGENTS = AGENTS.filter(a => a.name !== name);
+  saveAgents(AGENTS);
+  refreshAgentSelect();
+  renderAgentsMgrList();
+}
+</script>
+
 </body>
 </html>
