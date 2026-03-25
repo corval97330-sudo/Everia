@@ -353,6 +353,11 @@
     <input type="password" id="pinInput" placeholder="PIN-код" maxlength="4">
     <button class="btnGold" onclick="doLogin()">Войти</button>
     <div class="loginError" id="loginError"></div>
+    <div style="margin-top:24px;padding-top:16px;border-top:1px solid rgba(201,168,76,.2);font-size:11px;color:#8890a8;letter-spacing:.08em">
+      разработано для<br>
+      <span style="color:#c9a84c;font-weight:700;letter-spacing:.15em">EVERIA LIFE · ОМСК</span><br>
+      <span style="font-size:10px">© Токарева Марина Владимировна, 2026</span>
+    </div>
   </div>
 </div>
 
@@ -1064,7 +1069,7 @@ function stopRec() {
 }
 
 function sendToTelegram() {
-  if (!recordingBlob) { alert('Нет записи! Сначала запишите встречу.'); return; }
+  if (!recordingBlob) return;
   const TG_TOKEN = '8586163814:AAGgGuAXpBKxU3iq6o374Qppdv-0v0v0i7w';
   const CHAT_ID = '180849598';
   const name = document.getElementById('clientName').value || 'клиент';
