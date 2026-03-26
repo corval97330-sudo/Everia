@@ -1206,6 +1206,39 @@ function newMeeting() {
   // go to prep
   goPhase(0);
 }
+
+
+function openMgr() {
+  const list = document.getElementById('mgrList');
+  const agList = AGENTS.filter(a => a.role !== 'Менеджер');
+  let html = '';
+  for (let i = 0; i < agList.length; i++) {
+    const n = agList[i].name;
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;background:#222536;border:1px solid #2e3248;border-radius:8px;padding:8px 12px;margin-bottom:6px">';
+    html += '<span style="font-size:13px;color:#e8eaf0">' + n + '</span>';
+    html += '<button onclick="delAg(this)" data-name="' + n + '" style="background:none;border:none;color:#e05c5c;cursor:pointer;font-size:18px;line-height:1">×</button>';
+    html += '</div>';
+  }
+  list.innerHTML = html;
+  document.getElementById('mgrModal').style.display = 'flex';
+}
+function addAg() {
+  const name = document.getElementById('newAgName').value.trim();
+  if (!name) return;
+  if (AGENTS.find(a => a.name === name)) { alert('Уже есть!'); return; }
+  AGENTS.push({ name: name, role: 'Агент', pin: '1234' });
+  refreshAgentSelect();
+  document.getElementById('newAgName').value = '';
+  openMgr();
+}
+function delAg(btn) {
+  const name = btn.getAttribute('data-name');
+  if (!confirm('Удалить ' + name + '?')) return;
+  AGENTS = AGENTS.filter(a => a.name !== name);
+  refreshAgentSelect();
+  openMgr();
+}
+
 </script>
 
 <div id="mgrModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:300;align-items:center;justify-content:center;padding:16px" onclick="if(event.target===this)this.style.display='none'">
@@ -1221,32 +1254,6 @@ function newMeeting() {
     <div id="mgrList" style="display:flex;flex-direction:column;gap:6px"></div>
   </div>
 </div>
-<script>
-function openMgr() {
-  const list = document.getElementById('mgrList');
-  list.innerHTML = AGENTS.filter(a => a.role !== 'Менеджер').map(a =>
-    '<div style="display:flex;align-items:center;justify-content:space-between;background:#222536;border:1px solid #2e3248;border-radius:8px;padding:8px 12px">' +
-    '<span style="font-size:13px;color:#e8eaf0">' + a.name + '</span>' +
-    '<button onclick="delAg('' + a.name + '')" style="background:none;border:none;color:#e05c5c;cursor:pointer;font-size:18px;line-height:1">×</button>' +
-    '</div>'
-  ).join('');
-  document.getElementById('mgrModal').style.display = 'flex';
-}
-function addAg() {
-  const name = document.getElementById('newAgName').value.trim();
-  if (!name) return;
-  if (AGENTS.find(a => a.name === name)) { alert('Уже есть!'); return; }
-  AGENTS.push({ name: name, role: 'Агент', pin: '1234' });
-  refreshAgentSelect();
-  document.getElementById('newAgName').value = '';
-  openMgr();
-}
-function delAg(name) {
-  if (!confirm('Удалить ' + name + '?')) return;
-  AGENTS = AGENTS.filter(a => a.name !== name);
-  refreshAgentSelect();
-  openMgr();
-}
-</script>
+
 </body>
 </html>
