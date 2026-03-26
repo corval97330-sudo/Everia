@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Everia Life — Рекрутинг</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;900&family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0d14;--surface:#111520;--surface2:#171d2e;--border:#1e2640;
+  --gold:#c9a84c;--gold2:#e8c97a;--text:#e8eaf0;--dim:#5a6080;
+  --green:#3ecf8e;--red:#f56060;--blue:#4f9cf9;--orange:#f5a623;--purple:#8b6cf7;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Golos Text',sans-serif;min-height:100vh;}
+
+/* LOGIN */
+#loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 40% 40%,#151a2e 0%,var(--bg) 70%);}
+.loginBox{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:48px 40px;width:360px;position:relative;}
+.loginBox::before{content:'';position:absolute;top:0;left:20%;right:20%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+.loginLogo{font-family:'Unbounded',sans-serif;font-size:10px;font-weight:700;letter-spacing:4px;color:var(--gold);text-align:center;margin-bottom:8px;}
+.loginTitle{font-family:'Unbounded',sans-serif;font-size:18px;font-weight:700;text-align:center;margin-bottom:4px;}
+.loginSub{font-size:12px;color:var(--dim);text-align:center;margin-bottom:32px;}
+.loginInp{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Golos Text',sans-serif;font-size:14px;padding:12px 14px;outline:none;margin-bottom:14px;text-align:center;}
+.loginInp:focus{border-color:var(--gold);}
+.loginBtn{width:100%;background:var(--gold);color:#0a0d14;border:none;border-radius:10px;font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;padding:13px;cursor:pointer;}
+.loginErr{color:var(--red);font-size:12px;text-align:center;margin-top:10px;min-height:18px;}
+.loginCopy{text-align:center;margin-top:20px;padding-top:16px;border-top:1px solid rgba(201,168,76,.15);font-size:10px;color:var(--dim);line-height:1.6;}
+.loginCopy span{color:var(--gold);font-weight:600;}
+
+/* APP */
+#app{display:none;}
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.hLeft{display:flex;align-items:center;gap:14px;}
+.hLogo{font-family:'Unbounded',sans-serif;font-size:10px;font-weight:700;letter-spacing:3px;color:var(--gold);}
+.hDiv{width:1px;height:18px;background:var(--border);}
+.hTitle{font-family:'Unbounded',sans-serif;font-size:11px;font-weight:600;}
+.hRight{display:flex;align-items:center;gap:8px;}
+.hBtn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--dim);font-size:12px;padding:5px 11px;cursor:pointer;}
+.hBtn:hover{border-color:var(--gold);color:var(--gold);}
+
+/* TABS */
+.tabs{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;display:flex;gap:4px;}
+.tab{background:none;border:none;color:var(--dim);font-family:'Golos Text',sans-serif;font-size:13px;font-weight:500;padding:12px 16px;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;}
+.tab:hover{color:var(--text);}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+
+/* MAIN */
+.main{padding:20px;max-width:1200px;margin:0 auto;}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:20px;}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;position:relative;overflow:hidden;}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.stat.s1::before{background:var(--blue)}.stat.s2::before{background:var(--orange)}.stat.s3::before{background:var(--green)}.stat.s4::before{background:var(--red)}.stat.s5::before{background:var(--gold)}
+.statL{font-size:9px;font-weight:600;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;margin-bottom:4px;}
+.statV{font-family:'Unbounded',sans-serif;font-size:24px;font-weight:700;}
+.s1 .statV{color:var(--blue)}.s2 .statV{color:var(--orange)}.s3 .statV{color:var(--green)}.s4 .statV{color:var(--red)}.s5 .statV{color:var(--gold)}
+
+/* TOOLBAR */
+.toolbar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
+.addBtn{background:var(--gold);border:none;border-radius:8px;color:#0a0d14;font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;padding:9px 18px;cursor:pointer;}
+.filterBtn{background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--dim);font-size:12px;padding:7px 12px;cursor:pointer;}
+.filterBtn.on{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,.06);}
+.searchInp{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Golos Text',sans-serif;font-size:13px;padding:8px 12px;outline:none;width:200px;}
+.searchInp:focus{border-color:var(--gold);}
+
+/* KANBAN */
+.kanban{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px;}
+.kCol{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;}
+.kHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.kLabel{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;}
+.kCount{font-size:11px;font-weight:700;background:var(--surface2);border-radius:10px;padding:2px 8px;}
+.kItems{display:flex;flex-direction:column;gap:6px;min-height:40px;}
+.kCard{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;cursor:pointer;transition:all .15s;}
+.kCard:hover{border-color:var(--gold);transform:translateY(-1px);}
+.kCardName{font-size:13px;font-weight:600;margin-bottom:4px;}
+.kCardMeta{font-size:11px;color:var(--dim);}
+.kCardSource{font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;margin-top:4px;display:inline-block;}
+
+/* TABLE */
+.table{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.tableHead{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 80px;gap:0;background:var(--surface2);border-bottom:1px solid var(--border);padding:10px 16px;}
+.th{font-size:10px;font-weight:600;letter-spacing:1px;color:var(--dim);text-transform:uppercase;}
+.tableRow{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 80px;gap:0;padding:12px 16px;border-bottom:1px solid var(--border);align-items:center;cursor:pointer;transition:background .15s;}
+.tableRow:last-child{border-bottom:none;}
+.tableRow:hover{background:var(--surface2);}
+.td{font-size:13px;}
+.tdName{font-weight:600;}
+.tdDim{color:var(--dim);font-size:12px;}
+.badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;display:inline-block;}
+.editBtn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--dim);font-size:12px;padding:4px 9px;cursor:pointer;}
+.editBtn:hover{border-color:var(--gold);color:var(--gold);}
+
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;}
+.overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:600px;position:relative;margin:auto;}
+.modal::before{content:'';position:absolute;top:0;left:20%;right:20%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+.mHead{padding:24px 24px 16px;display:flex;align-items:center;justify-content:space-between;}
+.mTitle{font-family:'Unbounded',sans-serif;font-size:14px;font-weight:700;}
+.mClose{background:none;border:1px solid var(--border);border-radius:6px;color:var(--dim);font-size:14px;width:28px;height:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.mBody{padding:0 24px 24px;}
+.fg{margin-bottom:16px;}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;}
+.fl{font-size:10px;font-weight:600;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;margin-bottom:6px;display:block;}
+.fi{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Golos Text',sans-serif;font-size:13px;padding:10px 12px;outline:none;}
+.fi:focus{border-color:var(--gold);}
+textarea.fi{resize:vertical;min-height:70px;}
+.mFoot{display:flex;gap:10px;justify-content:flex-end;}
+.btnSave{background:var(--gold);border:none;border-radius:8px;color:#0a0d14;font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;padding:10px 22px;cursor:pointer;}
+.btnCancel{background:none;border:1px solid var(--border);border-radius:8px;color:var(--dim);font-family:'Golos Text',sans-serif;font-size:13px;padding:10px 18px;cursor:pointer;}
+.btnDel{background:rgba(245,96,96,.1);border:1px solid rgba(245,96,96,.3);border-radius:8px;color:var(--red);font-size:12px;padding:10px 14px;cursor:pointer;margin-right:auto;}
+
+/* SCRIPTS TAB */
+.scriptTabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;}
+.scriptTab{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--dim);font-size:12px;font-weight:600;padding:7px 14px;cursor:pointer;}
+.scriptTab.on{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,.06);}
+.scriptBlock{display:none;}
+.scriptBlock.show{display:block;}
+.scriptCard{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:12px;}
+.scriptTitle{font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;color:var(--gold);margin-bottom:12px;}
+.scriptSection{margin-bottom:14px;}
+.scriptSectionTitle{font-size:11px;font-weight:700;letter-spacing:1px;color:var(--blue);text-transform:uppercase;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border);}
+.qItem{background:var(--surface2);border:1px solid transparent;border-radius:8px;padding:10px 12px;margin-bottom:6px;font-size:13px;line-height:1.6;cursor:pointer;position:relative;transition:all .15s;}
+.qItem:hover{border-color:var(--gold);}
+.qItem.copied{border-color:var(--green);}
+.copyHint{position:absolute;top:6px;right:8px;font-size:10px;color:var(--green);opacity:0;transition:opacity .3s;}
+.qItem.copied .copyHint{opacity:1;}
+.qM{display:inline-block;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;margin-right:6px;}
+.qK{background:rgba(79,156,249,.15);color:var(--blue);}
+.qA{background:rgba(62,207,142,.15);color:var(--green);}
+.objCard{background:var(--surface2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:8px;}
+.objHead{padding:10px 14px;font-size:13px;font-weight:600;color:var(--red);cursor:pointer;display:flex;justify-content:space-between;background:rgba(245,96,96,.05);}
+.objBody{display:none;padding:12px 14px;border-top:1px solid var(--border);}
+.objBody.show{display:block;}
+.objStep{margin-bottom:8px;padding:8px 10px;background:var(--surface);border-radius:6px;border-left:3px solid var(--gold);font-size:13px;line-height:1.5;}
+.objStepT{font-size:10px;font-weight:700;color:var(--gold);margin-bottom:3px;text-transform:uppercase;}
+
+/* ANKETA */
+.anketaForm{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px;}
+.anketaTitle{font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;color:var(--gold);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
+.priorityGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.priorityItem{display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;}
+.priorityNum{width:28px;height:28px;border-radius:6px;background:var(--bg);border:1px solid var(--border);color:var(--text);font-size:13px;text-align:center;outline:none;font-family:'Golos Text',sans-serif;}
+.priorityNum:focus{border-color:var(--gold);}
+.priorityText{font-size:12px;color:var(--text);flex:1;}
+
+/* EMPTY */
+.empty{text-align:center;padding:50px 20px;color:var(--dim);}
+.emptyIcon{font-size:40px;margin-bottom:12px;}
+.emptyText{font-family:'Unbounded',sans-serif;font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px;}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fadeIn{animation:fadeIn .3s ease;}
+
+@media(max-width:700px){
+  .tableHead,.tableRow{grid-template-columns:2fr 1fr 1fr 60px;}
+  .tableHead .th:nth-child(3),.tableRow .td:nth-child(3),
+  .tableHead .th:nth-child(4),.tableRow .td:nth-child(4){display:none;}
+  .kanban{grid-template-columns:1fr 1fr;}
+  .fg2,.fg3{grid-template-columns:1fr;}
+  .priorityGrid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="loginBox">
+    <div class="loginLogo">Everia Life</div>
+    <div class="loginTitle">Рекрутинг</div>
+    <div class="loginSub">Управление кандидатами</div>
+    <input class="loginInp" type="password" id="pwd" placeholder="Пароль" onkeydown="if(event.key==='Enter')login()">
+    <button class="loginBtn" onclick="login()">Войти</button>
+    <div class="loginErr" id="loginErr"></div>
+    <div class="loginCopy">разработано для<br><span>EVERIA LIFE · ОМСК</span><br><small>© Токарева Марина Владимировна, 2026</small></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="header">
+    <div class="hLeft">
+      <div class="hLogo">Everia Life</div>
+      <div class="hDiv"></div>
+      <div class="hTitle">Рекрутинг</div>
+    </div>
+    <div class="hRight">
+      <span id="syncBadge" style="font-size:11px;color:var(--dim)">●</span>
+      <button class="hBtn" onclick="logout()">Выйти</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('funnel')">🔍 Воронка</button>
+    <button class="tab" onclick="showTab('list')">📋 Список</button>
+    <button class="tab" onclick="showTab('scripts')">📞 Скрипты</button>
+    <button class="tab" onclick="showTab('anketa')">📄 Анкета</button>
+  </div>
+
+  <div class="main">
+
+    <!-- ВОРОНКА -->
+    <div id="tabFunnel" class="fadeIn">
+      <div class="stats" id="statsBar"></div>
+      <div class="toolbar">
+        <button class="addBtn" onclick="openAdd()">+ Кандидат</button>
+        <input class="searchInp" id="searchInp" placeholder="Поиск..." oninput="render()">
+      </div>
+      <div class="kanban" id="kanban"></div>
+    </div>
+
+    <!-- СПИСОК -->
+    <div id="tabList" style="display:none" class="fadeIn">
+      <div class="toolbar">
+        <button class="addBtn" onclick="openAdd()">+ Кандидат</button>
+        <button class="filterBtn on" onclick="setFilter('all',this)">Все</button>
+        <button class="filterBtn" onclick="setFilter('Новый',this)">Новые</button>
+        <button class="filterBtn" onclick="setFilter('Звонок',this)">Звонки</button>
+        <button class="filterBtn" onclick="setFilter('Встреча назначена',this)">Встречи</button>
+        <button class="filterBtn" onclick="setFilter('Принят',this)">Принятые</button>
+      </div>
+      <div class="table">
+        <div class="tableHead">
+          <div class="th">Кандидат</div>
+          <div class="th">Статус</div>
+          <div class="th">Источник</div>
+          <div class="th">Кто привёл</div>
+          <div class="th">Дата</div>
+          <div class="th"></div>
+        </div>
+        <div id="tableBody"></div>
+      </div>
+    </div>
+
+    <!-- СКРИПТЫ -->
+    <div id="tabScripts" style="display:none" class="fadeIn">
+      <div class="scriptTabs">
+        <button class="scriptTab on" onclick="showScript('calls',this)">📞 Звонки</button>
+        <button class="scriptTab" onclick="showScript('interview1',this)">🤝 Интервью (знаком)</button>
+        <button class="scriptTab" onclick="showScript('interview2',this)">🆕 Интервью (не знаком)</button>
+        <button class="scriptTab" onclick="showScript('objections',this)">🛑 Возражения</button>
+        <button class="scriptTab" onclick="showScript('algo',this)">📋 Алгоритм</button>
+      </div>
+
+      <!-- ЗВОНКИ -->
+      <div class="scriptBlock show" id="scriptCalls">
+        <div class="scriptCard">
+          <div class="scriptTitle">📞 Скрипт в тёплый круг</div>
+          <div class="qItem" onclick="copyQ(this)">
+            <span class="qM qK">М</span>Марина, привет! Оля Петрова. Сейчас удобно говорить? Ты же знаешь, что я сейчас работаю менеджером, и мне нужны новые сотрудники. Мы знакомы с тобой давно, ты тот человек, которого я бы хотела видеть в своей команде. Предлагаю встретиться и обсудить варианты сотрудничества.
+            <span class="copyHint">✓ скопировано</span>
+          </div>
+          <div class="scriptSection">
+            <div class="scriptSectionTitle">Если отказывает — берём рекомендации</div>
+            <div class="qItem" onclick="copyQ(this)">
+              <span class="qM qK">М</span>Марина, я очень рада, что у тебя есть любимое дело. А что насчет твоих знакомых? Уверена в твоём окружении есть люди, такие же активные, как ты, которые ищут новую работу или подработку. Порекомендуй мне 2–3 твоих знакомых. Я готова записать их имена... Предупреди их о моём звонке.
+              <span class="copyHint">✓ скопировано</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="scriptCard">
+          <div class="scriptTitle">💼 Запрос из клиентского портфеля</div>
+          <div class="qItem" onclick="copyQ(this)">
+            <span class="qM qK">А</span>Юлия, Вы сказали, что такие программы нужны многим людям. У меня к Вам есть 3 предложения: Первое — рекомендации с вознаграждением 40% от комиссии. Второе — участие во встречах — 60%. Третье — обучение и самостоятельная работа — 100%. Как Вам идея?
+            <span class="copyHint">✓ скопировано</span>
+          </div>
+        </div>
+
+        <div class="scriptCard">
+          <div class="scriptTitle">🔄 База 100 — кто не стал клиентом</div>
+          <div class="qItem" onclick="copyQ(this)">
+            <span class="qM qK">М</span>Светлана, мы с Вами недавно встречались по вопросам страхования. Пока Вы не стали нашим клиентом. А сама тема Вам показалась интересной, важной?
+            <span class="copyHint">✓ скопировано</span>
+          </div>
+          <div class="qItem" onclick="copyQ(this)">
+            <span class="qM qK">М</span>Светлана, я знаю, как Вам помочь. Вы сказали, что видите пользу в том, чем мы занимаемся. А приходите к нам работать! У нас возможны разные форматы работы, не только полный день, но и как подработка. Вы сможете совмещать со своей работой. Мы всему научим. Заработать сможете больше, и на полис тоже будут деньги.
+            <span class="copyHint">✓ скопировано</span>
+          </div>
+        </div>
+
+        <div class="scriptCard">
+          <div class="scriptTitle">🏥 После выплаты клиенту</div>
+          <div class="qItem" onclick="copyQ(this)">
+            <span class="qM qK">А</span>Надежда, добрый день. Ольга, Ваш финансовый консультант. Как Ваше здоровье? Получили уже выплату? Быстро пришла от нас финансовая помощь? Вот именно для этого мы и работаем, чтобы финансово защищать наших клиентов в те моменты, когда эта помощь нужна. Хорошая у меня работа? Важная? Компания сейчас набирает новых сотрудников. Вам это интересно?
+            <span class="copyHint">✓ скопировано</span>
+          </div>
+        </div>
+
+        <div class="scriptCard">
+          <div class="scriptTitle">🆕 На встрече с новым клиентом</div>
+          <div class="qItem" onclick="copyQ(this)">
+            <span class="qM qK">М</span>Иван, Вы говорили, что Ваша супруга не очень довольна своей работой, я могу созвониться с ней и рассказать о наших возможностях, мы активно расширяемся и набираем сотрудников. Профессионалы из этой сферы у нас очень успешны.
+            <span class="copyHint">✓ скопировано</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ИНТЕРВЬЮ ЗНАКОМ -->
+      <div class="scriptBlock" id="scriptInterview1">
+        <div class="scriptCard">
+          <div class="scriptTitle">🤝 Знакомство (кандидат знаком со страхованием)</div>
+          <div class="scriptSection">
+            <div class="scriptSectionTitle">Открытие встречи</div>
+            <div class="qItem" onclick="copyQ(this)">
+              <span class="qM qK">М</span>Рада вас видеть. Коротко о том, как пройдёт наша встреча: сначала я расскажу о себе и компании, далее познакомимся поближе, для этого буду задавать вам вопросы. После у вас будет возможность задать вопросы мне. В конце нашей встречи мы определим варианты сотрудничества. А пока попрошу вас заполнить Анкету.
+              <span class="copyHint">✓ скопировано</span>
+            </div>
+            <div class="qItem" onclick="copyQ(this)">
+              <span class="qM qK">М</span>Самопрезентация: мой опыт и навыки позволяют обучать новых сотрудников до уровня профессионалов. Компания работает более 20 лет, лидеры по выплатам в России по страхованию жизни, более 90 агентств и более 10 тысяч финансовых консультантов по всей стране.
+              <span class="copyHint">✓ скопировано</span>
+            </div>
+          </div>
+          <div class="scriptSection">
+            <div class="scriptSectionTitle">Вопросы кандидату</div>
+            <div class="qItem" onclick="copyQ(this)">
+              <span class="qM qK">М</span>Расскажите о себе, о своём профессиональном опыте. Почему сегодня пришли на встречу? Почему вы рассматриваете новое направление?
+              <span class="copyHint">✓ скопировано</span>
+            </div>
+            <div class="qItem" onclick="copyQ(this)">
+              <span class="qM qK">М</span>Как вы можете влиять на свой доход? На вашем текущем месте есть перспективы роста заработка?
+              <span class="copyHint">✓ скопировано</span>
+            </div>
+            <div class="qItem" onclick="copyQ(this)">
+              <span class="qM qK">М</span>Какие ставите перед собой цели? С учётом ваших целей — сколько нужно зарабатывать?
+              <span class="copyHint">✓ скопировано</span>
+            </div>
+          </div>
+          <div class="scriptSection">
+            <div class="scriptSectionTitle">Продажа идеи страхования</div>
+            <div class="qItem" onclick="copyQ(this)">
+              <span class="qM qK">М</span>4 направления: Дети, Пенсия, Защита здоровья, Защита уровня жизни при потере кормильца. Это 1,2,3,4 направление деятельности компании. Важно? Нужно? У вас решены эти вопросы? В вашем окружении есть люди, которым также важно решить эти вопросы? Насколько вам близка идея страхования?
+              <span class="copyHint">✓ скопировано</span>
+            </div>
+          </div>
+          <div class="scriptSection">
+            <div class="scriptSectionTitle">Продажа профессии</div>
+            <div class="qItem" onclick="copyQ(this)">
+              <span class="qM qK">М</span>Работа простая (всё уже продумано), но не лёгкая (не каждая встреча заканчивается продажей). Обучение в компании, ДОК, регулярное обучение, индивидуальный подход, поддержка МПП и ДА, Портал обучения 24/7. Доход: комиссионное вознаграждение, бонус за статусы, доход при качественном сопровождении портфеля. Карьера, конкурсы, поездки.
+              <span class="copyHint">✓ скопировано</span>
+            </div>
+          </div>
+          <div class="scriptSection">
+            <div class="scriptSectionTitle">Завершение</div>
+            <div class="qItem" onclick="copyQ(this)">
+              <span class="qM qK">М</span>Договорённости: дата начала работы, планирование первой рабочей встречи (ИВ), даты ДОК. Задание кандидату: мы составим план работы, с меня — гарантии достижения результата, с вас... точное выполнение договорённостей!
+              <span class="copyHint">✓ скопировано</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ИНТЕРВЬЮ НЕ ЗНАКОМ -->
+      <div class="scriptBlock" id="scriptInterview2">
+        <div class="scriptCard">
+          <div class="scriptTitle">🆕 Знакомство (кандидат не знаком со страхованием)</div>
+          <div class="scriptSection">
+            <div class="scriptSectionTitle">Открытие</div>
+            <div class="qItem" onclick="copyQ(this)">
+              <span class="qM qK">М</span>Наша сегодняшняя встреча займёт около часа, и по результатам мы сможем понять варианты дальнейшего сотрудничества. Чтобы нам разговаривать предметно — заполните, пожалуйста, анкету. Сначала я расскажу о себе и компании, потом вы расскажите о себе. Поговорим о том, чем мы занимаемся, и если наши интересы совпадут — расскажу о мотивации и карьере.
+              <span class="copyHint">✓ скопировано</span>
+            </div>
+            <div class="qItem" onclick="copyQ(this)">
+              <span class="qM qK">М</span>О компании: работаем в России с 2002 года, занимаем лидирующие позиции на рынке страхования жизни. Бессрочная лицензия от ЦБ, высокий рейтинг надёжности. Офисы от Калининграда до Владивостока. Даже в период пандемии увеличили штат на 1500 финансовых консультантов.
+              <span class="copyHint">✓ скопировано</span>
+            </div>
+          </div>
+          <div class="scriptSection">
+            <div class="scriptSectionTitle">Продажа идеи через личный пример</div>
+            <div class="qItem" onclick="copyQ(this)">
+              <span class="qM qK">М</span>Вы рассказывали о своём сыне. А какое будущее хотите для него? Хорошее образование — это какое? Как думаете, через 10 лет стоимость изменится? Стоимость 1 года обучения в вузах уже сейчас 120-150 тыс. рублей, в топовых — до 400 тыс.
+              <span class="copyHint">✓ скопировано</span>
+            </div>
+          </div>
+          <div class="scriptSection">
+            <div class="scriptSectionTitle">Ключевые вопросы</div>
+            <div class="qItem" onclick="copyQ(this)">
+              <span class="qM qK">М</span>С чем связан поиск работы? Почему для вас сейчас это актуально? Подработка с каким доходом вас устроит? Сколько времени готовы выделять на работу у нас?
+              <span class="copyHint">✓ скопировано</span>
+            </div>
+            <div class="qItem" onclick="copyQ(this)">
+              <span class="qM qK">М</span>Если в нашей компании вы выйдете на доход выше, чем ваша основная работа — готовы перейти к нам на постоянной основе?
+              <span class="copyHint">✓ скопировано</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ВОЗРАЖЕНИЯ -->
+      <div class="scriptBlock" id="scriptObjections">
+        <div class="scriptCard">
+          <div class="scriptTitle">🛑 Работа с возражениями на интервью</div>
+
+          <div class="objCard">
+            <div class="objHead" onclick="toggleObj(this)">«Это сетевой маркетинг?» <span>▼</span></div>
+            <div class="objBody">
+              <div class="objStep"><div class="objStepT">Ответ</div>Нет, мы страховая компания с лицензией ЦБ РФ. Разница принципиальная: в МЛМ продают продукт через сеть, мы — защищаем жизнь и здоровье людей. Регулируемся государством. Наши клиенты получают реальные страховые выплаты.</div>
+            </div>
+          </div>
+
+          <div class="objCard">
+            <div class="objHead" onclick="toggleObj(this)">«У меня нет опыта в продажах» <span>▼</span></div>
+            <div class="objBody">
+              <div class="objStep"><div class="objStepT">Ответ</div>Это большой плюс! Нам не нужны люди с "опытом продаж" — нам нужны люди, которым доверяют. Мы всему обучаем: ДОК, регулярные тренинги, Портал обучения 24/7. Самые успешные наши агенты приходили из педагогики, медицины, торговли.</div>
+            </div>
+          </div>
+
+          <div class="objCard">
+            <div class="objHead" onclick="toggleObj(this)">«Нет времени / я занята» <span>▼</span></div>
+            <div class="objBody">
+              <div class="objStep"><div class="objStepT">Уточните</div>Сколько времени в неделю вы могли бы выделить? У нас есть формат совместительства — 2-3 встречи в неделю. Именно для таких случаев у нас есть гибкий формат работы.</div>
+              <div class="objStep"><div class="objStepT">Если 3-5 часов</div>Этого достаточно для старта. Я сама так начинала. Первые 2-3 месяца — обучение, потом работа по своему графику.</div>
+            </div>
+          </div>
+
+          <div class="objCard">
+            <div class="objHead" onclick="toggleObj(this)">«Нестабильный доход» <span>▼</span></div>
+            <div class="objBody">
+              <div class="objStep"><div class="objStepT">Ответ</div>Понимаю этот страх. В начале — да, доход формируется. Но уже через 3-6 месяцев при работе 3-4 встречи в неделю наши агенты выходят на стабильный доход. Плюс — портфель клиентов, который даёт ежегодные пролонгации.</div>
+            </div>
+          </div>
+
+          <div class="objCard">
+            <div class="objHead" onclick="toggleObj(this)">«Надо подумать / посоветоваться» <span>▼</span></div>
+            <div class="objBody">
+              <div class="objStep"><div class="objStepT">Назначьте следующий шаг</div>Конечно, это важное решение. Давайте назначим встречу на конкретную дату — вы подумаете, я подготовлю для вас расчёт потенциального дохода исходя из вашего графика.</div>
+              <div class="objStep"><div class="objStepT">Или пригласите на мероприятие</div>Приглашаю вас на наш день карьеры / финансовую игру. Там вы сами увидите как работают наши консультанты и поймёте подходит ли вам это.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- АЛГОРИТМ -->
+      <div class="scriptBlock" id="scriptAlgo">
+        <div class="scriptCard">
+          <div class="scriptTitle">📋 Алгоритм интервью-мотиваторы</div>
+          <div class="scriptSection">
+            <div class="scriptSectionTitle">1. Знакомство с кандидатом</div>
+            <div class="qItem" onclick="copyQ(this)">Приветствие → Сценарий встречи → Заполнение Анкеты (обращаем внимание на мотиваторы) → Самопрезентация → Рассказ о компании → Вопросы к кандидату (причина поиска работы, приоритеты, цели, доход, круг общения, личные качества)<span class="copyHint">✓</span></div>
+          </div>
+          <div class="scriptSection">
+            <div class="scriptSectionTitle">2. Продажа идеи страхования</div>
+            <div class="qItem" onclick="copyQ(this)">4 темы: Дети / Пенсия / Защита здоровья / Защита при потере кормильца → Важно? Нужно? У вас решены? → В окружении есть люди с такими вопросами? → Насколько близка идея страхования?<span class="copyHint">✓</span></div>
+          </div>
+          <div class="scriptSection">
+            <div class="scriptSectionTitle">3. Продажа профессии (на основе мотиваторов)</div>
+            <div class="qItem" onclick="copyQ(this)">Что делает ФК → Обучение (ДОК, регулярное, Портал 24/7) → Доход (КВ + бонусы + портфель) → Карьера → Конкурсы и поездки<span class="copyHint">✓</span></div>
+          </div>
+          <div class="scriptSection">
+            <div class="scriptSectionTitle">4. Завершение — результат</div>
+            <div class="qItem" onclick="copyQ(this)">✅ Агент фулл-тайм → ✅ Агент-совместитель → ✅ Рекомендатель → ❌ Отказ — берём рекомендации<span class="copyHint">✓</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- АНКЕТА -->
+    <div id="tabAnketa" style="display:none" class="fadeIn">
+      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+        <button class="addBtn" onclick="printAnketa()">🖨️ Распечатать</button>
+        <button class="addBtn" style="background:var(--blue)" onclick="clearAnketa()">🗑️ Очистить</button>
+        <span style="font-size:12px;color:var(--dim)">Заполняется менеджером в процессе беседы</span>
+      </div>
+
+      <div class="anketaForm">
+        <div class="anketaTitle">👤 Личные данные</div>
+        <div class="fg2">
+          <div><label class="fl">Ф.И.О.</label><input class="fi" id="aFio" placeholder="Иванова Ирина Петровна"></div>
+          <div><label class="fl">Возраст</label><input class="fi" id="aAge" placeholder="35 лет"></div>
+        </div>
+        <div class="fg2">
+          <div><label class="fl">Телефон</label><input class="fi" id="aPhone" placeholder="9001234567"></div>
+          <div><label class="fl">Гражданство</label><input class="fi" id="aCitizenship" placeholder="РФ"></div>
+        </div>
+        <div class="fg">
+          <label class="fl">Адрес проживания</label>
+          <input class="fi" id="aAddress" placeholder="г. Омск, ул. ...">
+        </div>
+        <div class="fg2">
+          <div><label class="fl">Семейное положение</label><input class="fi" id="aFamily" placeholder="Замужем"></div>
+          <div><label class="fl">Дети (кол-во, возраст)</label><input class="fi" id="aChildren" placeholder="2 детей, 5 и 8 лет"></div>
+        </div>
+      </div>
+
+      <div class="anketaForm">
+        <div class="anketaTitle">💼 Профессиональный опыт</div>
+        <div class="fg">
+          <label class="fl">Образование / Специальность</label>
+          <input class="fi" id="aEdu" placeholder="Высшее, педагогическое">
+        </div>
+        <div class="fg">
+          <label class="fl">Последнее место работы (должность, обязанности)</label>
+          <textarea class="fi" id="aWork1" placeholder="Учитель математики, школа №5..."></textarea>
+        </div>
+        <div class="fg">
+          <label class="fl">Предыдущее место работы</label>
+          <textarea class="fi" id="aWork2" placeholder="..."></textarea>
+        </div>
+        <div class="fg2">
+          <div><label class="fl">Опыт продаж с % оплатой</label><input class="fi" id="aSales" placeholder="Орифлейм, 4 года"></div>
+          <div><label class="fl">Опыт в страховании</label><input class="fi" id="aInsurance" placeholder="Нет / есть клиент"></div>
+        </div>
+        <div class="fg">
+          <label class="fl">Увлечения</label>
+          <input class="fi" id="aHobbies" placeholder="Путешествия, спорт...">
+        </div>
+        <div class="fg">
+          <label class="fl">Откуда узнал о Эверия Лайф</label>
+          <input class="fi" id="aSource2" placeholder="Рекомендация Петровой А.И.">
+        </div>
+      </div>
+
+      <div class="anketaForm">
+        <div class="anketaTitle">🎯 Мотивация и цели</div>
+        <div class="fg">
+          <label class="fl">Причина поиска работы</label>
+          <textarea class="fi" id="aReason" placeholder="Хочу больше зарабатывать, ищу подработку..."></textarea>
+        </div>
+        <div class="fg2">
+          <div><label class="fl">Желаемый доход</label><input class="fi" id="aIncome" placeholder="50 000 руб."></div>
+          <div><label class="fl">Свободное время</label><input class="fi" id="aTime" placeholder="Вт-Чт с 13:00 до 18:00"></div>
+        </div>
+        <div class="fg">
+          <label class="fl">Цели (ближайшие 1-2 года)</label>
+          <textarea class="fi" id="aGoals" placeholder="Ремонт, поездка в Европу..."></textarea>
+        </div>
+        <div class="fg">
+          <label class="fl">Рекомендации (коллеги/друзья)</label>
+          <textarea class="fi" id="aRecs" placeholder="1. Сидорова М., тел...\n2. Козлов И., тел..."></textarea>
+        </div>
+      </div>
+
+      <div class="anketaForm">
+        <div class="anketaTitle">⭐ Таблица приоритетов (1 — самое важное, 12 — наименее важное)</div>
+        <div class="priorityGrid">
+          <div class="priorityItem"><input class="priorityNum" id="p1" type="number" min="1" max="12"><span class="priorityText">Быть материально обеспеченным</span></div>
+          <div class="priorityItem"><input class="priorityNum" id="p2" type="number" min="1" max="12"><span class="priorityText">Выполнять полезную, социально значимую работу</span></div>
+          <div class="priorityItem"><input class="priorityNum" id="p3" type="number" min="1" max="12"><span class="priorityText">Получать удовольствие от работы</span></div>
+          <div class="priorityItem"><input class="priorityNum" id="p4" type="number" min="1" max="12"><span class="priorityText">Работать с людьми</span></div>
+          <div class="priorityItem"><input class="priorityNum" id="p5" type="number" min="1" max="12"><span class="priorityText">Достигать высоких результатов, сделать карьеру</span></div>
+          <div class="priorityItem"><input class="priorityNum" id="p6" type="number" min="1" max="12"><span class="priorityText">Обеспечить спокойное будущее для себя и семьи</span></div>
+          <div class="priorityItem"><input class="priorityNum" id="p7" type="number" min="1" max="12"><span class="priorityText">Постоянно приобретать новые знания</span></div>
+          <div class="priorityItem"><input class="priorityNum" id="p8" type="number" min="1" max="12"><span class="priorityText">Работать в стабильной, надёжной компании</span></div>
+          <div class="priorityItem"><input class="priorityNum" id="p9" type="number" min="1" max="12"><span class="priorityText">Работать под управлением опытного руководителя</span></div>
+          <div class="priorityItem"><input class="priorityNum" id="p10" type="number" min="1" max="12"><span class="priorityText">Руководить людьми</span></div>
+          <div class="priorityItem"><input class="priorityNum" id="p11" type="number" min="1" max="12"><span class="priorityText">Работать в команде, общаться с друзьями на работе</span></div>
+          <div class="priorityItem"><input class="priorityNum" id="p12" type="number" min="1" max="12"><span class="priorityText">Иметь гибкий график работы</span></div>
+        </div>
+      </div>
+
+      <div class="anketaForm">
+        <div class="anketaTitle">📊 Итог интервью</div>
+        <div class="fg2">
+          <div>
+            <label class="fl">Результат интервью</label>
+            <select class="fi" id="aResult">
+              <option value="">— выберите —</option>
+              <option>Агент фулл-тайм</option>
+              <option>Агент-совместитель</option>
+              <option>Рекомендатель</option>
+              <option>Отказ</option>
+              <option>Думает / перенос</option>
+            </select>
+          </div>
+          <div>
+            <label class="fl">Дата следующего шага</label>
+            <input class="fi" type="date" id="aNextDate">
+          </div>
+        </div>
+        <div class="fg">
+          <label class="fl">Комментарии менеджера</label>
+          <textarea class="fi" id="aComment" placeholder="Впечатление от кандидата, ключевые мотиваторы, договорённости..."></textarea>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
+          <button class="btnCancel" onclick="clearAnketa()">Очистить</button>
+          <button class="btnSave" onclick="saveAnketaToCandidates()">💾 Сохранить как кандидата</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="mHead">
+      <div class="mTitle" id="modalTitle">Новый кандидат</div>
+      <button class="mClose" onclick="closeModal()">×</button>
+    </div>
+    <div class="mBody">
+      <input type="hidden" id="fId">
+      <div class="fg2">
+        <div><label class="fl">Ф.И.О.</label><input class="fi" id="fName" placeholder="Иванова И.П."></div>
+        <div><label class="fl">Телефон</label><input class="fi" id="fPhone" placeholder="9001234567"></div>
+      </div>
+      <div class="fg2">
+        <div>
+          <label class="fl">Статус</label>
+          <select class="fi" id="fStatus">
+            <option>Новый</option>
+            <option>Звонок</option>
+            <option>Встреча назначена</option>
+            <option>Встреча была</option>
+            <option>Стажировка</option>
+            <option>Принят</option>
+            <option>Отказ</option>
+          </select>
+        </div>
+        <div>
+          <label class="fl">Источник</label>
+          <select class="fi" id="fSource">
+            <option>Тёплый круг менеджера</option>
+            <option>Рекомендации клиентов</option>
+            <option>Рекомендации агентов</option>
+            <option>Несостоявшийся клиент</option>
+            <option>Проект 100 агента</option>
+            <option>Соцсети</option>
+            <option>HH / сайты работы</option>
+            <option>Холодный рекрутинг</option>
+            <option>День карьеры / мероприятие</option>
+            <option>После выплаты</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg2">
+        <div><label class="fl">Кто привёл</label><input class="fi" id="fWho" placeholder="Борисова Л.С. / я сама"></div>
+        <div><label class="fl">Дата контакта</label><input class="fi" type="date" id="fDate"></div>
+      </div>
+      <div class="fg2">
+        <div><label class="fl">Возраст / Профессия</label><input class="fi" id="fInfo" placeholder="35 лет, учитель"></div>
+        <div><label class="fl">Следующий шаг / дата</label><input class="fi" id="fNext" placeholder="Встреча 28.03"></div>
+      </div>
+      <div class="fg">
+        <label class="fl">Формат сотрудничества</label>
+        <select class="fi" id="fFormat">
+          <option value="">— не определён —</option>
+          <option>Агент фулл-тайм</option>
+          <option>Агент-совместитель</option>
+          <option>Рекомендатель</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label class="fl">Комментарии</label>
+        <textarea class="fi" id="fComment" placeholder="Ключевые мотиваторы, договорённости..."></textarea>
+      </div>
+      <div id="fErr" style="display:none;color:var(--red);font-size:12px;margin-bottom:12px;padding:8px 12px;background:rgba(245,96,96,.1);border-radius:6px;"></div>
+      <div class="mFoot">
+        <button class="btnDel" id="delBtn" style="display:none" onclick="deleteCand()">Удалить</button>
+        <button class="btnCancel" onclick="closeModal()">Закрыть</button>
+        <button class="btnSave" onclick="saveCand()">Сохранить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const PASSWORD = 'Everia2026';
+const BIN_ID = '69b4fe3ab7ec241ddc68ff70';
+const API_KEY = '$2a$10$or/10uhY3Yz82p.8/QaAnO1IYrtaDRgEcGWgQ3mM1JkKdkKmQbTXm';
+const LKEY = 'ev_recruit';
+
+// Используем отдельный ключ для рекрутинга
+const RECRUIT_KEY = 'ev_recruit_v1';
+
+const STATUSES = ['Новый','Звонок','Встреча назначена','Встреча была','Стажировка','Принят','Отказ'];
+const STATUS_COLORS = {
+  'Новый':'#4f9cf9','Звонок':'#f5a623','Встреча назначена':'#8b6cf7',
+  'Встреча была':'#3ecf8e','Стажировка':'#c9a84c','Принят':'#3ecf8e','Отказ':'#f56060'
+};
+
+let candidates = [];
+let filterStatus = 'all';
+let currentTab = 'funnel';
+let saveTimer = null;
+
+// AUTH
+function login() {
+  if (document.getElementById('pwd').value === PASSWORD) {
+    sessionStorage.setItem('ev_rec_auth','1');
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    loadData();
+  } else {
+    document.getElementById('loginErr').textContent = 'Неверный пароль';
+  }
+}
+function logout() { sessionStorage.removeItem('ev_rec_auth'); location.reload(); }
+
+// DATA
+function localLoad() {
+  try { const d = localStorage.getItem(RECRUIT_KEY); return d ? JSON.parse(d) : []; } catch(e) { return []; }
+}
+function localSave(data) { try { localStorage.setItem(RECRUIT_KEY, JSON.stringify(data)); } catch(e) {} }
+
+function loadData() {
+  candidates = localLoad();
+  render();
+  setSyncStatus('ok','локально');
+}
+
+function schedSave() {
+  localSave(candidates);
+  setSyncStatus('ok','сохранено');
+}
+
+function setSyncStatus(state, text) {
+  const el = document.getElementById('syncBadge');
+  const colors = {ok:'var(--green)',err:'var(--red)',loading:'var(--gold)'};
+  el.style.color = colors[state] || 'var(--dim)';
+  el.title = text;
+}
+
+// TABS
+function showTab(name) {
+  ['funnel','list','scripts','anketa'].forEach(t => {
+    document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).style.display = 'none';
+  });
+  document.getElementById('tab'+name.charAt(0).toUpperCase()+name.slice(1)).style.display = 'block';
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.remove('active'));
+  event.target.classList.add('active');
+  currentTab = name;
+  render();
+}
+
+function showScript(name, el) {
+  document.querySelectorAll('.scriptBlock').forEach(b => b.classList.remove('show'));
+  document.getElementById('script'+name.charAt(0).toUpperCase()+name.slice(1)).classList.add('show');
+  document.querySelectorAll('.scriptTab').forEach(t => t.classList.remove('on'));
+  el.classList.add('on');
+}
+
+function setFilter(status, el) {
+  filterStatus = status;
+  document.querySelectorAll('.filterBtn').forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+  render();
+}
+
+// RENDER
+function render() {
+  if (currentTab === 'funnel') renderFunnel();
+  else if (currentTab === 'list') renderList();
+  renderStats();
+}
+
+function renderStats() {
+  const total = candidates.length;
+  const active = candidates.filter(c => !['Принят','Отказ'].includes(c.status)).length;
+  const accepted = candidates.filter(c => c.status === 'Принят').length;
+  const meetings = candidates.filter(c => c.status === 'Встреча назначена').length;
+  const refused = candidates.filter(c => c.status === 'Отказ').length;
+  document.getElementById('statsBar').innerHTML = `
+    <div class="stat s1"><div class="statL">Всего</div><div class="statV">${total}</div></div>
+    <div class="stat s2"><div class="statL">В работе</div><div class="statV">${active}</div></div>
+    <div class="stat s5"><div class="statL">Встречи</div><div class="statV">${meetings}</div></div>
+    <div class="stat s3"><div class="statL">Принято</div><div class="statV">${accepted}</div></div>
+    <div class="stat s4"><div class="statL">Отказов</div><div class="statV">${refused}</div></div>
+  `;
+}
+
+function renderFunnel() {
+  const search = document.getElementById('searchInp') ? document.getElementById('searchInp').value.toLowerCase() : '';
+  const filtered = candidates.filter(c => !search || c.name.toLowerCase().includes(search));
+  
+  let html = '';
+  STATUSES.forEach(status => {
+    const items = filtered.filter(c => c.status === status);
+    const color = STATUS_COLORS[status];
+    html += `<div class="kCol">
+      <div class="kHead">
+        <div class="kLabel" style="color:${color}">${status}</div>
+        <div class="kCount" style="color:${color}">${items.length}</div>
+      </div>
+      <div class="kItems">`;
+    if (items.length === 0) {
+      html += '<div style="font-size:11px;color:var(--dim);text-align:center;padding:8px">—</div>';
+    }
+    items.forEach(c => {
+      html += `<div class="kCard fadeIn" onclick="openEdit('${c.id}')">
+        <div class="kCardName">${c.name}</div>
+        <div class="kCardMeta">${c.phone||''}</div>
+        ${c.who ? `<div class="kCardMeta">↑ ${c.who}</div>` : ''}
+        ${c.next ? `<div class="kCardMeta" style="color:var(--gold)">→ ${c.next}</div>` : ''}
+        <div class="kCardSource" style="background:rgba(79,156,249,.1);color:var(--blue)">${c.source||''}</div>
+      </div>`;
+    });
+    html += '</div></div>';
+  });
+  document.getElementById('kanban').innerHTML = html;
+}
+
+function renderList() {
+  const filtered = candidates.filter(c => filterStatus === 'all' || c.status === filterStatus);
+  if (!filtered.length) {
+    document.getElementById('tableBody').innerHTML = '<div class="empty"><div class="emptyIcon">📋</div><div class="emptyText">Нет кандидатов</div></div>';
+    return;
+  }
+  document.getElementById('tableBody').innerHTML = filtered.map(c => {
+    const color = STATUS_COLORS[c.status] || 'var(--dim)';
+    return `<div class="tableRow fadeIn" onclick="openEdit('${c.id}')">
+      <div class="td"><div class="tdName">${c.name}</div><div class="tdDim">${c.phone||''}</div></div>
+      <div class="td"><span class="badge" style="background:${color}22;color:${color}">${c.status}</span></div>
+      <div class="td tdDim">${c.source||'—'}</div>
+      <div class="td tdDim">${c.who||'—'}</div>
+      <div class="td tdDim">${c.date ? new Date(c.date).toLocaleDateString('ru-RU') : '—'}</div>
+      <div class="td"><button class="editBtn" onclick="event.stopPropagation();openEdit('${c.id}')">✏️</button></div>
+    </div>`;
+  }).join('');
+}
+
+// MODAL
+function openAdd() {
+  document.getElementById('modalTitle').textContent = 'Новый кандидат';
+  document.getElementById('fId').value = '';
+  document.getElementById('fName').value = '';
+  document.getElementById('fPhone').value = '';
+  document.getElementById('fStatus').value = 'Новый';
+  document.getElementById('fSource').value = 'Тёплый круг менеджера';
+  document.getElementById('fWho').value = '';
+  document.getElementById('fDate').value = new Date().toISOString().slice(0,10);
+  document.getElementById('fInfo').value = '';
+  document.getElementById('fNext').value = '';
+  document.getElementById('fFormat').value = '';
+  document.getElementById('fComment').value = '';
+  document.getElementById('fErr').style.display = 'none';
+  document.getElementById('delBtn').style.display = 'none';
+  document.getElementById('overlay').classList.add('open');
+}
+
+function openEdit(id) {
+  const c = candidates.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('modalTitle').textContent = 'Редактировать кандидата';
+  document.getElementById('fId').value = c.id;
+  document.getElementById('fName').value = c.name || '';
+  document.getElementById('fPhone').value = c.phone || '';
+  document.getElementById('fStatus').value = c.status || 'Новый';
+  document.getElementById('fSource').value = c.source || '';
+  document.getElementById('fWho').value = c.who || '';
+  document.getElementById('fDate').value = c.date || '';
+  document.getElementById('fInfo').value = c.info || '';
+  document.getElementById('fNext').value = c.next || '';
+  document.getElementById('fFormat').value = c.format || '';
+  document.getElementById('fComment').value = c.comment || '';
+  document.getElementById('fErr').style.display = 'none';
+  document.getElementById('delBtn').style.display = 'block';
+  document.getElementById('overlay').classList.add('open');
+}
+
+function closeModal() { document.getElementById('overlay').classList.remove('open'); }
+
+function saveCand() {
+  const name = document.getElementById('fName').value.trim();
+  if (!name) { showErr('Введите имя кандидата'); return; }
+  const id = document.getElementById('fId').value;
+  const data = {
+    id: id || Date.now().toString(36),
+    name,
+    phone: document.getElementById('fPhone').value.trim(),
+    status: document.getElementById('fStatus').value,
+    source: document.getElementById('fSource').value,
+    who: document.getElementById('fWho').value.trim(),
+    date: document.getElementById('fDate').value,
+    info: document.getElementById('fInfo').value.trim(),
+    next: document.getElementById('fNext').value.trim(),
+    format: document.getElementById('fFormat').value,
+    comment: document.getElementById('fComment').value.trim(),
+  };
+  if (id) {
+    const idx = candidates.findIndex(c => c.id === id);
+    if (idx >= 0) candidates[idx] = data;
+  } else {
+    candidates.push(data);
+  }
+  schedSave();
+  closeModal();
+  render();
+}
+
+function deleteCand() {
+  const id = document.getElementById('fId').value;
+  if (!id || !confirm('Удалить кандидата?')) return;
+  candidates = candidates.filter(c => c.id !== id);
+  schedSave();
+  closeModal();
+  render();
+}
+
+function showErr(msg) {
+  const el = document.getElementById('fErr');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+// SCRIPTS
+function copyQ(el) {
+  const text = el.innerText.replace('✓ скопировано','').replace('✓','').trim();
+  navigator.clipboard.writeText(text).catch(()=>{});
+  el.classList.add('copied');
+  setTimeout(() => el.classList.remove('copied'), 1500);
+}
+
+function toggleObj(head) {
+  const body = head.nextElementSibling;
+  body.classList.toggle('show');
+  head.querySelector('span:last-child').textContent = body.classList.contains('show') ? '▲' : '▼';
+}
+
+// ANKETA
+function clearAnketa() {
+  if (!confirm('Очистить анкету?')) return;
+  ['aFio','aAge','aPhone','aCitizenship','aAddress','aFamily','aChildren',
+   'aEdu','aWork1','aWork2','aSales','aInsurance','aHobbies','aSource2',
+   'aReason','aIncome','aTime','aGoals','aRecs','aResult','aNextDate','aComment'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  for (let i = 1; i <= 12; i++) {
+    const el = document.getElementById('p'+i);
+    if (el) el.value = '';
+  }
+}
+
+function saveAnketaToCandidates() {
+  const name = document.getElementById('aFio').value.trim();
+  if (!name) { alert('Введите Ф.И.О. кандидата'); return; }
+  
+  // Собираем приоритеты
+  let priorities = [];
+  for (let i = 1; i <= 12; i++) {
+    const val = document.getElementById('p'+i).value;
+    if (val) priorities.push(val);
+  }
+  
+  const data = {
+    id: Date.now().toString(36),
+    name,
+    phone: document.getElementById('aPhone').value.trim(),
+    status: document.getElementById('aResult').value || 'Встреча была',
+    source: document.getElementById('aSource2').value.trim() || 'Тёплый круг менеджера',
+    who: '',
+    date: new Date().toISOString().slice(0,10),
+    info: document.getElementById('aAge').value + (document.getElementById('aEdu').value ? ', '+document.getElementById('aEdu').value : ''),
+    next: document.getElementById('aNextDate').value,
+    format: document.getElementById('aResult').value,
+    comment: document.getElementById('aComment').value.trim(),
+  };
+  
+  candidates.push(data);
+  schedSave();
+  alert('Кандидат сохранён в воронку!');
+}
+
+function printAnketa() {
+  window.print();
+}
+
+// OVERLAY CLICK
+document.getElementById('overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// INIT
+if (sessionStorage.getItem('ev_rec_auth') === '1') {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  loadData();
+}
+</script>
+</body>
+</html>
