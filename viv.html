@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Everia Life — ВИВ</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;900&family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0d14;--surface:#111520;--surface2:#171d2e;--border:#1e2640;
+  --gold:#c9a84c;--gold2:#e8c97a;--text:#e8eaf0;--dim:#5a6080;
+  --green:#3ecf8e;--red:#f56060;--blue:#4f9cf9;--orange:#f5a623;--purple:#8b6cf7;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Golos Text',sans-serif;min-height:100vh;}
+
+#loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 40% 40%,#151a2e 0%,var(--bg) 70%);}
+.loginBox{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:48px 40px;width:360px;position:relative;}
+.loginBox::before{content:'';position:absolute;top:0;left:20%;right:20%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+.loginLogo{font-family:'Unbounded',sans-serif;font-size:10px;font-weight:700;letter-spacing:4px;color:var(--gold);text-align:center;margin-bottom:8px;}
+.loginTitle{font-family:'Unbounded',sans-serif;font-size:18px;font-weight:700;text-align:center;margin-bottom:4px;}
+.loginSub{font-size:12px;color:var(--dim);text-align:center;margin-bottom:32px;}
+.loginInp{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Golos Text',sans-serif;font-size:14px;padding:12px 14px;outline:none;margin-bottom:14px;text-align:center;}
+.loginInp:focus{border-color:var(--gold);}
+.loginBtn{width:100%;background:var(--gold);color:#0a0d14;border:none;border-radius:10px;font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;padding:13px;cursor:pointer;}
+.loginErr{color:var(--red);font-size:12px;text-align:center;margin-top:10px;min-height:18px;}
+.loginCopy{text-align:center;margin-top:20px;padding-top:16px;border-top:1px solid rgba(201,168,76,.15);font-size:10px;color:var(--dim);line-height:1.6;}
+.loginCopy span{color:var(--gold);font-weight:600;}
+
+#app{display:none;}
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.hLeft{display:flex;align-items:center;gap:14px;}
+.hLogo{font-family:'Unbounded',sans-serif;font-size:10px;font-weight:700;letter-spacing:3px;color:var(--gold);}
+.hDiv{width:1px;height:18px;background:var(--border);}
+.hTitle{font-family:'Unbounded',sans-serif;font-size:11px;font-weight:600;}
+.hRight{display:flex;align-items:center;gap:8px;}
+.hBtn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--dim);font-size:12px;padding:5px 11px;cursor:pointer;}
+.hBtn:hover{border-color:var(--gold);color:var(--gold);}
+
+.tabs{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;display:flex;gap:0;overflow-x:auto;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{background:none;border:none;color:var(--dim);font-family:'Golos Text',sans-serif;font-size:13px;font-weight:500;padding:12px 16px;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap;}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+
+.main{padding:20px;max-width:900px;margin:0 auto;}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:14px;}
+.cardTitle{font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;color:var(--gold);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.stepNum{width:26px;height:26px;border-radius:50%;background:rgba(201,168,76,.15);color:var(--gold);font-family:'Unbounded',sans-serif;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+
+.fg{margin-bottom:14px;}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px;}
+.fl{font-size:10px;font-weight:600;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;margin-bottom:6px;display:block;}
+.fi{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Golos Text',sans-serif;font-size:13px;padding:10px 12px;outline:none;}
+.fi:focus{border-color:var(--gold);}
+textarea.fi{resize:vertical;min-height:70px;}
+.fi-big{font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700;text-align:center;color:var(--gold);}
+
+.calcBox{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;}
+.calcLabel{font-size:11px;color:var(--dim);margin-bottom:4px;}
+.calcVal{font-family:'Unbounded',sans-serif;font-size:20px;font-weight:700;color:var(--gold);}
+.calcSub{font-size:11px;color:var(--dim);margin-top:2px;}
+
+.funnel{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+.funnelBox{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;}
+.funnelVal{font-family:'Unbounded',sans-serif;font-size:28px;font-weight:700;color:var(--blue);}
+.funnelLabel{font-size:11px;color:var(--dim);margin-top:4px;}
+.funnelMult{display:flex;gap:10px;margin-bottom:10px;}
+.funnelMultBox{flex:1;background:var(--surface2);border:1px solid var(--gold);border-radius:10px;padding:12px;text-align:center;}
+.funnelMultVal{font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700;color:var(--gold);}
+.funnelMultLabel{font-size:10px;color:var(--dim);margin-top:3px;}
+
+.checklist{display:flex;flex-direction:column;gap:8px;}
+.checkItem{display:flex;align-items:flex-start;gap:12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;cursor:pointer;transition:all .15s;}
+.checkItem:hover{border-color:var(--gold);}
+.checkItem.done{border-color:var(--green);background:rgba(62,207,142,.05);}
+.checkBox{width:20px;height:20px;border-radius:4px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;transition:all .15s;}
+.checkItem.done .checkBox{background:var(--green);border-color:var(--green);color:#fff;font-size:11px;}
+.checkText{font-size:13px;line-height:1.5;}
+.checkItem.done .checkText{color:var(--dim);text-decoration:line-through;}
+
+.qItem{background:var(--surface2);border:1px solid transparent;border-radius:8px;padding:12px 14px;margin-bottom:8px;font-size:13px;line-height:1.6;cursor:pointer;position:relative;transition:all .15s;}
+.qItem:hover{border-color:var(--gold);}
+.qItem.copied{border-color:var(--green);}
+.copyHint{position:absolute;top:6px;right:8px;font-size:10px;color:var(--green);opacity:0;transition:opacity .3s;}
+.qItem.copied .copyHint{opacity:1;}
+.qM{display:inline-block;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;margin-right:6px;}
+.qK{background:rgba(79,156,249,.15);color:var(--blue);}
+.qA{background:rgba(62,207,142,.15);color:var(--green);}
+
+.iprTable{width:100%;border-collapse:collapse;margin-bottom:14px;}
+.iprTable th{font-size:10px;font-weight:600;letter-spacing:1px;color:var(--dim);text-transform:uppercase;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);text-align:left;}
+.iprTable td{padding:8px 12px;border:1px solid var(--border);font-size:13px;}
+.iprTable input{background:transparent;border:none;color:var(--gold);font-family:'Unbounded',sans-serif;font-size:13px;font-weight:700;width:80px;outline:none;text-align:right;}
+
+.agentList{display:flex;flex-direction:column;gap:8px;}
+.agentCard{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.agentHead{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;}
+.agentHead:hover{background:var(--surface2);}
+.agentName{font-weight:700;font-size:14px;}
+.agentMeta{font-size:12px;color:var(--dim);margin-top:2px;}
+.agentBadge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;}
+.agentBody{display:none;border-top:1px solid var(--border);padding:16px;}
+.agentBody.open{display:block;}
+
+.saveBtn{background:var(--gold);border:none;border-radius:8px;color:#0a0d14;font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;padding:10px 22px;cursor:pointer;}
+.cancelBtn{background:none;border:1px solid var(--border);border-radius:8px;color:var(--dim);font-size:13px;padding:10px 18px;cursor:pointer;}
+.newBtn{background:var(--gold);border:none;border-radius:8px;color:#0a0d14;font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;padding:9px 18px;cursor:pointer;margin-bottom:16px;}
+.delBtn{background:rgba(245,96,96,.1);border:1px solid rgba(245,96,96,.3);border-radius:8px;color:var(--red);font-size:12px;padding:10px 14px;cursor:pointer;margin-right:auto;}
+
+.divider{display:flex;align-items:center;gap:12px;margin:16px 0;}
+.divLine{flex:1;height:1px;background:var(--border);}
+.divText{font-size:10px;font-weight:600;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;}
+
+.infoBox{background:rgba(79,156,249,.08);border:1px solid rgba(79,156,249,.2);border-radius:10px;padding:12px 14px;font-size:13px;color:#8baaf5;line-height:1.6;margin-bottom:14px;}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.fadeIn{animation:fadeIn .3s ease;}
+
+@media(max-width:600px){
+  .fg2,.fg3{grid-template-columns:1fr;}
+  .funnel{grid-template-columns:repeat(2,1fr);}
+  .funnelMult{flex-direction:column;}
+}
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="loginBox">
+    <div class="loginLogo">Everia Life</div>
+    <div class="loginTitle">ВИВ</div>
+    <div class="loginSub">Вводная индивидуальная встреча</div>
+    <input class="loginInp" type="password" id="pwd" placeholder="Пароль" onkeydown="if(event.key==='Enter')login()">
+    <button class="loginBtn" onclick="login()">Войти</button>
+    <div class="loginErr" id="loginErr"></div>
+    <div class="loginCopy">разработано для<br><span>EVERIA LIFE · ОМСК</span><br><small>© Токарева Марина Владимировна, 2026</small></div>
+  </div>
+</div>
+
+<div id="app">
+  <div class="header">
+    <div class="hLeft">
+      <div class="hLogo">Everia Life</div>
+      <div class="hDiv"></div>
+      <div class="hTitle">ВИВ — Вводная встреча</div>
+    </div>
+    <div class="hRight">
+      <button class="hBtn" onclick="logout()">Выйти</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('meetings',this)">📋 Встречи</button>
+    <button class="tab" onclick="showTab('protocol',this)">📄 Протокол</button>
+    <button class="tab" onclick="showTab('calc',this)">🧮 Калькулятор</button>
+    <button class="tab" onclick="showTab('algo',this)">📌 Алгоритм</button>
+    <button class="tab" onclick="showTab('scripts',this)">💬 Скрипты</button>
+  </div>
+
+  <div class="main">
+
+    <!-- ВСТРЕЧИ -->
+    <div id="tabMeetings" class="fadeIn">
+      <button class="newBtn" onclick="newMeeting()">+ Новая ВИВ</button>
+      <div class="agentList" id="meetingsList"></div>
+    </div>
+
+    <!-- ПРОТОКОЛ -->
+    <div id="tabProtocol" style="display:none" class="fadeIn">
+      <div class="card">
+        <div class="cardTitle">👤 Участники встречи</div>
+        <div class="fg2">
+          <div><label class="fl">ФИО Агента</label><input class="fi" id="pAgent" placeholder="Петрова Эльмира"></div>
+          <div><label class="fl">ФИО МПП</label><input class="fi" id="pMpp" placeholder="Токарева Марина"></div>
+        </div>
+        <div class="fg3">
+          <div><label class="fl">Вид сотрудничества</label>
+            <select class="fi" id="pType">
+              <option>Фулл-тайм</option>
+              <option>Совместитель</option>
+            </select>
+          </div>
+          <div><label class="fl">Дата ВИВ</label><input class="fi" type="date" id="pDate"></div>
+          <div><label class="fl">Дата след. ИВ</label><input class="fi" type="date" id="pNextDate"></div>
+        </div>
+        <div><label class="fl">Рабочее время (дней/часов)</label><input class="fi" id="pWorkTime" placeholder="5 дней в неделю с 13:00 до 18:00"></div>
+      </div>
+
+      <div class="card">
+        <div class="cardTitle"><div class="stepNum">5</div>ИПР — Желаемый доход</div>
+        <div class="fg3">
+          <div><label class="fl">1-й месяц, ₽</label><input class="fi fi-big" id="inc1" type="number" placeholder="10000" oninput="calcAll()"></div>
+          <div><label class="fl">2-й месяц, ₽</label><input class="fi fi-big" id="inc2" type="number" placeholder="15000" oninput="calcAll()"></div>
+          <div><label class="fl">3-й месяц, ₽</label><input class="fi fi-big" id="inc3" type="number" placeholder="25000" oninput="calcAll()"></div>
+        </div>
+        <div class="fg2">
+          <div class="calcBox"><div class="calcLabel">Итого квартал</div><div class="calcVal" id="totalQ">0 ₽</div></div>
+          <div class="calcBox"><div class="calcLabel">Итого год (×4)</div><div class="calcVal" id="totalY">0 ₽</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="cardTitle"><div class="stepNum">5</div>Воронка активностей (статистика группы)</div>
+        <div class="infoBox">💡 Статистика: 15 звонков → 3 первых встречи → 2 повторных встречи → 1 договор</div>
+        <div class="fg3">
+          <div><label class="fl">Средний договор, ₽</label><input class="fi" id="avgDeal" type="number" value="23000" oninput="calcAll()"></div>
+          <div><label class="fl">Средний % комиссии</label><input class="fi" id="commPct" type="number" value="25" oninput="calcAll()"></div>
+          <div><label class="fl">Цель: договоров/мес</label><input class="fi fi-big" id="dealsTarget" type="number" value="3" oninput="calcAll()"></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px">
+          <div class="calcBox"><div class="calcLabel">Доход год. взнос</div><div class="calcVal" id="incYear">0 ₽</div><div class="calcSub">25% от годового</div></div>
+          <div class="calcBox"><div class="calcLabel">Доход полугод.</div><div class="calcVal" id="incHalf">0 ₽</div><div class="calcSub">25% от полугодового</div></div>
+          <div class="calcBox"><div class="calcLabel">Доход кварт.</div><div class="calcVal" id="incQuart">0 ₽</div><div class="calcSub">25% от квартального</div></div>
+        </div>
+
+        <div class="divider"><div class="divLine"></div><div class="divText">Активности для цели</div><div class="divLine"></div></div>
+
+        <table class="iprTable">
+          <tr><th>Показатель</th><th>Квартал</th><th>Месяц</th><th>Неделя</th></tr>
+          <tr><td>📋 Договоров</td><td id="a1q">—</td><td id="a1m">—</td><td id="a1w">—</td></tr>
+          <tr><td>🔄 Повторных встреч</td><td id="a2q">—</td><td id="a2m">—</td><td id="a2w">—</td></tr>
+          <tr><td>🤝 Первых встреч</td><td id="a3q">—</td><td id="a3m">—</td><td id="a3w">—</td></tr>
+          <tr><td>📞 Звонков</td><td id="a4q">—</td><td id="a4m">—</td><td id="a4w">—</td></tr>
+          <tr><td>⭐ Рекомендаций</td><td id="a5q">—</td><td id="a5m">—</td><td id="a5w">—</td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="cardTitle"><div class="stepNum">6</div>Инструменты помощники</div>
+        <div class="checklist" id="toolsChecklist">
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkText">База клиентов (заполнена и готова)</div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkText">Бланк Рабочей недели / ежедневник</div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkText">Мониторинг активностей</div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkText">Агентский договор (АД)</div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkText">Отчёт А и В (или другой формат учёта встреч)</div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkText">Протокол ИВ</div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkText">Портал обучения — Маршрутная карта</div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkText">Калькулятор</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="cardTitle"><div class="stepNum">7</div>План совместных активностей</div>
+        <div class="fg2">
+          <div><label class="fl">Полевые тренинги (показ)</label><input class="fi" id="pFieldShow" placeholder="Дата, формат..."></div>
+          <div><label class="fl">Полевые тренинги (просмотр)</label><input class="fi" id="pFieldWatch" placeholder="Дата, формат..."></div>
+        </div>
+        <div><label class="fl">Совместные активности (план)</label><textarea class="fi" id="pJointPlan" placeholder="Ролевые игры, семинары, встречи с клиентами..."></textarea></div>
+      </div>
+
+      <div class="card">
+        <div class="cardTitle"><div class="stepNum">8</div>Обучение</div>
+        <div class="fg2">
+          <div><label class="fl">ДОК (дата, формат)</label><input class="fi" id="pDok" placeholder="22-25.01 в офисе"></div>
+          <div><label class="fl">Портал / Маршрутная карта</label><input class="fi" id="pPortal" placeholder="Пройти Модуль 2"></div>
+        </div>
+        <div class="fg2">
+          <div><label class="fl">Базовые семинары / РИ</label><input class="fi" id="pSeminar" placeholder="Семинар 09.02 в 14:00"></div>
+          <div><label class="fl">Полевые тренинги</label><input class="fi" id="pField" placeholder="Дата, формат..."></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="cardTitle"><div class="stepNum">9</div>Цель агента — соглашение</div>
+        <div class="infoBox">
+          Цель агента — качественные продажи договоров страхования жизни в запланированном объёме, что поможет достичь целей по доходу.<br><br>
+          <strong>Агент соглашается:</strong>
+        </div>
+        <div class="checklist" id="agreementList">
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkText">Уделять работе агента запланированное время</div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkText">Выполнять необходимые активности по звонкам и встречам</div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkText">Посещать базовые семинары и ролевые игры в агентстве</div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkText">Проходить обучение на Портале (Маршрутная карта)</div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkText">Брать рекомендации с каждой встречи (3-4 контакта)</div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkText">Регулярно посещать индивидуальные встречи с менеджером</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="cardTitle"><div class="stepNum">11</div>Итоги встречи</div>
+        <div class="fg"><label class="fl">Обратная связь от агента (что и когда нужно сделать)</label><textarea class="fi" id="pFeedback" placeholder="Агент резюмирует договорённости..."></textarea></div>
+        <div class="fg"><label class="fl">Комментарии менеджера</label><textarea class="fi" id="pComment" placeholder="Впечатление, ключевые моменты, на что обратить внимание..."></textarea></div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
+          <button class="cancelBtn" onclick="clearProtocol()">Очистить</button>
+          <button class="saveBtn" onclick="saveProtocol()">💾 Сохранить протокол</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- КАЛЬКУЛЯТОР -->
+    <div id="tabCalc" style="display:none" class="fadeIn">
+      <div class="card">
+        <div class="cardTitle">🧮 Калькулятор дохода агента</div>
+        <div class="infoBox">Введите параметры — калькулятор автоматически рассчитает воронку активностей и доход</div>
+        <div class="fg3">
+          <div><label class="fl">Желаемый доход, ₽</label><input class="fi fi-big" id="cIncome" type="number" placeholder="30000" oninput="calcStandalone()"></div>
+          <div><label class="fl">Средний договор, ₽</label><input class="fi" id="cDeal" type="number" value="23000" oninput="calcStandalone()"></div>
+          <div><label class="fl">Комиссия, %</label><input class="fi" id="cComm" type="number" value="25" oninput="calcStandalone()"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="cardTitle">💰 Доход с одного договора</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+          <div class="calcBox" style="border-color:var(--gold)">
+            <div class="calcLabel">Годовой взнос</div>
+            <div class="calcVal" id="cY">0 ₽</div>
+            <div class="calcSub">Оплата сразу — выгоднее!</div>
+          </div>
+          <div class="calcBox">
+            <div class="calcLabel">Полугодовой взнос</div>
+            <div class="calcVal" id="cH">0 ₽</div>
+            <div class="calcSub">+2% к сумме договора</div>
+          </div>
+          <div class="calcBox">
+            <div class="calcLabel">Квартальный взнос</div>
+            <div class="calcVal" id="cQ">0 ₽</div>
+            <div class="calcSub">+5% к сумме договора</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="cardTitle">📊 Воронка для достижения цели</div>
+        <div id="cFunnelResult"></div>
+      </div>
+
+      <div class="card">
+        <div class="cardTitle">📅 Пример планирования месяца</div>
+        <div id="cPlanExample"></div>
+      </div>
+    </div>
+
+    <!-- АЛГОРИТМ -->
+    <div id="tabAlgo" style="display:none" class="fadeIn">
+      <div class="card" style="border-color:rgba(201,168,76,.3)">
+        <div class="cardTitle">📌 Алгоритм ВИВ — 13 шагов</div>
+        <div class="checklist" id="algoList">
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkText"><strong>1. Приветствие / Установление контакта</strong><br><span style="color:var(--dim);font-size:12px">Как настроение? Создаём атмосферу доверия</span></div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkText"><strong>2. Что такое ИВ?</strong><br><span style="color:var(--dim);font-size:12px">Объяснить цель и формат встречи</span></div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkText"><strong>3. Цель с договорённостью о РИВ</strong><br><span style="color:var(--dim);font-size:12px">Назначить дату и время регулярных встреч</span></div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkText"><strong>4. Сценарий = итог</strong><br><span style="color:var(--dim);font-size:12px">Фиксируем в Протоколе ИВ</span></div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkText"><strong>5. ИПР: цель по доходу</strong><br><span style="color:var(--dim);font-size:12px">1-й, 2-й, 3-й месяц, квартал, год</span></div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkText"><strong>5. ИПР: время (Рабочая неделя)</strong><br><span style="color:var(--dim);font-size:12px">Сколько дней, часов выделяет агент</span></div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkText"><strong>5. ИПР: воронка активностей</strong><br><span style="color:var(--dim);font-size:12px">15 звонков → 3 первых → 2 повторных → 1 договор</span></div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkText"><strong>6. Инструменты помощники</strong><br><span style="color:var(--dim);font-size:12px">Мониторинг, АД, База клиентов, Отчёт А и В, Портал</span></div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkText"><strong>7. План совместных активностей</strong><br><span style="color:var(--dim);font-size:12px">Полевые тренинги показ и просмотр</span></div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkText"><strong>8. План личных активностей агента</strong><br><span style="color:var(--dim);font-size:12px">Обучение: ДОК, Портал, семинары, РИ</span></div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkText"><strong>9. Цель агента (активность = действия)</strong><br><span style="color:var(--dim);font-size:12px">Конкретные цифры на неделю/месяц</span></div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkText"><strong>10. Соглашение</strong><br><span style="color:var(--dim);font-size:12px">Агент подтверждает договорённости</span></div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkText"><strong>11. Резюме / Итоги</strong><br><span style="color:var(--dim);font-size:12px">Агент сам проговаривает что и когда сделает</span></div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkText"><strong>12. Обратная связь от агента</strong><br><span style="color:var(--dim);font-size:12px">Что и когда нужно сделать</span></div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkText"><strong>13. Мотивационное прощание</strong><br><span style="color:var(--dim);font-size:12px">Воодушевить, поддержать, зарядить энергией!</span></div></div>
+        </div>
+        <div style="text-align:right;margin-top:12px">
+          <button class="cancelBtn" onclick="resetAlgo()">Сбросить</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="cardTitle">📦 Что должно быть на встрече</div>
+        <div class="divider"><div class="divLine"></div><div class="divText">У агента</div><div class="divLine"></div></div>
+        <div class="checklist">
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkText">База клиентов (заполнена)</div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkText">Бланк Рабочей недели / ежедневник</div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkText">Калькулятор</div></div>
+        </div>
+        <div class="divider"><div class="divLine"></div><div class="divText">У МПП</div><div class="divLine"></div></div>
+        <div class="checklist">
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkText">Отчёт агента (формы А и В) или другой формат учёта встреч</div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkText">Воронка продаж, средняя по группе (KPI)</div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkText">Мониторинг</div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkText">Протокол и бланк ИПР</div></div>
+          <div class="checkItem" onclick="toggleCheck(this)"><div class="checkBox">✓</div><div class="checkText">Анкеты клиентов по проведённым встречам</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- СКРИПТЫ -->
+    <div id="tabScripts" style="display:none" class="fadeIn">
+      <div class="card">
+        <div class="cardTitle">💬 Вводная часть — открытие встречи</div>
+        <div class="qItem" onclick="copyQ(this)">
+          <span class="qM qK">М</span>Мне нравится твой настрой! Именно для того, чтобы легко научиться осваивать эту профессию и стать настоящим профессионалом нашей идеи, мы сейчас проводим вводную индивидуальную встречу.
+          <span class="copyHint">✓ скопировано</span>
+        </div>
+        <div class="qItem" onclick="copyQ(this)">
+          <span class="qM qK">М</span>Это встреча, на которой мы с тобой выстроим план работы. Дальше мы встречаемся, понимаем что из запланированного состоялось, что нет, где какие сложности ты встретила — и сразу же находим пути исправления. Эти встречи важны и для тебя, и для меня. Договорились?
+          <span class="copyHint">✓ скопировано</span>
+        </div>
+        <div class="qItem" onclick="copyQ(this)">
+          <span class="qM qK">М</span>Давай запланируем нашу следующую индивидуальную встречу на [день недели]. Ты запланируй, запиши в планинг и не планируй в это время никакие активности. Наша ИВ занимает около часа. Все договорённости я буду фиксировать в Протоколе, ты — в своём ежедневнике. Договорились?
+          <span class="copyHint">✓ скопировано</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="cardTitle">🧮 Объяснение воронки активностей</div>
+        <div class="qItem" onclick="copyQ(this)">
+          <span class="qM qK">М</span>Смотри, мы работаем на основании статистики. В нашей группе: чтобы назначить 3 первые встречи — нужно сделать 15 звонков (5 звонков на одну назначенную встречу). Из 3 проведённых первых встреч будет 2 повторных. Из 2 повторных — 1 договор. Понятно?
+          <span class="copyHint">✓ скопировано</span>
+        </div>
+        <div class="qItem" onclick="copyQ(this)">
+          <span class="qM qK">М</span>Есть активности, которые приводят к продаже: звонки → встречи → договоры. И есть активности, которые делают нас профессиональнее: обучение, ролевые игры, полевые тренинги. Оба вида одинаково важны.
+          <span class="copyHint">✓ скопировано</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="cardTitle">💰 Объяснение комиссии</div>
+        <div class="qItem" onclick="copyQ(this)">
+          <span class="qM qK">М</span>В нашей группе в среднем клиенты оплачивают по договору 23 тысячи. Комиссионное вознаграждение — в среднем 25%. Посчитай: сколько ты заработаешь с одного годового взноса? (5 750 руб.)
+          <span class="copyHint">✓ скопировано</span>
+        </div>
+        <div class="qItem" onclick="copyQ(this)">
+          <span class="qM qK">М</span>Если продаём годовой взнос — ты получаешь зарплату сразу. Если в рассрочку — и зарплату получаем в рассрочку. Для клиента выгоднее годовой — он платит меньше. При квартальной рассрочке его платёж увеличивается на 5%, при полугодовой — на 2%.
+          <span class="copyHint">✓ скопировано</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="cardTitle">🔄 Пополнение базы — рекомендации</div>
+        <div class="qItem" onclick="copyQ(this)">
+          <span class="qM qK">М</span>При таком планировании из твоей базы уйдёт [N] человек. Очень важно, чтобы база постоянно пополнялась. Задача — с каждой встречи брать 3-4 рекомендации. Тогда база всегда будет живой. Договорились?
+          <span class="copyHint">✓ скопировано</span>
+        </div>
+        <div class="qItem" onclick="copyQ(this)">
+          <span class="qM qK">М</span>Из [N] первых встреч договоры заключат только [M] человек. Но остальные — это не пустые клиенты! К ним можно вернуться: пригласить на финансовую игру, день клиента, мероприятие агентства. Кому-то нужно время принять решение — и мы к ним обязательно вернёмся.
+          <span class="copyHint">✓ скопировано</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="cardTitle">🏁 Мотивационное завершение</div>
+        <div class="qItem" onclick="copyQ(this)">
+          <span class="qM qK">М</span>Если в следующем месяце ты повторишь свою активность с теми же результатами — у тебя появится возможность помимо комиссионного вознаграждения получить от компании бонус за статус. Это ещё одна причина выполнять план!
+          <span class="copyHint">✓ скопировано</span>
+        </div>
+        <div class="qItem" onclick="copyQ(this)">
+          <span class="qM qK">М</span>Итак, у нас есть план. С меня — гарантии поддержки и помощи на каждом шагу. С тебя — точное выполнение договорённостей. Я в тебя верю! Увидимся [дата] в [время].
+          <span class="copyHint">✓ скопировано</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const PASSWORD = 'Everia2026';
+const LKEY = 'ev_viv_v1';
+
+let meetings = [];
+
+function login() {
+  if (document.getElementById('pwd').value === PASSWORD) {
+    sessionStorage.setItem('ev_viv','1');
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    loadData();
+  } else {
+    document.getElementById('loginErr').textContent = 'Неверный пароль';
+  }
+}
+function logout() { sessionStorage.removeItem('ev_viv'); location.reload(); }
+
+function loadData() {
+  try { const d = localStorage.getItem(LKEY); if(d) meetings = JSON.parse(d); } catch(e) {}
+  renderMeetings();
+  calcAll();
+  calcStandalone();
+}
+
+function saveData() { try { localStorage.setItem(LKEY, JSON.stringify(meetings)); } catch(e) {} }
+
+function showTab(name, el) {
+  ['meetings','protocol','calc','algo','scripts'].forEach(t => {
+    const el2 = document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1));
+    if(el2) el2.style.display = 'none';
+  });
+  document.getElementById('tab'+name.charAt(0).toUpperCase()+name.slice(1)).style.display = 'block';
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  if(el) el.classList.add('active');
+  if(name === 'calc') calcStandalone();
+}
+
+// MEETINGS LIST
+function renderMeetings() {
+  const list = document.getElementById('meetingsList');
+  if (!meetings.length) {
+    list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--dim)"><div style="font-size:36px;margin-bottom:12px">📋</div><div style="font-family:Unbounded,sans-serif;font-size:13px;color:var(--text)">Нет сохранённых встреч</div><div style="font-size:12px;margin-top:6px">Заполните протокол и сохраните</div></div>';
+    return;
+  }
+  list.innerHTML = meetings.map((m, i) => {
+    const color = m.type === 'Фулл-тайм' ? 'var(--green)' : 'var(--orange)';
+    return `<div class="agentCard fadeIn">
+      <div class="agentHead" onclick="toggleMeeting(${i})">
+        <div>
+          <div class="agentName">${m.agent || 'Агент'}</div>
+          <div class="agentMeta">${m.date ? new Date(m.date).toLocaleDateString('ru-RU') : '—'} · МПП: ${m.mpp || '—'}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="agentBadge" style="background:${color}22;color:${color}">${m.type||'—'}</span>
+          <span style="color:var(--dim);font-size:18px">▾</span>
+        </div>
+      </div>
+      <div class="agentBody" id="meeting${i}">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px">
+          <div class="calcBox"><div class="calcLabel">Цель/мес</div><div class="calcVal" style="font-size:16px">${m.inc1 ? Number(m.inc1).toLocaleString('ru') + ' ₽' : '—'}</div></div>
+          <div class="calcBox"><div class="calcLabel">Договоров/мес</div><div class="calcVal" style="font-size:16px">${m.deals||'—'}</div></div>
+          <div class="calcBox"><div class="calcLabel">Следующая ИВ</div><div class="calcVal" style="font-size:14px">${m.nextDate ? new Date(m.nextDate).toLocaleDateString('ru-RU') : '—'}</div></div>
+        </div>
+        ${m.comment ? `<div style="font-size:13px;color:var(--dim);margin-bottom:10px">${m.comment}</div>` : ''}
+        <div style="display:flex;gap:8px">
+          <button class="saveBtn" onclick="loadMeeting(${i})">✏️ Открыть протокол</button>
+          <button class="cancelBtn" onclick="deleteMeeting(${i})">Удалить</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleMeeting(i) {
+  const body = document.getElementById('meeting'+i);
+  body.classList.toggle('open');
+}
+
+function newMeeting() {
+  clearProtocol();
+  document.getElementById('pDate').value = new Date().toISOString().slice(0,10);
+  showTab('protocol', document.querySelectorAll('.tab')[1]);
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i===1));
+}
+
+function loadMeeting(i) {
+  const m = meetings[i];
+  document.getElementById('pAgent').value = m.agent || '';
+  document.getElementById('pMpp').value = m.mpp || '';
+  document.getElementById('pType').value = m.type || 'Совместитель';
+  document.getElementById('pDate').value = m.date || '';
+  document.getElementById('pNextDate').value = m.nextDate || '';
+  document.getElementById('pWorkTime').value = m.workTime || '';
+  document.getElementById('inc1').value = m.inc1 || '';
+  document.getElementById('inc2').value = m.inc2 || '';
+  document.getElementById('inc3').value = m.inc3 || '';
+  document.getElementById('avgDeal').value = m.avgDeal || 23000;
+  document.getElementById('commPct').value = m.commPct || 25;
+  document.getElementById('dealsTarget').value = m.deals || 3;
+  document.getElementById('pFieldShow').value = m.fieldShow || '';
+  document.getElementById('pFieldWatch').value = m.fieldWatch || '';
+  document.getElementById('pJointPlan').value = m.jointPlan || '';
+  document.getElementById('pDok').value = m.dok || '';
+  document.getElementById('pPortal').value = m.portal || '';
+  document.getElementById('pSeminar').value = m.seminar || '';
+  document.getElementById('pField').value = m.field || '';
+  document.getElementById('pFeedback').value = m.feedback || '';
+  document.getElementById('pComment').value = m.comment || '';
+  calcAll();
+  showTab('protocol', null);
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i===1));
+}
+
+function deleteMeeting(i) {
+  if (!confirm('Удалить протокол?')) return;
+  meetings.splice(i, 1);
+  saveData();
+  renderMeetings();
+}
+
+// CALC
+function calcAll() {
+  const inc1 = +document.getElementById('inc1').value || 0;
+  const inc2 = +document.getElementById('inc2').value || 0;
+  const inc3 = +document.getElementById('inc3').value || 0;
+  const q = inc1 + inc2 + inc3;
+  document.getElementById('totalQ').textContent = q.toLocaleString('ru') + ' ₽';
+  document.getElementById('totalY').textContent = (q * 4).toLocaleString('ru') + ' ₽';
+
+  const avg = +document.getElementById('avgDeal').value || 23000;
+  const pct = +document.getElementById('commPct').value || 25;
+  const deals = +document.getElementById('dealsTarget').value || 3;
+
+  const iY = Math.round(avg * pct / 100);
+  const iH = Math.round(avg / 2 * pct / 100);
+  const iQ2 = Math.round(avg / 4 * pct / 100);
+
+  document.getElementById('incYear').textContent = iY.toLocaleString('ru') + ' ₽';
+  document.getElementById('incHalf').textContent = iH.toLocaleString('ru') + ' ₽';
+  document.getElementById('incQuart').textContent = iQ2.toLocaleString('ru') + ' ₽';
+
+  // Воронка
+  const dM = deals; const dQ = dM * 3;
+  const rpM = dM * 2; const rpQ = rpM * 3;
+  const fpM = dM * 3; const fpQ = fpM * 3;
+  const callM = fpM * 5 * 3; const callQ = callM * 3;
+  const recM = fpM * 4; const recQ = recM * 3;
+
+  const setCell = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+  setCell('a1q', dQ); setCell('a1m', dM); setCell('a1w', Math.ceil(dM/4));
+  setCell('a2q', rpQ); setCell('a2m', rpM); setCell('a2w', Math.ceil(rpM/4));
+  setCell('a3q', fpQ); setCell('a3m', fpM); setCell('a3w', Math.ceil(fpM/4));
+  setCell('a4q', callQ); setCell('a4m', callM); setCell('a4w', Math.ceil(callM/4));
+  setCell('a5q', recQ); setCell('a5m', recM); setCell('a5w', Math.ceil(recM/4));
+}
+
+function calcStandalone() {
+  const income = +document.getElementById('cIncome').value || 0;
+  const deal = +document.getElementById('cDeal').value || 23000;
+  const comm = +document.getElementById('cComm').value || 25;
+
+  const iY = Math.round(deal * comm / 100);
+  const iH = Math.round(deal / 2 * comm / 100);
+  const iQ2 = Math.round(deal / 4 * comm / 100);
+
+  document.getElementById('cY').textContent = iY.toLocaleString('ru') + ' ₽';
+  document.getElementById('cH').textContent = iH.toLocaleString('ru') + ' ₽';
+  document.getElementById('cQ').textContent = iQ2.toLocaleString('ru') + ' ₽';
+
+  if (!income) {
+    document.getElementById('cFunnelResult').innerHTML = '<div style="color:var(--dim);font-size:13px;text-align:center;padding:20px">Введите желаемый доход</div>';
+    document.getElementById('cPlanExample').innerHTML = '';
+    return;
+  }
+
+  const dealsNeeded = Math.ceil(income / iY);
+  const fp = dealsNeeded * 3;
+  const rp = dealsNeeded * 2;
+  const calls = fp * 5;
+  const recs = fp * 4;
+
+  document.getElementById('cFunnelResult').innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px">
+      <div class="calcBox" style="border-color:var(--gold)"><div class="calcLabel">Нужно договоров/мес</div><div class="calcVal">${dealsNeeded}</div></div>
+      <div class="calcBox"><div class="calcLabel">Ожидаемый доход</div><div class="calcVal">${(dealsNeeded*iY).toLocaleString('ru')} ₽</div></div>
+    </div>
+    <table class="iprTable">
+      <tr><th>Показатель</th><th>В месяц</th><th>В неделю</th><th>В день</th></tr>
+      <tr><td>📋 Договоров</td><td>${dealsNeeded}</td><td>${Math.ceil(dealsNeeded/4)}</td><td>—</td></tr>
+      <tr><td>🔄 Повторных встреч</td><td>${rp}</td><td>${Math.ceil(rp/4)}</td><td>—</td></tr>
+      <tr><td>🤝 Первых встреч</td><td>${fp}</td><td>${Math.ceil(fp/4)}</td><td>${Math.ceil(fp/22)}</td></tr>
+      <tr><td>📞 Звонков</td><td>${calls}</td><td>${Math.ceil(calls/4)}</td><td>${Math.ceil(calls/22)}</td></tr>
+      <tr><td>⭐ Рекомендаций</td><td>${recs}</td><td>${Math.ceil(recs/4)}</td><td>—</td></tr>
+    </table>`;
+
+  document.getElementById('cPlanExample').innerHTML = `
+    <div class="infoBox">
+      При ${dealsNeeded} договорах в месяц (при продаже годовым взносом):<br>
+      <strong>Доход: ${(dealsNeeded*iY).toLocaleString('ru')} ₽</strong><br>
+      Нужно: ${calls} звонков → ${fp} первых встреч → ${rp} повторных → ${dealsNeeded} договоров<br>
+      Рекомендации с каждой встречи (3-4 контакта) = пополнение базы
+    </div>`;
+}
+
+// PROTOCOL SAVE
+function saveProtocol() {
+  const agent = document.getElementById('pAgent').value.trim();
+  if (!agent) { alert('Введите ФИО агента'); return; }
+  const m = {
+    agent,
+    mpp: document.getElementById('pMpp').value.trim(),
+    type: document.getElementById('pType').value,
+    date: document.getElementById('pDate').value,
+    nextDate: document.getElementById('pNextDate').value,
+    workTime: document.getElementById('pWorkTime').value,
+    inc1: document.getElementById('inc1').value,
+    inc2: document.getElementById('inc2').value,
+    inc3: document.getElementById('inc3').value,
+    avgDeal: document.getElementById('avgDeal').value,
+    commPct: document.getElementById('commPct').value,
+    deals: document.getElementById('dealsTarget').value,
+    fieldShow: document.getElementById('pFieldShow').value,
+    fieldWatch: document.getElementById('pFieldWatch').value,
+    jointPlan: document.getElementById('pJointPlan').value,
+    dok: document.getElementById('pDok').value,
+    portal: document.getElementById('pPortal').value,
+    seminar: document.getElementById('pSeminar').value,
+    field: document.getElementById('pField').value,
+    feedback: document.getElementById('pFeedback').value,
+    comment: document.getElementById('pComment').value,
+    savedAt: new Date().toISOString(),
+  };
+  meetings.unshift(m);
+  saveData();
+  alert('Протокол сохранён!');
+  showTab('meetings', document.querySelectorAll('.tab')[0]);
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i===0));
+  renderMeetings();
+}
+
+function clearProtocol() {
+  ['pAgent','pMpp','pDate','pNextDate','pWorkTime','inc1','inc2','inc3',
+   'pFieldShow','pFieldWatch','pJointPlan','pDok','pPortal','pSeminar','pField','pFeedback','pComment'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value = '';
+  });
+  document.getElementById('avgDeal').value = 23000;
+  document.getElementById('commPct').value = 25;
+  document.getElementById('dealsTarget').value = 3;
+  document.querySelectorAll('.checkItem').forEach(el => el.classList.remove('done'));
+  calcAll();
+}
+
+// HELPERS
+function toggleCheck(el) { el.classList.toggle('done'); }
+function resetAlgo() { document.querySelectorAll('#algoList .checkItem').forEach(el => el.classList.remove('done')); }
+
+function copyQ(el) {
+  const text = el.innerText.replace('✓ скопировано','').replace('✓','').trim();
+  navigator.clipboard.writeText(text).catch(()=>{});
+  el.classList.add('copied');
+  setTimeout(() => el.classList.remove('copied'), 1500);
+}
+
+if (sessionStorage.getItem('ev_viv') === '1') {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  loadData();
+}
+
+document.getElementById('pwd') && document.getElementById('pwd').addEventListener('keydown', e => {
+  if (e.key === 'Enter') login();
+});
+</script>
+</body>
+</html>
