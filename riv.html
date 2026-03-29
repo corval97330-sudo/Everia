@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Everia Life — РИВ</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;900&family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0d14;--surface:#111520;--surface2:#171d2e;--border:#1e2640;
+  --gold:#c9a84c;--gold2:#e8c97a;--text:#e8eaf0;--dim:#5a6080;
+  --green:#3ecf8e;--red:#f56060;--blue:#4f9cf9;--orange:#f5a623;--purple:#8b6cf7;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Golos Text',sans-serif;min-height:100vh;}
+
+/* LOGIN */
+#loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 40% 40%,#151a2e 0%,var(--bg) 70%);}
+.loginBox{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:48px 40px;width:360px;position:relative;}
+.loginBox::before{content:'';position:absolute;top:0;left:20%;right:20%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+.loginLogo{font-family:'Unbounded',sans-serif;font-size:10px;font-weight:700;letter-spacing:4px;color:var(--gold);text-align:center;margin-bottom:8px;}
+.loginTitle{font-family:'Unbounded',sans-serif;font-size:18px;font-weight:700;text-align:center;margin-bottom:4px;}
+.loginSub{font-size:12px;color:var(--dim);text-align:center;margin-bottom:32px;}
+.loginInp{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Golos Text',sans-serif;font-size:14px;padding:12px 14px;outline:none;margin-bottom:14px;text-align:center;}
+.loginInp:focus{border-color:var(--gold);}
+.loginBtn{width:100%;background:var(--gold);color:#0a0d14;border:none;border-radius:10px;font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;padding:13px;cursor:pointer;}
+.loginErr{color:var(--red);font-size:12px;text-align:center;margin-top:10px;min-height:18px;}
+.loginCopy{text-align:center;margin-top:20px;padding-top:16px;border-top:1px solid rgba(201,168,76,.15);font-size:10px;color:var(--dim);line-height:1.6;}
+.loginCopy span{color:var(--gold);font-weight:600;}
+
+/* APP */
+#app{display:none;}
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.hLeft{display:flex;align-items:center;gap:14px;}
+.hLogo{font-family:'Unbounded',sans-serif;font-size:10px;font-weight:700;letter-spacing:3px;color:var(--gold);}
+.hDiv{width:1px;height:18px;background:var(--border);}
+.hTitle{font-family:'Unbounded',sans-serif;font-size:11px;font-weight:600;}
+.hRight{display:flex;align-items:center;gap:8px;}
+.hBtn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--dim);font-size:12px;padding:5px 11px;cursor:pointer;}
+.hBtn:hover{border-color:var(--gold);color:var(--gold);}
+
+.tabs{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;display:flex;gap:0;overflow-x:auto;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{background:none;border:none;color:var(--dim);font-family:'Golos Text',sans-serif;font-size:13px;font-weight:500;padding:12px 16px;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap;}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+
+.main{padding:20px;max-width:1000px;margin:0 auto;}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:20px;}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;position:relative;overflow:hidden;}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.s1::before{background:var(--blue)}.s2::before{background:var(--green)}.s3::before{background:var(--orange)}.s4::before{background:var(--purple)}
+.statL{font-size:9px;font-weight:600;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;margin-bottom:4px;}
+.statV{font-family:'Unbounded',sans-serif;font-size:24px;font-weight:700;}
+.s1 .statV{color:var(--blue)}.s2 .statV{color:var(--green)}.s3 .statV{color:var(--orange)}.s4 .statV{color:var(--purple)}
+
+/* CARDS LIST */
+.rivList{display:flex;flex-direction:column;gap:10px;}
+.rivCard{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:all .15s;}
+.rivCard:hover{border-color:rgba(201,168,76,.3);}
+.rivCardHead{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;cursor:pointer;}
+.rcAgent{font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;}
+.rcMeta{font-size:11px;color:var(--dim);margin-top:3px;}
+.rcRight{display:flex;align-items:center;gap:10px;}
+.moodBadge{font-size:16px;}
+.rcDate{font-size:11px;color:var(--dim);}
+.rcResult{font-family:'Unbounded',sans-serif;font-size:13px;font-weight:700;}
+.rcResult.hot{color:var(--green)}.rcResult.ok{color:var(--orange)}.rcResult.low{color:var(--red)}
+.rivCardBody{display:none;padding:0 18px 16px;border-top:1px solid var(--border);}
+.rivCardBody.open{display:block;}
+.rcSection{margin-top:12px;}
+.rcSecLabel{font-size:9px;font-weight:700;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;margin-bottom:6px;}
+.rcSecText{font-size:13px;line-height:1.6;color:var(--text);}
+.rcGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-top:8px;}
+.rcNum{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;text-align:center;}
+.rcNumV{font-family:'Unbounded',sans-serif;font-size:18px;font-weight:700;color:var(--gold);}
+.rcNumL{font-size:10px;color:var(--dim);margin-top:2px;}
+.delBtn{background:none;border:1px solid rgba(245,96,96,.3);border-radius:6px;color:var(--red);font-size:11px;padding:4px 10px;cursor:pointer;margin-top:12px;}
+.delBtn:hover{background:rgba(245,96,96,.1);}
+
+/* PROTOCOL FORM */
+.formCard{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:16px;}
+.formTitle{font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;color:var(--gold);margin-bottom:18px;display:flex;align-items:center;gap:8px;}
+.stepNum{width:26px;height:26px;border-radius:50%;background:rgba(201,168,76,.15);color:var(--gold);font-family:'Unbounded',sans-serif;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.fg{margin-bottom:14px;}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px;}
+.fl{font-size:10px;font-weight:600;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;margin-bottom:6px;display:block;}
+.fi{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Golos Text',sans-serif;font-size:13px;padding:10px 12px;outline:none;}
+.fi:focus{border-color:var(--gold);}
+textarea.fi{resize:vertical;min-height:70px;}
+select.fi{cursor:pointer;}
+
+/* Mood selector */
+.moodRow{display:flex;gap:10px;margin-bottom:14px;}
+.moodBtn{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 8px;text-align:center;cursor:pointer;transition:all .15s;font-size:22px;}
+.moodBtn:hover{border-color:var(--gold);}
+.moodBtn.sel{border-color:var(--gold);background:rgba(201,168,76,.1);}
+.moodBtn .ml{font-size:10px;color:var(--dim);margin-top:4px;}
+.moodBtn.sel .ml{color:var(--gold);}
+
+/* Plan pct bar */
+.pctBar{background:var(--surface2);border-radius:6px;height:6px;margin-top:6px;overflow:hidden;}
+.pctFill{height:100%;border-radius:6px;transition:width .3s;background:linear-gradient(90deg,var(--red),var(--orange),var(--green));}
+
+/* Actions */
+.actionRow{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+.actionItem{display:flex;align-items:center;gap:8px;}
+.actionItem input[type=text]{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Golos Text',sans-serif;font-size:13px;padding:9px 12px;outline:none;}
+.actionItem input[type=text]:focus{border-color:var(--gold);}
+.rmBtn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--dim);font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.rmBtn:hover{border-color:var(--red);color:var(--red);}
+.addActBtn{background:none;border:1px dashed var(--border);border-radius:8px;color:var(--dim);font-size:12px;padding:9px;width:100%;cursor:pointer;transition:all .15s;}
+.addActBtn:hover{border-color:var(--gold);color:var(--gold);}
+
+.saveBtn{background:var(--gold);border:none;border-radius:10px;color:#0a0d14;font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;padding:12px 28px;cursor:pointer;width:100%;margin-top:8px;}
+.saveBtn:hover{background:var(--gold2);}
+.saveFeedback{text-align:center;font-size:12px;color:var(--green);margin-top:8px;min-height:18px;}
+
+/* SCRIPTS TAB */
+.scriptGroup{margin-bottom:20px;}
+.sgTitle{font-family:'Unbounded',sans-serif;font-size:10px;font-weight:700;color:var(--gold);letter-spacing:2px;margin-bottom:10px;text-transform:uppercase;}
+.qItem{background:var(--surface2);border:1px solid transparent;border-radius:8px;padding:12px 14px;margin-bottom:7px;font-size:13px;line-height:1.6;cursor:pointer;position:relative;transition:all .15s;}
+.qItem:hover{border-color:var(--gold);}
+.qItem.copied{border-color:var(--green);}
+.copyHint{position:absolute;top:6px;right:8px;font-size:10px;color:var(--green);opacity:0;transition:opacity .3s;}
+.qItem.copied .copyHint{opacity:1;}
+.qM{display:inline-block;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;margin-right:6px;}
+.qOpen{background:rgba(79,156,249,.15);color:var(--blue);}
+.qFocus{background:rgba(245,166,35,.15);color:var(--orange);}
+.qSum{background:rgba(62,207,142,.15);color:var(--green);}
+.qMotiv{background:rgba(139,108,247,.15);color:var(--purple);}
+
+/* ALGO TAB */
+.algoStep{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start;}
+.algoNum{width:32px;height:32px;border-radius:50%;background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.25);display:flex;align-items:center;justify-content:center;font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;color:var(--gold);flex-shrink:0;}
+.algoContent{}
+.algoTitle{font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.algoDesc{font-size:12px;color:var(--dim);line-height:1.6;}
+.algoTime{display:inline-block;font-size:10px;font-weight:600;color:var(--orange);background:rgba(245,166,35,.1);border-radius:4px;padding:2px 7px;margin-top:6px;}
+
+.emptyState{text-align:center;padding:60px 20px;color:var(--dim);}
+.emptyState div:first-child{font-size:44px;margin-bottom:14px;}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.fadeIn{animation:fadeIn .3s ease;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="loginBox">
+    <div class="loginLogo">EVERIA LIFE</div>
+    <div class="loginTitle">РИВ</div>
+    <div class="loginSub">Регулярные индивидуальные встречи</div>
+    <input class="loginInp" type="password" id="pwd" placeholder="Пароль" onkeydown="if(event.key==='Enter')login()">
+    <button class="loginBtn" onclick="login()">Войти</button>
+    <div class="loginErr" id="loginErr"></div>
+    <div class="loginCopy">Регулярная индивидуальная встреча<br><span>Everia Life · Marina · 2026</span></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="header">
+    <div class="hLeft">
+      <span class="hLogo">EVERIA</span>
+      <div class="hDiv"></div>
+      <span class="hTitle">РИВ</span>
+    </div>
+    <div class="hRight">
+      <span id="syncBadge" style="font-size:11px;color:var(--green);font-weight:600;">●</span>
+      <button class="hBtn" onclick="logout()">Выйти</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('history',this)">📋 История</button>
+    <button class="tab" onclick="showTab('protocol',this)">✍️ Протокол</button>
+    <button class="tab" onclick="showTab('algo',this)">🗂 Алгоритм</button>
+    <button class="tab" onclick="showTab('scripts',this)">💬 Скрипты</button>
+  </div>
+
+  <div class="main">
+
+    <!-- STATS -->
+    <div class="stats">
+      <div class="stat s1"><div class="statL">Встреч всего</div><div class="statV" id="statTotal">0</div></div>
+      <div class="stat s2"><div class="statL">В этом месяце</div><div class="statV" id="statMonth">0</div></div>
+      <div class="stat s3"><div class="statL">Агентов охвачено</div><div class="statV" id="statAgents">0</div></div>
+      <div class="stat s4"><div class="statL">Задач открыто</div><div class="statV" id="statTasks">0</div></div>
+    </div>
+
+    <!-- HISTORY TAB -->
+    <div id="tabHistory">
+      <div id="rivList" class="rivList"></div>
+    </div>
+
+    <!-- PROTOCOL TAB -->
+    <div id="tabProtocol" style="display:none;">
+
+      <div class="formCard">
+        <div class="formTitle"><div class="stepNum">1</div>Общая информация</div>
+        <div class="fg2">
+          <div>
+            <span class="fl">Агент</span>
+            <input class="fi" type="text" id="fAgent" placeholder="Имя агента">
+          </div>
+          <div>
+            <span class="fl">Дата встречи</span>
+            <input class="fi" type="date" id="fDate">
+          </div>
+        </div>
+        <div class="fg2">
+          <div>
+            <span class="fl">Анализируемый период</span>
+            <input class="fi" type="text" id="fPeriod" placeholder="Например: март 2026">
+          </div>
+          <div>
+            <span class="fl">Тип встречи</span>
+            <select class="fi" id="fType">
+              <option>Плановая</option>
+              <option>Внеплановая</option>
+              <option>Корректирующая</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="formCard">
+        <div class="formTitle"><div class="stepNum">2</div>Результаты периода</div>
+        <div class="fg3">
+          <div>
+            <span class="fl">Кол-во полисов</span>
+            <input class="fi" type="number" id="fPolicies" placeholder="0" oninput="calcPct()">
+          </div>
+          <div>
+            <span class="fl">Сумма премий, ₽</span>
+            <input class="fi" type="number" id="fPremium" placeholder="0" oninput="calcPct()">
+          </div>
+          <div>
+            <span class="fl">План по премии, ₽</span>
+            <input class="fi" type="number" id="fPlan" placeholder="0" oninput="calcPct()">
+          </div>
+        </div>
+        <div id="pctDisplay" style="display:none;margin-bottom:14px;">
+          <span class="fl">Выполнение плана</span>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span id="pctVal" style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700;color:var(--gold);">0%</span>
+          </div>
+          <div class="pctBar"><div class="pctFill" id="pctFill" style="width:0%"></div></div>
+        </div>
+        <div class="fg2">
+          <div>
+            <span class="fl">Что получилось ✅</span>
+            <textarea class="fi" id="fWorks" placeholder="Конкретные успехи агента..."></textarea>
+          </div>
+          <div>
+            <span class="fl">Что не получилось ❌</span>
+            <textarea class="fi" id="fNotWorks" placeholder="Зоны роста, проблемные моменты..."></textarea>
+          </div>
+        </div>
+        <div class="fg">
+          <span class="fl">Причины (анализ)</span>
+          <textarea class="fi" id="fReasons" placeholder="Объективные и субъективные причины результата..."></textarea>
+        </div>
+      </div>
+
+      <div class="formCard">
+        <div class="formTitle"><div class="stepNum">3</div>Договорённости</div>
+        <div class="fg2" style="margin-bottom:8px;">
+          <div>
+            <span class="fl">Цель на следующий период</span>
+            <input class="fi" type="number" id="fNextGoal" placeholder="Сумма, ₽">
+          </div>
+          <div>
+            <span class="fl">Дата следующей РИВ</span>
+            <input class="fi" type="date" id="fNextDate">
+          </div>
+        </div>
+        <div class="fg" style="margin-bottom:8px;">
+          <span class="fl">Задачи агента до следующей встречи</span>
+          <div class="actionRow" id="actionsList">
+            <div class="actionItem">
+              <input type="text" placeholder="Задача 1...">
+              <button class="rmBtn" onclick="removeAction(this)">×</button>
+            </div>
+          </div>
+          <button class="addActBtn" onclick="addAction()">+ Добавить задачу</button>
+        </div>
+        <div class="fg">
+          <span class="fl">Мои задачи (менеджер)</span>
+          <textarea class="fi" id="fManagerTasks" placeholder="Что я обязуюсь сделать для агента..."></textarea>
+        </div>
+      </div>
+
+      <div class="formCard">
+        <div class="formTitle"><div class="stepNum">4</div>Итог встречи</div>
+        <div class="fg" style="margin-bottom:10px;">
+          <span class="fl">Настрой агента по итогу встречи</span>
+          <div class="moodRow">
+            <div class="moodBtn" onclick="setMood('🔥',this)">🔥<div class="ml">Горит</div></div>
+            <div class="moodBtn" onclick="setMood('😊',this)">😊<div class="ml">Норма</div></div>
+            <div class="moodBtn" onclick="setMood('😐',this)">😐<div class="ml">Нейтрально</div></div>
+            <div class="moodBtn" onclick="setMood('😟',this)">😟<div class="ml">Тревожно</div></div>
+            <div class="moodBtn" onclick="setMood('😤',this)">😤<div class="ml">Риск</div></div>
+          </div>
+          <input type="hidden" id="fMood" value="">
+        </div>
+        <div class="fg">
+          <span class="fl">Заметки менеджера (не для агента)</span>
+          <textarea class="fi" id="fNotes" placeholder="Наблюдения, ощущения, что важно не забыть..."></textarea>
+        </div>
+        <button class="saveBtn" onclick="saveProtocol()">💾 Сохранить протокол РИВ</button>
+        <div class="saveFeedback" id="saveFeedback"></div>
+      </div>
+
+    </div>
+
+    <!-- ALGO TAB -->
+    <div id="tabAlgo" style="display:none;">
+      <div class="algoStep"><div class="algoNum">1</div><div class="algoContent"><div class="algoTitle">Открытие встречи</div><div class="algoDesc">Поблагодари за время. Обозначь формат: «Сегодня мы разберём результаты, найдём точки роста и договоримся о следующих шагах. Встреча займёт ~30 минут.»</div><span class="algoTime">2–3 мин</span></div></div>
+      <div class="algoStep"><div class="algoNum">2</div><div class="algoContent"><div class="algoTitle">Самооценка агента</div><div class="algoDesc">Спроси первым: «Как ты сам оцениваешь свои результаты за период? Что получилось лучше всего? Что было сложно?» — дай высказаться полностью, не перебивай.</div><span class="algoTime">5–7 мин</span></div></div>
+      <div class="algoStep"><div class="algoNum">3</div><div class="algoContent"><div class="algoTitle">Анализ цифр</div><div class="algoDesc">Разбери конкретные показатели: полисы, премия, выполнение плана. Сравни с предыдущим периодом. Ищи паттерны — что влияет на результат. Не оценивай — исследуй вместе.</div><span class="algoTime">7–10 мин</span></div></div>
+      <div class="algoStep"><div class="algoNum">4</div><div class="algoContent"><div class="algoTitle">Причины и выводы</div><div class="algoDesc">Задай вопрос: «Что, по-твоему, главная причина такого результата?» Разделите объективные факторы и субъективные. Зафиксируй честно — без осуждения.</div><span class="algoTime">5 мин</span></div></div>
+      <div class="algoStep"><div class="algoNum">5</div><div class="algoContent"><div class="algoTitle">Цель на следующий период</div><div class="algoDesc">«Что ты хочешь сделать в следующем месяце?» Помоги сформулировать конкретную цифру. Проверь: амбициозно, но реалистично. Зафиксируй.</div><span class="algoTime">5 мин</span></div></div>
+      <div class="algoStep"><div class="algoNum">6</div><div class="algoContent"><div class="algoTitle">Договорённости и задачи</div><div class="algoDesc">Зафиксируй задачи агента и свои обязательства. «Что тебе нужно от меня?» — это важный вопрос. Назначь дату следующей РИВ прямо сейчас.</div><span class="algoTime">3–5 мин</span></div></div>
+      <div class="algoStep"><div class="algoNum">7</div><div class="algoContent"><div class="algoTitle">Закрытие встречи</div><div class="algoDesc">«Как ты чувствуешь себя после нашей встречи? Есть ли что-то важное, что мы не обсудили?» Резюмируй договорённости. Зафиксируй настрой агента в протоколе.</div><span class="algoTime">2–3 мин</span></div></div>
+    </div>
+
+    <!-- SCRIPTS TAB -->
+    <div id="tabScripts" style="display:none;">
+
+      <div class="scriptGroup">
+        <div class="sgTitle">🔓 Открытие встречи</div>
+        <div class="qItem" onclick="copyQ(this)"><span class="qM qOpen">О</span>Рад тебя видеть! У нас сегодня рабочая встреча — разберём результаты, найдём точки роста и договоримся о следующих шагах. Всё займёт около 30 минут. Готов?<span class="copyHint">✓ скопировано</span></div>
+        <div class="qItem" onclick="copyQ(this)"><span class="qM qOpen">О</span>Перед тем как перейти к цифрам — скажи честно: как ты сам оцениваешь свой месяц? Что тебя радует, что беспокоит?<span class="copyHint">✓ скопировано</span></div>
+      </div>
+
+      <div class="scriptGroup">
+        <div class="sgTitle">🔍 Анализ результатов</div>
+        <div class="qItem" onclick="copyQ(this)"><span class="qM qFocus">А</span>Давай посмотрим на цифры вместе. [сумма] — это [X]% от плана. Как ты сам это объясняешь?<span class="copyHint">✓ скопировано</span></div>
+        <div class="qItem" onclick="copyQ(this)"><span class="qM qFocus">А</span>Что из того, что ты делал в этом месяце, давало самый быстрый результат? Почему именно это?<span class="copyHint">✓ скопировано</span></div>
+        <div class="qItem" onclick="copyQ(this)"><span class="qM qFocus">А</span>Если бы ты начинал месяц заново — что бы сделал иначе в первую очередь?<span class="copyHint">✓ скопировано</span></div>
+        <div class="qItem" onclick="copyQ(this)"><span class="qM qFocus">А</span>Были ли ситуации, когда ты чувствовал, что можешь больше, но что-то мешало? Что именно?<span class="copyHint">✓ скопировано</span></div>
+      </div>
+
+      <div class="scriptGroup">
+        <div class="sgTitle">🎯 Постановка цели</div>
+        <div class="qItem" onclick="copyQ(this)"><span class="qM qSum">Ц</span>Что ты хочешь заработать в следующем месяце? Назови конкретную цифру. Что нужно сделать, чтобы это стало реальным?<span class="copyHint">✓ скопировано</span></div>
+        <div class="qItem" onclick="copyQ(this)"><span class="qM qSum">Ц</span>Ты говоришь [цифра]. Что изменится в твоей жизни, когда ты это заработаешь? Это важно понять прямо сейчас.<span class="copyHint">✓ скопировано</span></div>
+        <div class="qItem" onclick="copyQ(this)"><span class="qM qSum">Ц</span>Если оставить всё как есть — что произойдёт через 3 месяца? А если сделать [конкретное действие] — что изменится?<span class="copyHint">✓ скопировано</span></div>
+      </div>
+
+      <div class="scriptGroup">
+        <div class="sgTitle">💪 Мотивация и поддержка</div>
+        <div class="qItem" onclick="copyQ(this)"><span class="qM qMotiv">М</span>Я вижу в тебе потенциал, который ты ещё не раскрыл полностью. Что нужно от меня, чтобы следующий месяц был другим?<span class="copyHint">✓ скопировано</span></div>
+        <div class="qItem" onclick="copyQ(this)"><span class="qM qMotiv">М</span>Ты прошёл сложный период. Важно не то, что случилось — важно как ты из него выйдешь. Я рядом. Давай договоримся конкретно.<span class="copyHint">✓ скопировано</span></div>
+        <div class="qItem" onclick="copyQ(this)"><span class="qM qMotiv">М</span>Итак, наши договорённости: ты берёшь на себя [задачи], я — [обязательства менеджера]. Следующая встреча — [дата]. Я в тебя верю!<span class="copyHint">✓ скопировано</span></div>
+      </div>
+
+      <div class="scriptGroup">
+        <div class="sgTitle">⚠️ Сложные разговоры</div>
+        <div class="qItem" onclick="copyQ(this)"><span class="qM qFocus">С</span>Мне важно сказать тебе кое-что напрямую, потому что я хочу твоего успеха. [Проблема] — это паттерн, который мешает тебе расти. Ты это видишь?<span class="copyHint">✓ скопировано</span></div>
+        <div class="qItem" onclick="copyQ(this)"><span class="qM qFocus">С</span>Я вижу, что последние [период] результаты не соответствуют твоему уровню. Что происходит? Я хочу понять, не осудить.<span class="copyHint">✓ скопировано</span></div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<script>
+const PASSWORD = 'Everia2026';
+const LKEY = 'ev_riv_v1';
+const BIN_ID = '69b4fe3ab7ec241ddc68ff70';
+const API_KEY = '$2a$10$or/10uhY3Yz82p.8/QaAnO1IYrtaDRgEcGWgQ3mM1JkKdkKmQbTXm';
+
+let rivMeetings = [];
+let selectedMood = '';
+
+// AUTH
+function login() {
+  if (document.getElementById('pwd').value === PASSWORD) {
+    sessionStorage.setItem('ev_riv','1');
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('fDate').value = new Date().toISOString().split('T')[0];
+    loadData();
+  } else {
+    document.getElementById('loginErr').textContent = 'Неверный пароль';
+  }
+}
+function logout() { sessionStorage.removeItem('ev_riv'); location.reload(); }
+
+// SYNC BADGE
+function setSyncBadge(state, text) {
+  const el = document.getElementById('syncBadge');
+  if (!el) return;
+  const colors = { ok: 'var(--green)', err: 'var(--red)', loading: 'var(--gold)' };
+  el.style.color = colors[state] || 'var(--dim)';
+  el.textContent = text || '●';
+}
+
+// LOCAL STORAGE
+function localSaveRiv() { try { localStorage.setItem(LKEY, JSON.stringify(rivMeetings)); } catch(e) {} }
+function localLoadRiv() { try { const d = localStorage.getItem(LKEY); return d ? JSON.parse(d) : []; } catch(e) { return []; } }
+
+// CLOUD LOAD
+function loadData() {
+  setSyncBadge('loading', 'загрузка...');
+  fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+    headers: { 'X-Master-Key': API_KEY, 'X-Bin-Meta': 'false' }
+  })
+  .then(r => r.json())
+  .then(data => {
+    rivMeetings = Array.isArray(data.riv_meetings) ? data.riv_meetings : localLoadRiv();
+    localSaveRiv();
+    renderHistory();
+    updateStats();
+    setSyncBadge('ok', 'синхронизировано');
+  })
+  .catch(() => {
+    rivMeetings = localLoadRiv();
+    renderHistory();
+    updateStats();
+    setSyncBadge('err', 'локально');
+  });
+}
+
+// CLOUD SAVE (read-merge-write)
+function saveCloud(cb) {
+  localSaveRiv();
+  setSyncBadge('loading', 'сохранение...');
+  fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+    headers: { 'X-Master-Key': API_KEY, 'X-Bin-Meta': 'false' }
+  })
+  .then(r => r.json())
+  .then(current => {
+    const updated = Object.assign({}, typeof current === 'object' && !Array.isArray(current) ? current : {}, { riv_meetings: rivMeetings });
+    return fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
+      body: JSON.stringify(updated)
+    });
+  })
+  .then(() => { setSyncBadge('ok', 'сохранено'); if(cb) cb(); })
+  .catch(() => { setSyncBadge('err', 'ошибка'); if(cb) cb(); });
+}
+
+// TABS
+function showTab(name, el) {
+  ['history','protocol','algo','scripts'].forEach(t => {
+    const el2 = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
+    if(el2) el2.style.display = 'none';
+  });
+  document.getElementById('tab' + name.charAt(0).toUpperCase() + name.slice(1)).style.display = 'block';
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  if(el) el.classList.add('active');
+}
+
+// STATS
+function updateStats() {
+  document.getElementById('statTotal').textContent = rivMeetings.length;
+  const now = new Date();
+  const thisMonth = rivMeetings.filter(m => {
+    if (!m.date) return false;
+    const d = new Date(m.date);
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  }).length;
+  document.getElementById('statMonth').textContent = thisMonth;
+  const agents = new Set(rivMeetings.map(m => m.agent).filter(Boolean)).size;
+  document.getElementById('statAgents').textContent = agents;
+  const tasks = rivMeetings.reduce((sum, m) => sum + (m.actions ? m.actions.filter(a => a).length : 0), 0);
+  document.getElementById('statTasks').textContent = tasks;
+}
+
+// RENDER HISTORY
+function renderHistory() {
+  const list = document.getElementById('rivList');
+  if (!rivMeetings.length) {
+    list.innerHTML = '<div class="emptyState fadeIn"><div>📋</div><div style="font-family:Unbounded,sans-serif;font-size:13px;color:var(--text);margin-bottom:6px;">Встреч пока нет</div><div>Перейди в «Протокол» и сохрани первую РИВ</div></div>';
+    return;
+  }
+  const sorted = [...rivMeetings].sort((a,b) => new Date(b.date||0) - new Date(a.date||0));
+  list.innerHTML = sorted.map((m, i) => {
+    const realIdx = rivMeetings.indexOf(m);
+    const pct = m.plan > 0 ? Math.round(m.premium / m.plan * 100) : null;
+    const pctClass = pct === null ? '' : pct >= 100 ? 'hot' : pct >= 70 ? 'ok' : 'low';
+    const pctText = pct !== null ? `${pct}%` : '';
+    const dateStr = m.date ? new Date(m.date).toLocaleDateString('ru-RU', {day:'numeric',month:'short'}) : '';
+    return `<div class="rivCard fadeIn">
+      <div class="rivCardHead" onclick="toggleCard(this)">
+        <div>
+          <div class="rcAgent">${m.agent || '—'}</div>
+          <div class="rcMeta">${m.period || ''} · ${m.type || ''}</div>
+        </div>
+        <div class="rcRight">
+          <span class="moodBadge">${m.mood || ''}</span>
+          ${pctText ? `<span class="rcResult ${pctClass}">${pctText}</span>` : ''}
+          <span class="rcDate">${dateStr}</span>
+        </div>
+      </div>
+      <div class="rivCardBody">
+        ${m.policies || m.premium ? `<div class="rcSection"><div class="rcSecLabel">Результаты</div><div class="rcGrid">
+          ${m.policies ? `<div class="rcNum"><div class="rcNumV">${m.policies}</div><div class="rcNumL">полисов</div></div>` : ''}
+          ${m.premium ? `<div class="rcNum"><div class="rcNumV">${Number(m.premium).toLocaleString('ru')}</div><div class="rcNumL">сумма, ₽</div></div>` : ''}
+          ${m.plan ? `<div class="rcNum"><div class="rcNumV">${Number(m.plan).toLocaleString('ru')}</div><div class="rcNumL">план, ₽</div></div>` : ''}
+        </div></div>` : ''}
+        ${m.works ? `<div class="rcSection"><div class="rcSecLabel">✅ Что получилось</div><div class="rcSecText">${m.works}</div></div>` : ''}
+        ${m.notWorks ? `<div class="rcSection"><div class="rcSecLabel">❌ Что не получилось</div><div class="rcSecText">${m.notWorks}</div></div>` : ''}
+        ${m.actions && m.actions.filter(a=>a).length ? `<div class="rcSection"><div class="rcSecLabel">📌 Задачи агента</div>${m.actions.filter(a=>a).map(a=>`<div class="rcSecText" style="margin-bottom:4px;">• ${a}</div>`).join('')}</div>` : ''}
+        ${m.nextDate ? `<div class="rcSection"><div class="rcSecLabel">📅 Следующая РИВ</div><div class="rcSecText">${new Date(m.nextDate).toLocaleDateString('ru-RU',{day:'numeric',month:'long'})}</div></div>` : ''}
+        ${m.notes ? `<div class="rcSection"><div class="rcSecLabel">📝 Заметки менеджера</div><div class="rcSecText" style="color:var(--dim)">${m.notes}</div></div>` : ''}
+        <button class="delBtn" onclick="deleteRiv(${realIdx},event)">🗑 Удалить</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleCard(head) {
+  const body = head.nextElementSibling;
+  body.classList.toggle('open');
+}
+
+function deleteRiv(idx, e) {
+  e.stopPropagation();
+  if (!confirm('Удалить эту запись?')) return;
+  rivMeetings.splice(idx, 1);
+  saveCloud(() => { renderHistory(); updateStats(); });
+}
+
+// PCT CALC
+function calcPct() {
+  const prem = parseFloat(document.getElementById('fPremium').value) || 0;
+  const plan = parseFloat(document.getElementById('fPlan').value) || 0;
+  const disp = document.getElementById('pctDisplay');
+  if (prem > 0 || plan > 0) {
+    disp.style.display = 'block';
+    const pct = plan > 0 ? Math.min(Math.round(prem / plan * 100), 200) : 0;
+    document.getElementById('pctVal').textContent = pct + '%';
+    document.getElementById('pctFill').style.width = Math.min(pct, 100) + '%';
+  } else {
+    disp.style.display = 'none';
+  }
+}
+
+// MOOD
+function setMood(emoji, btn) {
+  document.querySelectorAll('.moodBtn').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+  selectedMood = emoji;
+  document.getElementById('fMood').value = emoji;
+}
+
+// ACTIONS
+function addAction() {
+  const row = document.createElement('div');
+  row.className = 'actionItem';
+  row.innerHTML = `<input type="text" placeholder="Задача..."><button class="rmBtn" onclick="removeAction(this)">×</button>`;
+  document.getElementById('actionsList').appendChild(row);
+}
+function removeAction(btn) {
+  const items = document.querySelectorAll('#actionsList .actionItem');
+  if (items.length > 1) btn.parentElement.remove();
+}
+
+// SAVE PROTOCOL
+function saveProtocol() {
+  const agent = document.getElementById('fAgent').value.trim();
+  if (!agent) { alert('Укажи имя агента'); return; }
+
+  const actions = [...document.querySelectorAll('#actionsList .actionItem input')].map(i => i.value.trim()).filter(Boolean);
+
+  const record = {
+    id: Date.now().toString(36),
+    agent,
+    date: document.getElementById('fDate').value,
+    period: document.getElementById('fPeriod').value.trim(),
+    type: document.getElementById('fType').value,
+    policies: parseFloat(document.getElementById('fPolicies').value) || 0,
+    premium: parseFloat(document.getElementById('fPremium').value) || 0,
+    plan: parseFloat(document.getElementById('fPlan').value) || 0,
+    works: document.getElementById('fWorks').value.trim(),
+    notWorks: document.getElementById('fNotWorks').value.trim(),
+    reasons: document.getElementById('fReasons').value.trim(),
+    nextGoal: parseFloat(document.getElementById('fNextGoal').value) || 0,
+    nextDate: document.getElementById('fNextDate').value,
+    actions,
+    managerTasks: document.getElementById('fManagerTasks').value.trim(),
+    mood: selectedMood,
+    notes: document.getElementById('fNotes').value.trim(),
+    savedAt: new Date().toISOString()
+  };
+
+  rivMeetings.unshift(record);
+  saveCloud(() => {
+    document.getElementById('saveFeedback').textContent = '✅ Протокол сохранён!';
+    setTimeout(() => document.getElementById('saveFeedback').textContent = '', 3000);
+    renderHistory();
+    updateStats();
+    resetForm();
+  });
+}
+
+function resetForm() {
+  ['fAgent','fPeriod','fPolicies','fPremium','fPlan','fNextGoal','fNextDate','fWorks','fNotWorks','fReasons','fManagerTasks','fNotes'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value = '';
+  });
+  document.getElementById('fDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('fType').value = 'Плановая';
+  document.getElementById('pctDisplay').style.display = 'none';
+  document.querySelectorAll('.moodBtn').forEach(b => b.classList.remove('sel'));
+  selectedMood = '';
+  const al = document.getElementById('actionsList');
+  al.innerHTML = '<div class="actionItem"><input type="text" placeholder="Задача 1..."><button class="rmBtn" onclick="removeAction(this)">×</button></div>';
+}
+
+// COPY SCRIPTS
+function copyQ(el) {
+  const text = el.textContent.replace('✓ скопировано','').trim();
+  navigator.clipboard.writeText(text).catch(() => {});
+  el.classList.add('copied');
+  setTimeout(() => el.classList.remove('copied'), 1500);
+}
+
+// INIT
+window.addEventListener('load', () => {
+  if (sessionStorage.getItem('ev_riv')) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('fDate').value = new Date().toISOString().split('T')[0];
+    loadData();
+  }
+});
+</script>
+</body>
+</html>
