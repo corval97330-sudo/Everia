@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Everia Life — Мониторинг команды</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;900&family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0d14;--surface:#111520;--surface2:#171d2e;--border:#1e2640;
+  --gold:#c9a84c;--gold2:#e8c97a;--text:#e8eaf0;--dim:#5a6080;
+  --green:#3ecf8e;--red:#f56060;--blue:#4f9cf9;--orange:#f5a623;--purple:#8b6cf7;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Golos Text',sans-serif;min-height:100vh;}
+
+/* LOGIN */
+#loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 40% 40%,#151a2e 0%,var(--bg) 70%);}
+.loginBox{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:48px 40px;width:360px;position:relative;}
+.loginBox::before{content:'';position:absolute;top:0;left:20%;right:20%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+.loginLogo{font-family:'Unbounded',sans-serif;font-size:10px;font-weight:700;letter-spacing:4px;color:var(--gold);text-align:center;margin-bottom:8px;}
+.loginTitle{font-family:'Unbounded',sans-serif;font-size:18px;font-weight:700;text-align:center;margin-bottom:4px;}
+.loginSub{font-size:12px;color:var(--dim);text-align:center;margin-bottom:32px;}
+.loginInp{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Golos Text',sans-serif;font-size:14px;padding:12px 14px;outline:none;text-align:center;margin-bottom:14px;}
+.loginInp:focus{border-color:var(--gold);}
+.loginBtn{width:100%;background:var(--gold);color:#0a0d14;border:none;border-radius:10px;font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;padding:13px;cursor:pointer;}
+.loginErr{color:var(--red);font-size:12px;text-align:center;margin-top:10px;min-height:18px;}
+
+/* APP */
+#app{display:none;}
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.hLeft{display:flex;align-items:center;gap:14px;}
+.hLogo{font-family:'Unbounded',sans-serif;font-size:10px;font-weight:700;letter-spacing:3px;color:var(--gold);}
+.hDiv{width:1px;height:18px;background:var(--border);}
+.hTitle{font-family:'Unbounded',sans-serif;font-size:11px;font-weight:600;}
+.hRight{display:flex;align-items:center;gap:8px;}
+.hBtn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--dim);font-size:12px;padding:5px 11px;cursor:pointer;}
+.hBtn:hover{border-color:var(--gold);color:var(--gold);}
+#syncBadge{font-size:11px;font-weight:600;color:var(--green);}
+
+.tabs{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;display:flex;overflow-x:auto;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{background:none;border:none;color:var(--dim);font-family:'Golos Text',sans-serif;font-size:13px;font-weight:500;padding:12px 16px;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s;}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+
+.main{padding:20px;max-width:1100px;margin:0 auto;}
+
+/* DATE NAV */
+.dateNav{display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap;}
+.dateBtn{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--dim);font-size:12px;padding:6px 12px;cursor:pointer;}
+.dateBtn:hover{border-color:var(--gold);color:var(--gold);}
+.dateBtn.active{background:rgba(201,168,76,.1);border-color:var(--gold);color:var(--gold);}
+.dateInp{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Golos Text',sans-serif;font-size:13px;padding:6px 10px;outline:none;}
+.dateInp:focus{border-color:var(--gold);}
+
+/* SUMMARY STATS */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:20px;}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;position:relative;overflow:hidden;}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.s1::before{background:var(--blue)}.s2::before{background:var(--green)}.s3::before{background:var(--gold)}.s4::before{background:var(--orange)}.s5::before{background:var(--red)}
+.statL{font-size:9px;font-weight:600;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;margin-bottom:4px;}
+.statV{font-family:'Unbounded',sans-serif;font-size:24px;font-weight:700;}
+.s1 .statV{color:var(--blue)}.s2 .statV{color:var(--green)}.s3 .statV{color:var(--gold)}.s4 .statV{color:var(--orange)}.s5 .statV{color:var(--red)}
+
+/* TODAY TABLE */
+.tableWrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:20px;}
+.tableTitle{padding:14px 18px;font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;color:var(--text);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.tableHead{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 40px;padding:8px 18px;background:var(--surface2);border-bottom:1px solid var(--border);}
+.th{font-size:9px;font-weight:600;letter-spacing:1.2px;color:var(--dim);text-transform:uppercase;}
+.tableRow{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 40px;padding:11px 18px;border-bottom:1px solid var(--border);align-items:center;transition:background .15s;}
+.tableRow:last-child{border-bottom:none;}
+.tableRow:hover{background:var(--surface2);}
+.td{font-size:13px;}
+.tdName{font-weight:600;}
+.tdMood{font-size:18px;}
+.badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;}
+
+/* ABSENT LIST */
+.absentWrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:20px;}
+.absentTitle{padding:14px 18px;font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+.absentGrid{display:flex;flex-wrap:wrap;gap:8px;padding:14px 18px;}
+.absentPill{background:rgba(245,96,96,.08);border:1px solid rgba(245,96,96,.2);border-radius:20px;padding:5px 12px;font-size:12px;color:var(--dim);}
+
+/* LEADERBOARD */
+.lbList{display:flex;flex-direction:column;gap:8px;}
+.lbRow{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:12px;transition:all .15s;}
+.lbRow:hover{border-color:rgba(201,168,76,.25);}
+.lbPos{font-family:'Unbounded',sans-serif;font-size:14px;font-weight:700;width:28px;text-align:center;flex-shrink:0;}
+.pos1{color:#ffd700;}.pos2{color:#c0c0c0;}.pos3{color:#cd7f32;}
+.lbName{flex:1;font-size:13px;font-weight:600;}
+.lbMeta{font-size:11px;color:var(--dim);}
+.lbStreak{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--orange);}
+.lbNums{display:flex;gap:10px;margin-left:auto;}
+.lbNum{text-align:center;}
+.lbNumV{font-family:'Unbounded',sans-serif;font-size:16px;font-weight:700;}
+.lbNumL{font-size:9px;color:var(--dim);}
+
+/* PERIOD SELECT */
+.periodRow{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.periodBtn{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--dim);font-size:12px;padding:6px 14px;cursor:pointer;}
+.periodBtn.active{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,.07);}
+
+/* AGENT DETAIL */
+.agentCards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;}
+.agentCard{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;}
+.acName{font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;margin-bottom:4px;}
+.acStreak{font-size:11px;color:var(--orange);margin-bottom:10px;}
+.acNums{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;}
+.acNum{background:var(--surface2);border-radius:8px;padding:8px 10px;text-align:center;}
+.acNumV{font-family:'Unbounded',sans-serif;font-size:18px;font-weight:700;color:var(--gold);}
+.acNumL{font-size:9px;color:var(--dim);margin-top:1px;}
+.bonusBar{background:var(--surface2);border-radius:4px;height:5px;overflow:hidden;margin-top:6px;}
+.bonusFill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--gold),var(--gold2));}
+.acGoal{font-size:10px;color:var(--dim);margin-top:4px;}
+
+/* EMPTY */
+.empty{text-align:center;padding:50px 20px;color:var(--dim);}
+.empty div:first-child{font-size:40px;margin-bottom:12px;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.fadeUp{animation:fadeUp .3s ease;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="loginBox">
+    <div class="loginLogo">EVERIA LIFE</div>
+    <div class="loginTitle">Мониторинг</div>
+    <div class="loginSub">Сводка по команде</div>
+    <input class="loginInp" type="password" id="pwd" placeholder="Пароль" onkeydown="if(event.key==='Enter')login()">
+    <button class="loginBtn" onclick="login()">Войти</button>
+    <div class="loginErr" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="header">
+    <div class="hLeft">
+      <span class="hLogo">EVERIA</span>
+      <div class="hDiv"></div>
+      <span class="hTitle">Мониторинг</span>
+    </div>
+    <div class="hRight">
+      <span id="syncBadge">●</span>
+      <button class="hBtn" onclick="loadData()">↻ Обновить</button>
+      <button class="hBtn" onclick="logout()">Выйти</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('today',this)">📅 Сегодня</button>
+    <button class="tab" onclick="showTab('leaderboard',this)">🏆 Рейтинг</button>
+    <button class="tab" onclick="showTab('agents',this)">👤 По агентам</button>
+  </div>
+
+  <div class="main">
+
+    <!-- TODAY TAB -->
+    <div id="tabToday">
+      <div class="stats">
+        <div class="stat s1"><div class="statL">Отчитались</div><div class="statV" id="stReported">0</div></div>
+        <div class="stat s5"><div class="statL">Не отчитались</div><div class="statV" id="stAbsent">0</div></div>
+        <div class="stat s2"><div class="statL">Звонков</div><div class="statV" id="stCalls">0</div></div>
+        <div class="stat s3"><div class="statL">Встреч</div><div class="statV" id="stMeetings">0</div></div>
+        <div class="stat s4"><div class="statL">Договоров</div><div class="statV" id="stDeals">0</div></div>
+      </div>
+
+      <div class="tableWrap fadeUp">
+        <div class="tableTitle">
+          <span>Отчёты за сегодня</span>
+          <span id="todayDateLabel" style="font-size:11px;color:var(--dim);font-family:'Golos Text',sans-serif;font-weight:400;"></span>
+        </div>
+        <div class="tableHead">
+          <div class="th">Агент</div>
+          <div class="th">Звонки</div>
+          <div class="th">Встречи</div>
+          <div class="th">Договора</div>
+          <div class="th">Премия</div>
+          <div class="th"></div>
+        </div>
+        <div id="todayTable"></div>
+      </div>
+
+      <div class="absentWrap fadeUp">
+        <div class="absentTitle">
+          <span style="color:var(--red)">⚠️</span>
+          <span>Не заполнили сегодня</span>
+          <span id="absentCount" style="font-size:11px;color:var(--dim);margin-left:auto;font-family:'Golos Text',sans-serif;font-weight:400;"></span>
+        </div>
+        <div class="absentGrid" id="absentList"></div>
+      </div>
+    </div>
+
+    <!-- LEADERBOARD TAB -->
+    <div id="tabLeaderboard" style="display:none;">
+      <div class="periodRow">
+        <button class="periodBtn active" onclick="setPeriod('week',this)">Эта неделя</button>
+        <button class="periodBtn" onclick="setPeriod('month',this)">Этот месяц</button>
+        <button class="periodBtn" onclick="setPeriod('all',this)">Всё время</button>
+      </div>
+      <div class="periodRow" style="margin-bottom:16px;">
+        <button class="periodBtn active" onclick="setMetric('calls',this)" id="mCalls">📞 Звонки</button>
+        <button class="periodBtn" onclick="setMetric('meetings',this)" id="mMeetings">🤝 Встречи</button>
+        <button class="periodBtn" onclick="setMetric('deals',this)" id="mDeals">📄 Договора</button>
+        <button class="periodBtn" onclick="setMetric('premium',this)" id="mPremium">💵 Премия</button>
+      </div>
+      <div id="lbList" class="lbList"></div>
+    </div>
+
+    <!-- AGENTS TAB -->
+    <div id="tabAgents" style="display:none;">
+      <div class="periodRow">
+        <button class="periodBtn active" onclick="setAgentPeriod('month',this)">Этот месяц</button>
+        <button class="periodBtn" onclick="setAgentPeriod('week',this)">Эта неделя</button>
+        <button class="periodBtn" onclick="setAgentPeriod('all',this)">Всё время</button>
+      </div>
+      <div id="agentCards" class="agentCards"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const PASSWORD = 'Everia2026';
+const BIN_ID = '69b4fe3ab7ec241ddc68ff70';
+const API_KEY = '$2a$10$or/10uhY3Yz82p.8/QaAnO1IYrtaDRgEcGWgQ3mM1JkKdkKmQbTXm';
+const MONTHLY_GOAL = 100000;
+
+let monitoring = [];
+let agentsList = [];
+let currentPeriod = 'week';
+let currentMetric = 'calls';
+let agentPeriod = 'month';
+
+// ─── AUTH ────────────────────────────────────────
+function login() {
+  if (document.getElementById('pwd').value === PASSWORD) {
+    sessionStorage.setItem('ev_mon_mgr','1');
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    loadData();
+  } else {
+    document.getElementById('loginErr').textContent = 'Неверный пароль';
+  }
+}
+function logout() { sessionStorage.removeItem('ev_mon_mgr'); location.reload(); }
+
+// ─── DATA ────────────────────────────────────────
+function setSyncBadge(state, text) {
+  const el = document.getElementById('syncBadge');
+  const colors = { ok:'var(--green)', err:'var(--red)', loading:'var(--gold)' };
+  el.style.color = colors[state] || 'var(--dim)';
+  el.textContent = text || '●';
+}
+
+function loadData() {
+  setSyncBadge('loading','...');
+  fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+    headers: { 'X-Master-Key': API_KEY, 'X-Bin-Meta': 'false' }
+  })
+  .then(r => r.json())
+  .then(data => {
+    const d = (typeof data === 'object' && !Array.isArray(data)) ? data : {};
+    monitoring = Array.isArray(d.monitoring) ? d.monitoring : [];
+    agentsList = Array.isArray(d.agents) ? d.agents : [];
+    setSyncBadge('ok', 'синхронизировано');
+    renderAll();
+  })
+  .catch(() => {
+    setSyncBadge('err','ошибка');
+    try {
+      const lc = localStorage.getItem('ev_mon_data');
+      if (lc) { const d = JSON.parse(lc); monitoring = d.monitoring||[]; agentsList = d.agents||[]; }
+    } catch(e){}
+    renderAll();
+  });
+}
+
+// ─── RENDER ALL ──────────────────────────────────
+function renderAll() {
+  renderToday();
+  renderLeaderboard();
+  renderAgents();
+}
+
+// ─── HELPERS ────────────────────────────────────
+function todayStr() { return new Date().toISOString().split('T')[0]; }
+
+function getPeriodStart(period) {
+  const now = new Date(); now.setHours(0,0,0,0);
+  if (period === 'week') {
+    const day = now.getDay() || 7;
+    const mon = new Date(now); mon.setDate(now.getDate() - day + 1);
+    return mon.toISOString().split('T')[0];
+  }
+  if (period === 'month') {
+    return new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+  }
+  return '2000-01-01';
+}
+
+function getStreak(agentName) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  let streak = 0;
+  for (let i = 0; i < 90; i++) {
+    const d = new Date(today); d.setDate(d.getDate() - i);
+    if (d.getDay() === 0 || d.getDay() === 6) continue;
+    const ds = d.toISOString().split('T')[0];
+    if (monitoring.find(r => r.agentName === agentName && r.date === ds)) { streak++; }
+    else if (i > 0) { break; }
+  }
+  return streak;
+}
+
+function sumField(records, field) {
+  return records.reduce((s,r) => s + (Number(r[field])||0), 0);
+}
+
+// ─── TODAY ───────────────────────────────────────
+function renderToday() {
+  const today = todayStr();
+  const todayReports = monitoring.filter(r => r.date === today);
+  const allNames = agentsList.map(a => a.name);
+
+  document.getElementById('todayDateLabel').textContent =
+    new Date().toLocaleDateString('ru-RU', {weekday:'long', day:'numeric', month:'long'});
+  document.getElementById('stReported').textContent = todayReports.length;
+  document.getElementById('stAbsent').textContent = Math.max(0, allNames.length - todayReports.length);
+  document.getElementById('stCalls').textContent = sumField(todayReports,'calls');
+  document.getElementById('stMeetings').textContent = sumField(todayReports,'meetings');
+  document.getElementById('stDeals').textContent = sumField(todayReports,'deals');
+
+  // Table
+  const tbody = document.getElementById('todayTable');
+  if (!todayReports.length) {
+    tbody.innerHTML = '<div class="empty"><div>📭</div><div>Пока никто не отчитался сегодня</div></div>';
+  } else {
+    const sorted = [...todayReports].sort((a,b) => (b.deals||0)-(a.deals||0) || (b.premium||0)-(a.premium||0));
+    tbody.innerHTML = sorted.map(r => `
+      <div class="tableRow">
+        <div class="td tdName">${r.agentName}</div>
+        <div class="td">${r.calls||0}</div>
+        <div class="td">${r.meetings||0}</div>
+        <div class="td">${r.deals||0}</div>
+        <div class="td">${r.premium ? Number(r.premium).toLocaleString('ru') + ' ₽' : '—'}</div>
+        <div class="td tdMood">${r.mood||''}</div>
+      </div>`).join('');
+  }
+
+  // Absent
+  const reportedNames = new Set(todayReports.map(r => r.agentName));
+  const absent = allNames.filter(n => !reportedNames.has(n));
+  document.getElementById('absentCount').textContent = absent.length + ' чел.';
+  const absentDiv = document.getElementById('absentList');
+  if (!absent.length) {
+    absentDiv.innerHTML = '<div style="font-size:13px;color:var(--green);padding:4px 0;">✅ Все отчитались!</div>';
+  } else {
+    absentDiv.innerHTML = absent.map(n => `<div class="absentPill">${n}</div>`).join('');
+  }
+}
+
+// ─── LEADERBOARD ────────────────────────────────
+function setPeriod(p, btn) {
+  currentPeriod = p;
+  document.querySelectorAll('.periodRow:first-child .periodBtn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderLeaderboard();
+}
+function setMetric(m, btn) {
+  currentMetric = m;
+  document.querySelectorAll('#mCalls,#mMeetings,#mDeals,#mPremium').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderLeaderboard();
+}
+
+function renderLeaderboard() {
+  const start = getPeriodStart(currentPeriod);
+  const filtered = monitoring.filter(r => r.date >= start);
+  const allNames = agentsList.map(a => a.name);
+
+  const byAgent = {};
+  allNames.forEach(n => { byAgent[n] = { calls:0, meetings:0, deals:0, premium:0, streak: getStreak(n) }; });
+  filtered.forEach(r => {
+    if (!byAgent[r.agentName]) byAgent[r.agentName] = { calls:0, meetings:0, deals:0, premium:0, streak:0 };
+    byAgent[r.agentName].calls += r.calls||0;
+    byAgent[r.agentName].meetings += r.meetings||0;
+    byAgent[r.agentName].deals += r.deals||0;
+    byAgent[r.agentName].premium += r.premium||0;
+  });
+
+  const sorted = Object.entries(byAgent)
+    .map(([name, d]) => ({name, ...d}))
+    .sort((a,b) => b[currentMetric] - a[currentMetric])
+    .filter(a => a.calls || a.meetings || a.deals || a.premium);
+
+  const list = document.getElementById('lbList');
+  if (!sorted.length) {
+    list.innerHTML = '<div class="empty"><div>📊</div><div>Нет данных за этот период</div></div>';
+    return;
+  }
+
+  const medalColors = ['pos1','pos2','pos3'];
+  const metricLabel = {calls:'📞',meetings:'🤝',deals:'📄',premium:'💵'};
+  list.innerHTML = sorted.map((a,i) => `
+    <div class="lbRow fadeUp" style="animation-delay:${i*.04}s">
+      <div class="lbPos ${medalColors[i]||''}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div>
+      <div>
+        <div class="lbName">${a.name}</div>
+        <div class="lbStreak">🔥 ${a.streak} дн подряд</div>
+      </div>
+      <div class="lbNums">
+        <div class="lbNum"><div class="lbNumV" style="color:var(--blue)">${a.calls}</div><div class="lbNumL">зв</div></div>
+        <div class="lbNum"><div class="lbNumV" style="color:var(--green)">${a.meetings}</div><div class="lbNumL">вст</div></div>
+        <div class="lbNum"><div class="lbNumV" style="color:var(--gold)">${a.deals}</div><div class="lbNumL">дог</div></div>
+        <div class="lbNum"><div class="lbNumV" style="color:var(--orange);font-size:12px">${a.premium ? (a.premium/1000).toFixed(0)+'к' : '—'}</div><div class="lbNumL">₽</div></div>
+      </div>
+    </div>`).join('');
+}
+
+// ─── AGENTS ─────────────────────────────────────
+function setAgentPeriod(p, btn) {
+  agentPeriod = p;
+  document.querySelectorAll('#tabAgents .periodBtn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAgents();
+}
+
+function renderAgents() {
+  const start = getPeriodStart(agentPeriod);
+  const allNames = agentsList.map(a => a.name);
+  const container = document.getElementById('agentCards');
+
+  const cards = allNames.map(name => {
+    const records = monitoring.filter(r => r.agentName === name && r.date >= start);
+    const totalCalls = sumField(records,'calls');
+    const totalMeetings = sumField(records,'meetings');
+    const totalDeals = sumField(records,'deals');
+    const totalPremium = sumField(records,'premium');
+    const streak = getStreak(name);
+    const pct = Math.min(Math.round(totalPremium / MONTHLY_GOAL * 100), 100);
+    const reportedToday = monitoring.some(r => r.agentName === name && r.date === todayStr());
+
+    return `<div class="agentCard fadeUp">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">
+        <div class="acName">${name}</div>
+        <span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;${reportedToday ? 'background:rgba(62,207,142,.15);color:var(--green)' : 'background:rgba(245,96,96,.1);color:var(--red)'}">
+          ${reportedToday ? '✓ сегодня' : '✗ нет'}
+        </span>
+      </div>
+      <div class="acStreak">🔥 ${streak} дней подряд</div>
+      <div class="acNums">
+        <div class="acNum"><div class="acNumV" style="color:var(--blue)">${totalCalls}</div><div class="acNumL">звонков</div></div>
+        <div class="acNum"><div class="acNumV" style="color:var(--green)">${totalMeetings}</div><div class="acNumL">встреч</div></div>
+        <div class="acNum"><div class="acNumV" style="color:var(--gold)">${totalDeals}</div><div class="acNumL">договоров</div></div>
+        <div class="acNum"><div class="acNumV" style="color:var(--orange);font-size:14px">${totalPremium ? totalPremium.toLocaleString('ru')+'₽' : '—'}</div><div class="acNumL">премия</div></div>
+      </div>
+      <div class="bonusBar"><div class="bonusFill" style="width:${pct}%"></div></div>
+      <div class="acGoal">${pct}% от цели 100 000 ₽</div>
+    </div>`;
+  });
+
+  container.innerHTML = cards.join('') || '<div class="empty"><div>👤</div><div>Нет данных</div></div>';
+}
+
+// ─── TABS ────────────────────────────────────────
+function showTab(name, el) {
+  ['today','leaderboard','agents'].forEach(t => {
+    const el2 = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
+    if(el2) el2.style.display = 'none';
+  });
+  document.getElementById('tab' + name.charAt(0).toUpperCase() + name.slice(1)).style.display = 'block';
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  if(el) el.classList.add('active');
+}
+
+// ─── INIT ────────────────────────────────────────
+window.addEventListener('load', () => {
+  if (sessionStorage.getItem('ev_mon_mgr')) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    loadData();
+  }
+});
+</script>
+</body>
+</html>
