@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Мой день — Everia Life</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;900&family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0d14;--surface:#111520;--surface2:#171d2e;--border:#1e2640;
+  --gold:#c9a84c;--gold2:#e8c97a;--text:#e8eaf0;--dim:#5a6080;
+  --green:#3ecf8e;--red:#f56060;--blue:#4f9cf9;--orange:#f5a623;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Golos Text',sans-serif;}
+
+/* LOGIN */
+#loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(ellipse at 50% 30%,#151a2e 0%,var(--bg) 70%);}
+.loginBox{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:36px 28px;width:100%;max-width:360px;position:relative;}
+.loginBox::before{content:'';position:absolute;top:0;left:20%;right:20%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+.loginLogo{font-family:'Unbounded',sans-serif;font-size:10px;font-weight:700;letter-spacing:4px;color:var(--gold);text-align:center;margin-bottom:6px;}
+.loginTitle{font-family:'Unbounded',sans-serif;font-size:20px;font-weight:900;text-align:center;margin-bottom:4px;}
+.loginSub{font-size:12px;color:var(--dim);text-align:center;margin-bottom:28px;}
+.loginSel{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Golos Text',sans-serif;font-size:15px;padding:13px 14px;outline:none;margin-bottom:12px;-webkit-appearance:none;}
+.loginSel:focus{border-color:var(--gold);}
+.loginBtn{width:100%;background:var(--gold);color:#0a0d14;border:none;border-radius:10px;font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;padding:14px;cursor:pointer;transition:opacity .2s;}
+.loginBtn:active{opacity:.85;}
+.loginErr{color:var(--red);font-size:12px;text-align:center;margin-top:10px;min-height:18px;}
+
+/* APP */
+#app{display:none;padding:0 0 40px;}
+
+/* HEADER */
+.appHeader{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.ahName{font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;color:var(--gold);}
+.ahDate{font-size:11px;color:var(--dim);}
+.ahOut{background:none;border:1px solid var(--border);border-radius:6px;color:var(--dim);font-size:11px;padding:5px 10px;cursor:pointer;}
+
+.wrap{padding:18px;}
+
+/* ALREADY DONE */
+#alreadyDone{display:none;background:rgba(62,207,142,.08);border:1px solid rgba(62,207,142,.25);border-radius:14px;padding:20px;margin-bottom:16px;text-align:center;}
+.adIcon{font-size:36px;margin-bottom:8px;}
+.adTitle{font-family:'Unbounded',sans-serif;font-size:13px;font-weight:700;color:var(--green);margin-bottom:4px;}
+.adSub{font-size:12px;color:var(--dim);}
+.adEdit{background:none;border:1px solid var(--border);border-radius:8px;color:var(--dim);font-size:12px;padding:8px 16px;cursor:pointer;margin-top:12px;}
+
+/* STREAK BLOCK */
+.streakBlock{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin-bottom:14px;display:flex;align-items:center;gap:14px;}
+.streakFire{font-size:32px;}
+.streakInfo{flex:1;}
+.streakNum{font-family:'Unbounded',sans-serif;font-size:26px;font-weight:900;color:var(--orange);line-height:1;}
+.streakLabel{font-size:11px;color:var(--dim);margin-top:2px;}
+.streakDots{display:flex;gap:5px;margin-top:8px;}
+.sdot{width:10px;height:10px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);}
+.sdot.done{background:var(--orange);}
+.sdot.today{background:var(--gold);box-shadow:0 0 6px rgba(201,168,76,.5);}
+
+/* BONUS PROGRESS */
+.bonusBlock{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin-bottom:14px;}
+.bonusTop{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.bonusTitle{font-size:11px;font-weight:600;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;}
+.bonusAmt{font-family:'Unbounded',sans-serif;font-size:18px;font-weight:700;color:var(--gold);}
+.bonusSub{font-size:11px;color:var(--dim);}
+.bonusBar{background:var(--surface2);border-radius:6px;height:8px;overflow:hidden;margin-bottom:6px;}
+.bonusFill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width .4s;}
+.bonusRemain{font-size:12px;color:var(--dim);}
+.bonusRemain span{color:var(--green);font-weight:600;}
+
+/* FORM */
+.formCard{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:14px;}
+.formTitle{font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;color:var(--gold);margin-bottom:16px;}
+
+.field{margin-bottom:16px;}
+.fieldLabel{font-size:10px;font-weight:600;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;margin-bottom:8px;display:block;}
+
+/* Number stepper */
+.stepper{display:flex;align-items:center;gap:0;border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.stepBtn{background:var(--surface2);border:none;color:var(--text);font-size:22px;width:52px;height:52px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s;}
+.stepBtn:active{background:var(--border);}
+.stepVal{flex:1;background:transparent;border:none;color:var(--text);font-family:'Unbounded',sans-serif;font-size:24px;font-weight:700;text-align:center;outline:none;width:100%;padding:0;}
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
+
+/* Premium input */
+.premiumInp{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--gold2);font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700;padding:13px 16px;outline:none;text-align:center;}
+.premiumInp:focus{border-color:var(--gold);}
+.premiumHint{font-size:11px;color:var(--dim);text-align:center;margin-top:6px;}
+
+/* Textarea */
+.commentInp{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Golos Text',sans-serif;font-size:14px;padding:12px 14px;outline:none;resize:none;min-height:80px;}
+.commentInp:focus{border-color:var(--gold);}
+
+/* Mood row */
+.moodRow{display:flex;gap:8px;}
+.moodBtn{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 4px;text-align:center;cursor:pointer;transition:all .15s;}
+.moodBtn:active{transform:scale(.95);}
+.moodBtn.sel{border-color:var(--gold);background:rgba(201,168,76,.1);}
+.moodEmoji{font-size:24px;display:block;}
+.moodLbl{font-size:9px;color:var(--dim);margin-top:3px;}
+.moodBtn.sel .moodLbl{color:var(--gold);}
+
+/* Submit */
+.submitBtn{width:100%;background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;border-radius:12px;color:#0a0d14;font-family:'Unbounded',sans-serif;font-size:13px;font-weight:900;padding:16px;cursor:pointer;margin-top:4px;transition:opacity .2s;}
+.submitBtn:active{opacity:.85;}
+.submitFeedback{text-align:center;font-size:12px;color:var(--green);margin-top:10px;min-height:18px;}
+
+/* SUCCESS SCREEN */
+#successScreen{display:none;min-height:100vh;align-items:center;justify-content:center;padding:20px;flex-direction:column;text-align:center;}
+.sucIcon{font-size:64px;margin-bottom:16px;animation:pop .4s ease;}
+@keyframes pop{0%{transform:scale(0)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+.sucTitle{font-family:'Unbounded',sans-serif;font-size:20px;font-weight:900;margin-bottom:8px;}
+.sucSub{font-size:14px;color:var(--dim);margin-bottom:24px;line-height:1.6;}
+.sucStreak{background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.3);border-radius:14px;padding:16px 24px;margin-bottom:20px;display:inline-block;}
+.sucStreakNum{font-family:'Unbounded',sans-serif;font-size:36px;font-weight:900;color:var(--orange);}
+.sucStreakLbl{font-size:12px;color:var(--dim);}
+.sucBackBtn{background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Golos Text',sans-serif;font-size:14px;padding:12px 24px;cursor:pointer;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.fadeUp{animation:fadeUp .3s ease;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="loginBox">
+    <div class="loginLogo">EVERIA LIFE</div>
+    <div class="loginTitle">Мой день</div>
+    <div class="loginSub">Ежедневный отчёт за 2 минуты</div>
+    <select class="loginSel" id="agentSel">
+      <option value="">— Выбери своё имя —</option>
+    </select>
+    <button class="loginBtn" onclick="login()">Войти →</button>
+    <div class="loginErr" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="appHeader">
+    <div>
+      <div class="ahName" id="ahName">—</div>
+      <div class="ahDate" id="ahDate">—</div>
+    </div>
+    <button class="ahOut" onclick="logout()">Выйти</button>
+  </div>
+
+  <div class="wrap">
+
+    <!-- Already submitted today -->
+    <div id="alreadyDone">
+      <div class="adIcon">✅</div>
+      <div class="adTitle">Сегодня уже отмечено!</div>
+      <div class="adSub" id="adSumText">—</div>
+      <button class="adEdit" onclick="editToday()">✏️ Изменить</button>
+    </div>
+
+    <!-- Streak -->
+    <div class="streakBlock fadeUp">
+      <div class="streakFire">🔥</div>
+      <div class="streakInfo">
+        <div class="streakNum" id="streakNum">0</div>
+        <div class="streakLabel">дней подряд</div>
+        <div class="streakDots" id="streakDots"></div>
+      </div>
+    </div>
+
+    <!-- Bonus progress -->
+    <div class="bonusBlock fadeUp">
+      <div class="bonusTop">
+        <span class="bonusTitle">💰 Прогресс к бонусу</span>
+        <div style="text-align:right">
+          <div class="bonusAmt" id="bonusAmt">0 ₽</div>
+          <div class="bonusSub" id="bonusSub">этот месяц</div>
+        </div>
+      </div>
+      <div class="bonusBar"><div class="bonusFill" id="bonusFill" style="width:0%"></div></div>
+      <div class="bonusRemain" id="bonusRemain">Загрузка...</div>
+    </div>
+
+    <!-- FORM -->
+    <div class="formCard fadeUp" id="reportForm">
+      <div class="formTitle">📋 Отчёт за сегодня</div>
+
+      <div class="field">
+        <span class="fieldLabel">📞 Звонков сделано</span>
+        <div class="stepper">
+          <button class="stepBtn" onclick="step('calls',-1)">−</button>
+          <input class="stepVal" type="number" id="calls" value="0" min="0">
+          <button class="stepBtn" onclick="step('calls',1)">+</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="fieldLabel">🤝 Встреч проведено</span>
+        <div class="stepper">
+          <button class="stepBtn" onclick="step('meetings',-1)">−</button>
+          <input class="stepVal" type="number" id="meetings" value="0" min="0">
+          <button class="stepBtn" onclick="step('meetings',1)">+</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="fieldLabel">📄 Договоров заключено</span>
+        <div class="stepper">
+          <button class="stepBtn" onclick="step('deals',-1)">−</button>
+          <input class="stepVal" type="number" id="deals" value="0" min="0">
+          <button class="stepBtn" onclick="step('deals',1)">+</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="fieldLabel">💵 Сумма премий, ₽</span>
+        <input class="premiumInp" type="number" id="premium" placeholder="0" inputmode="numeric">
+        <div class="premiumHint">Только за сегодняшние договоры</div>
+      </div>
+
+      <div class="field">
+        <span class="fieldLabel">😊 Настроение</span>
+        <div class="moodRow">
+          <div class="moodBtn" onclick="setMood('🔥',this)"><span class="moodEmoji">🔥</span><span class="moodLbl">Горю</span></div>
+          <div class="moodBtn sel" onclick="setMood('😊',this)"><span class="moodEmoji">😊</span><span class="moodLbl">Норм</span></div>
+          <div class="moodBtn" onclick="setMood('😐',this)"><span class="moodEmoji">😐</span><span class="moodLbl">Так себе</span></div>
+          <div class="moodBtn" onclick="setMood('😟',this)"><span class="moodEmoji">😟</span><span class="moodLbl">Тяжело</span></div>
+        </div>
+      </div>
+
+      <div class="field" style="margin-bottom:8px;">
+        <span class="fieldLabel">💬 Комментарий (необязательно)</span>
+        <textarea class="commentInp" id="comment" placeholder="Что важного случилось сегодня?"></textarea>
+      </div>
+
+      <button class="submitBtn" onclick="submitReport()">Сохранить отчёт ✓</button>
+      <div class="submitFeedback" id="submitFeedback"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- SUCCESS -->
+<div id="successScreen">
+  <div class="sucIcon">🎉</div>
+  <div class="sucTitle">Отлично!</div>
+  <div class="sucSub" id="sucSub">Отчёт сохранён.<br>Так держать!</div>
+  <div class="sucStreak">
+    <div class="sucStreakNum" id="sucStreakNum">1</div>
+    <div class="sucStreakLbl">🔥 дней подряд</div>
+  </div>
+  <button class="sucBackBtn" onclick="backToApp()">← Вернуться</button>
+</div>
+
+<script>
+const BIN_ID = '69b4fe3ab7ec241ddc68ff70';
+const API_KEY = '$2a$10$or/10uhY3Yz82p.8/QaAnO1IYrtaDRgEcGWgQ3mM1JkKdkKmQbTXm';
+const LKEY_AGENT = 'ev_mon_agent';
+const MONTHLY_GOAL = 100000; // руб — план для прогресс-бара
+
+let currentAgent = null;
+let selectedMood = '😊';
+let binData = {};
+let monitoring = [];
+let agentsList = [];
+let editingTodayId = null;
+
+// ─── AUTH ────────────────────────────────────────
+function login() {
+  const sel = document.getElementById('agentSel');
+  const name = sel.value;
+  if (!name) { document.getElementById('loginErr').textContent = 'Выбери своё имя'; return; }
+  currentAgent = name;
+  sessionStorage.setItem(LKEY_AGENT, name);
+  showApp();
+}
+function logout() { sessionStorage.removeItem(LKEY_AGENT); location.reload(); }
+
+// ─── INIT ────────────────────────────────────────
+window.addEventListener('load', () => {
+  loadAgentsAndInit();
+});
+
+function loadAgentsAndInit() {
+  fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+    headers: { 'X-Master-Key': API_KEY, 'X-Bin-Meta': 'false' }
+  })
+  .then(r => r.json())
+  .then(data => {
+    binData = (typeof data === 'object' && !Array.isArray(data)) ? data : {};
+    agentsList = Array.isArray(binData.agents) ? binData.agents : [];
+    monitoring = Array.isArray(binData.monitoring) ? binData.monitoring : [];
+    populateAgentSelect();
+    const saved = sessionStorage.getItem(LKEY_AGENT);
+    if (saved) { currentAgent = saved; showApp(); }
+  })
+  .catch(() => {
+    // fallback - try localStorage
+    try {
+      const lc = localStorage.getItem('ev_mon_data');
+      if (lc) { const d = JSON.parse(lc); monitoring = d.monitoring || []; agentsList = d.agents || []; }
+    } catch(e) {}
+    populateAgentSelect();
+    const saved = sessionStorage.getItem(LKEY_AGENT);
+    if (saved) { currentAgent = saved; showApp(); }
+  });
+}
+
+function populateAgentSelect() {
+  const sel = document.getElementById('agentSel');
+  const names = agentsList.length
+    ? agentsList.map(a => a.name).sort()
+    : ['Тест агент']; // fallback if BIN empty
+  names.forEach(n => {
+    const opt = document.createElement('option');
+    opt.value = n; opt.textContent = n;
+    sel.appendChild(opt);
+  });
+}
+
+function showApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('successScreen').style.display = 'none';
+
+  const now = new Date();
+  document.getElementById('ahName').textContent = currentAgent;
+  document.getElementById('ahDate').textContent = now.toLocaleDateString('ru-RU', {weekday:'long', day:'numeric', month:'long'});
+
+  renderStreak();
+  renderBonusProgress();
+  checkTodayReport();
+}
+
+// ─── TODAY CHECK ────────────────────────────────
+function todayStr() { return new Date().toISOString().split('T')[0]; }
+
+function getTodayReport() {
+  return monitoring.find(r => r.agentName === currentAgent && r.date === todayStr());
+}
+
+function checkTodayReport() {
+  const today = getTodayReport();
+  const alreadyDiv = document.getElementById('alreadyDone');
+  const form = document.getElementById('reportForm');
+  if (today && !editingTodayId) {
+    alreadyDiv.style.display = 'block';
+    document.getElementById('adSumText').textContent =
+      `📞 ${today.calls} зв · 🤝 ${today.meetings} вст · 📄 ${today.deals} дог · 💵 ${Number(today.premium||0).toLocaleString('ru')} ₽`;
+    form.style.display = 'none';
+  } else {
+    alreadyDiv.style.display = 'none';
+    form.style.display = 'block';
+    if (today && editingTodayId) {
+      document.getElementById('calls').value = today.calls || 0;
+      document.getElementById('meetings').value = today.meetings || 0;
+      document.getElementById('deals').value = today.deals || 0;
+      document.getElementById('premium').value = today.premium || '';
+      document.getElementById('comment').value = today.comment || '';
+    }
+  }
+}
+
+function editToday() {
+  const today = getTodayReport();
+  if (today) editingTodayId = today.id;
+  checkTodayReport();
+}
+
+// ─── STREAK ────────────────────────────────────
+function renderStreak() {
+  const myReports = monitoring.filter(r => r.agentName === currentAgent);
+  const today = new Date(); today.setHours(0,0,0,0);
+  let streak = 0;
+  for (let i = 0; i < 90; i++) {
+    const d = new Date(today); d.setDate(d.getDate() - i);
+    if (d.getDay() === 0 || d.getDay() === 6) continue; // skip weekends
+    const ds = d.toISOString().split('T')[0];
+    const found = myReports.find(r => r.date === ds);
+    if (found) { streak++; }
+    else if (i > 0) { break; } // allow today to be missing
+  }
+  document.getElementById('streakNum').textContent = streak;
+
+  // last 7 working days dots
+  const dots = document.getElementById('streakDots');
+  dots.innerHTML = '';
+  const days = [];
+  let checked = 0, j = 0;
+  while (checked < 7) {
+    const d = new Date(today); d.setDate(d.getDate() - j);
+    if (d.getDay() !== 0 && d.getDay() !== 6) {
+      days.unshift(d.toISOString().split('T')[0]);
+      checked++;
+    }
+    j++;
+  }
+  days.forEach(ds => {
+    const dot = document.createElement('div');
+    const found = myReports.find(r => r.date === ds);
+    const isToday = ds === todayStr();
+    dot.className = 'sdot' + (found ? (isToday ? ' today' : ' done') : (isToday ? ' today' : ''));
+    dots.appendChild(dot);
+  });
+}
+
+// ─── BONUS PROGRESS ────────────────────────────
+function renderBonusProgress() {
+  const now = new Date();
+  const monthKey = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+  const myMonth = monitoring.filter(r => r.agentName === currentAgent && r.date && r.date.startsWith(monthKey));
+  const total = myMonth.reduce((s, r) => s + (Number(r.premium) || 0), 0);
+  const pct = Math.min(Math.round(total / MONTHLY_GOAL * 100), 100);
+  const remain = Math.max(MONTHLY_GOAL - total, 0);
+
+  document.getElementById('bonusAmt').textContent = total.toLocaleString('ru') + ' ₽';
+  document.getElementById('bonusFill').style.width = pct + '%';
+  if (remain > 0) {
+    document.getElementById('bonusRemain').innerHTML = `До цели 100 000 ₽ осталось: <span>${remain.toLocaleString('ru')} ₽</span>`;
+  } else {
+    document.getElementById('bonusRemain').innerHTML = `<span>🎯 Цель достигнута! Отличная работа!</span>`;
+  }
+}
+
+// ─── FORM ───────────────────────────────────────
+function step(field, delta) {
+  const el = document.getElementById(field);
+  const val = Math.max(0, (parseInt(el.value) || 0) + delta);
+  el.value = val;
+}
+
+function setMood(emoji, btn) {
+  document.querySelectorAll('.moodBtn').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+  selectedMood = emoji;
+}
+
+function submitReport() {
+  const calls = parseInt(document.getElementById('calls').value) || 0;
+  const meetings = parseInt(document.getElementById('meetings').value) || 0;
+  const deals = parseInt(document.getElementById('deals').value) || 0;
+  const premium = parseFloat(document.getElementById('premium').value) || 0;
+  const comment = document.getElementById('comment').value.trim();
+
+  if (calls === 0 && meetings === 0 && deals === 0 && premium === 0) {
+    document.getElementById('submitFeedback').textContent = 'Заполни хотя бы одно поле';
+    return;
+  }
+
+  const record = {
+    id: editingTodayId || (Date.now().toString(36) + Math.random().toString(36).slice(2)),
+    agentName: currentAgent,
+    date: todayStr(),
+    calls, meetings, deals, premium, comment,
+    mood: selectedMood,
+    savedAt: new Date().toISOString()
+  };
+
+  // Remove existing today entry if editing
+  monitoring = monitoring.filter(r => !(r.agentName === currentAgent && r.date === todayStr()));
+  monitoring.push(record);
+  editingTodayId = null;
+
+  saveToCloud(() => {
+    const streak = parseInt(document.getElementById('streakNum').textContent) || 0;
+    document.getElementById('sucStreakNum').textContent = streak + (record ? 1 : streak);
+
+    let msg = '';
+    if (deals > 0) msg = `${deals} договор${deals > 1 ? 'а' : ''} — отличный день!`;
+    else if (meetings > 0) msg = `${meetings} встреч${meetings > 1 ? 'и' : 'а'} — продолжай в том же духе!`;
+    else if (calls > 0) msg = `${calls} звонков — работа идёт!`;
+    document.getElementById('sucSub').textContent = 'Отчёт сохранён.\n' + msg;
+
+    document.getElementById('app').style.display = 'none';
+    const ss = document.getElementById('successScreen');
+    ss.style.display = 'flex';
+    ss.style.flexDirection = 'column';
+    renderStreak();
+    renderBonusProgress();
+  });
+}
+
+function backToApp() {
+  document.getElementById('successScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  checkTodayReport();
+}
+
+// ─── CLOUD SAVE ─────────────────────────────────
+function saveToCloud(cb) {
+  // save locally first
+  try { localStorage.setItem('ev_mon_data', JSON.stringify({ monitoring, agents: agentsList })); } catch(e) {}
+
+  fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+    headers: { 'X-Master-Key': API_KEY, 'X-Bin-Meta': 'false' }
+  })
+  .then(r => r.json())
+  .then(current => {
+    const updated = Object.assign({},
+      (typeof current === 'object' && !Array.isArray(current)) ? current : {},
+      { monitoring }
+    );
+    return fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
+      body: JSON.stringify(updated)
+    });
+  })
+  .then(() => { if(cb) cb(); })
+  .catch(() => { if(cb) cb(); }); // still show success even if offline
+}
+</script>
+</body>
+</html>
