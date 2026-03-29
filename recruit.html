@@ -698,14 +698,44 @@ function localLoad() {
 function localSave(data) { try { localStorage.setItem(RECRUIT_KEY, JSON.stringify(data)); } catch(e) {} }
 
 function loadData() {
-  candidates = localLoad();
-  render();
-  setSyncStatus('ok','локально');
+  setSyncStatus('loading', '...');
+  fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+    headers: { 'X-Master-Key': API_KEY, 'X-Bin-Meta': 'false' }
+  })
+  .then(r => r.json())
+  .then(data => {
+    candidates = Array.isArray(data.candidates) ? data.candidates : localLoad();
+    localSave(candidates);
+    render();
+    setSyncStatus('ok', 'синхронизировано');
+  })
+  .catch(() => {
+    candidates = localLoad();
+    render();
+    setSyncStatus('err', 'локально');
+  });
 }
 
 function schedSave() {
   localSave(candidates);
-  setSyncStatus('ok','сохранено');
+  setSyncStatus('loading', '...');
+  fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+    headers: { 'X-Master-Key': API_KEY, 'X-Bin-Meta': 'false' }
+  })
+  .then(r => r.json())
+  .then(current => {
+    const updated = Object.assign({},
+      (typeof current === 'object' && !Array.isArray(current)) ? current : {},
+      { candidates }
+    );
+    return fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
+      body: JSON.stringify(updated)
+    });
+  })
+  .then(() => setSyncStatus('ok', 'сохранено ☁️'))
+  .catch(() => setSyncStatus('err', 'ошибка сети'));
 }
 
 function setSyncStatus(state, text) {
