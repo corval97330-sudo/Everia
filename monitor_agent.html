@@ -143,7 +143,10 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
       <div class="ahName" id="ahName">—</div>
       <div class="ahDate" id="ahDate">—</div>
     </div>
-    <button class="ahOut" onclick="logout()">Выйти</button>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <button onclick="editGoal()" style="background:none;border:1px solid var(--border);border-radius:6px;color:var(--dim);font-size:11px;padding:5px 10px;cursor:pointer;" id="goalBtn">🎯 —</button>
+      <button class="ahOut" onclick="logout()">Выйти</button>
+    </div>
   </div>
 
   <div class="wrap">
@@ -254,7 +257,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
 const BIN_ID = '69b4fe3ab7ec241ddc68ff70';
 const API_KEY = '$2a$10$or/10uhY3Yz82p.8/QaAnO1IYrtaDRgEcGWgQ3mM1JkKdkKmQbTXm';
 const LKEY_AGENT = 'ev_mon_agent';
-const MONTHLY_GOAL = 100000; // руб — план для прогресс-бара
+const MONTHLY_GOAL = 100000; // дефолт
 
 let currentAgent = null;
 let selectedMood = '😊';
@@ -285,7 +288,12 @@ function loadAgentsAndInit() {
   })
   .then(r => r.json())
   .then(data => {
-    binData = (typeof data === 'object' && !Array.isArray(data)) ? data : {};
+    // Поддерживаем оба формата: старый (массив агентов напрямую) и новый ({agents: [...]})
+    if (Array.isArray(data)) {
+      binData = { agents: data };
+    } else {
+      binData = (typeof data === 'object') ? data : {};
+    }
     agentsList = Array.isArray(binData.agents) ? binData.agents : [];
     monitoring = Array.isArray(binData.monitoring) ? binData.monitoring : [];
     populateAgentSelect();
@@ -328,6 +336,7 @@ function showApp() {
   renderStreak();
   renderBonusProgress();
   checkTodayReport();
+  updateGoalBtn();
 }
 
 // ─── TODAY CHECK ────────────────────────────────
@@ -403,20 +412,48 @@ function renderStreak() {
 }
 
 // ─── BONUS PROGRESS ────────────────────────────
+function getMyGoal() {
+  if (!currentAgent) return MONTHLY_GOAL;
+  const key = 'ev_goal_' + currentAgent.replace(/\s+/g,'_');
+  return parseInt(localStorage.getItem(key)) || MONTHLY_GOAL;
+}
+
+function setMyGoal(val) {
+  if (!currentAgent) return;
+  const key = 'ev_goal_' + currentAgent.replace(/\s+/g,'_');
+  localStorage.setItem(key, val);
+}
+
+function editGoal() {
+  const current = getMyGoal();
+  const val = prompt('Твой план на месяц (₽):', current);
+  if (val && !isNaN(parseInt(val)) && parseInt(val) > 0) {
+    setMyGoal(parseInt(val));
+    renderBonusProgress();
+    updateGoalBtn();
+  }
+}
+
+function updateGoalBtn() {
+  const btn = document.getElementById('goalBtn');
+  if (btn) btn.textContent = '🎯 ' + getMyGoal().toLocaleString('ru') + ' ₽';
+}
+
 function renderBonusProgress() {
+  const goal = getMyGoal();
   const now = new Date();
   const monthKey = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
   const myMonth = monitoring.filter(r => r.agentName === currentAgent && r.date && r.date.startsWith(monthKey));
   const total = myMonth.reduce((s, r) => s + (Number(r.premium) || 0), 0);
-  const pct = Math.min(Math.round(total / MONTHLY_GOAL * 100), 100);
-  const remain = Math.max(MONTHLY_GOAL - total, 0);
+  const pct = Math.min(Math.round(total / goal * 100), 100);
+  const remain = Math.max(goal - total, 0);
 
   document.getElementById('bonusAmt').textContent = total.toLocaleString('ru') + ' ₽';
   document.getElementById('bonusFill').style.width = pct + '%';
   if (remain > 0) {
-    document.getElementById('bonusRemain').innerHTML = `До цели 100 000 ₽ осталось: <span>${remain.toLocaleString('ru')} ₽</span>`;
+    document.getElementById('bonusRemain').innerHTML = `До цели ${goal.toLocaleString('ru')} ₽ осталось: <span>${remain.toLocaleString('ru')} ₽</span>`;
   } else {
-    document.getElementById('bonusRemain').innerHTML = `<span>🎯 Цель достигнута! Отличная работа!</span>`;
+    document.getElementById('bonusRemain').innerHTML = `<span>🎯 Цель ${goal.toLocaleString('ru')} ₽ достигнута! Отличная работа!</span>`;
   }
 }
 
