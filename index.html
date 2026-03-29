@@ -165,7 +165,13 @@ body {
 .app-card.tracker::before { background: linear-gradient(90deg, #6b5ce7, #4f9cf9); }
 .app-card.desk::before { background: linear-gradient(90deg, var(--gold), var(--gold2)); }
 .app-card.agent::before { background: linear-gradient(90deg, #3ecf8e, #4f9cf9); }
+.app-card.recruit::before { background: linear-gradient(90deg, #f56060, #f5a623); }
+.app-card.viv::before { background: linear-gradient(90deg, #8b6cf7, #4f9cf9); }
+.app-card.riv::before { background: linear-gradient(90deg, #c9a84c, #3ecf8e); }
 .app-card.monitor::before { background: linear-gradient(90deg, #3ecf8e, #8b6cf7); }
+.recruit .app-icon { background: rgba(245,96,96,0.12); }
+.viv .app-icon { background: rgba(139,108,247,0.12); }
+.riv .app-icon { background: rgba(201,168,76,0.12); }
 .monitor .app-icon { background: rgba(62,207,142,0.12); }
 
 .app-card:hover {
@@ -293,6 +299,39 @@ body {
     </a>
 
   </div>
+
+    <a class="app-card recruit" href="recruit.html" target="_blank">
+      <div class="card-inner">
+        <div class="app-icon">🔍</div>
+        <div class="app-info">
+          <div class="app-name">Рекрутинг</div>
+          <div class="app-desc">Кандидаты, воронка, анкета, скрипты</div>
+        </div>
+        <div class="app-arrow">→</div>
+      </div>
+    </a>
+
+    <a class="app-card viv" href="viv.html" target="_blank">
+      <div class="card-inner">
+        <div class="app-icon">💼</div>
+        <div class="app-info">
+          <div class="app-name">ВИВ</div>
+          <div class="app-desc">Входящая встреча, протокол, калькулятор</div>
+        </div>
+        <div class="app-arrow">→</div>
+      </div>
+    </a>
+
+    <a class="app-card riv" href="riv.html" target="_blank">
+      <div class="card-inner">
+        <div class="app-icon">📋</div>
+        <div class="app-info">
+          <div class="app-name">РИВ</div>
+          <div class="app-desc">Регулярная встреча с агентом, протокол, аналитика</div>
+        </div>
+        <div class="app-arrow">→</div>
+      </div>
+    </a>
 
     <a class="app-card monitor" href="monitor.html" target="_blank">
       <div class="card-inner">
