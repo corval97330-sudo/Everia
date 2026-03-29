@@ -147,6 +147,7 @@ textarea.fi{resize:vertical;min-height:70px;}
       <div class="hTitle">ВИВ — Вводная встреча</div>
     </div>
     <div class="hRight">
+      <span id="syncBadge" style="font-size:11px;font-weight:600;color:var(--green);">●</span>
       <button class="hBtn" onclick="logout()">Выйти</button>
     </div>
   </div>
@@ -452,6 +453,8 @@ textarea.fi{resize:vertical;min-height:70px;}
 <script>
 const PASSWORD = 'Everia2026';
 const LKEY = 'ev_viv_v1';
+const BIN_ID = '69b4fe3ab7ec241ddc68ff70';
+const API_KEY = '$2a$10$or/10uhY3Yz82p.8/QaAnO1IYrtaDRgEcGWgQ3mM1JkKdkKmQbTXm';
 
 let meetings = [];
 
@@ -467,14 +470,61 @@ function login() {
 }
 function logout() { sessionStorage.removeItem('ev_viv'); location.reload(); }
 
-function loadData() {
-  try { const d = localStorage.getItem(LKEY); if(d) meetings = JSON.parse(d); } catch(e) {}
-  renderMeetings();
-  calcAll();
-  calcStandalone();
+function setSyncBadge(state, text) {
+  const el = document.getElementById('syncBadge');
+  if (!el) return;
+  const colors = { ok: 'var(--green)', err: 'var(--red)', loading: 'var(--gold)' };
+  el.style.color = colors[state] || 'var(--dim)';
+  el.textContent = text || '●';
 }
 
-function saveData() { try { localStorage.setItem(LKEY, JSON.stringify(meetings)); } catch(e) {} }
+function localSaveViv() { try { localStorage.setItem(LKEY, JSON.stringify(meetings)); } catch(e) {} }
+function localLoadViv() { try { const d = localStorage.getItem(LKEY); return d ? JSON.parse(d) : []; } catch(e) { return []; } }
+
+function loadData() {
+  setSyncBadge('loading', '...');
+  fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+    headers: { 'X-Master-Key': API_KEY, 'X-Bin-Meta': 'false' }
+  })
+  .then(r => r.json())
+  .then(data => {
+    meetings = Array.isArray(data.viv_meetings) ? data.viv_meetings : localLoadViv();
+    localSaveViv();
+    setSyncBadge('ok', 'синхронизировано');
+    renderMeetings();
+    calcAll();
+    calcStandalone();
+  })
+  .catch(() => {
+    meetings = localLoadViv();
+    setSyncBadge('err', 'локально');
+    renderMeetings();
+    calcAll();
+    calcStandalone();
+  });
+}
+
+function saveData() {
+  localSaveViv();
+  setSyncBadge('loading', '...');
+  fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+    headers: { 'X-Master-Key': API_KEY, 'X-Bin-Meta': 'false' }
+  })
+  .then(r => r.json())
+  .then(current => {
+    const updated = Object.assign({},
+      (typeof current === 'object' && !Array.isArray(current)) ? current : {},
+      { viv_meetings: meetings }
+    );
+    return fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
+      body: JSON.stringify(updated)
+    });
+  })
+  .then(() => setSyncBadge('ok', 'сохранено ☁️'))
+  .catch(() => setSyncBadge('err', 'ошибка'));
+}
 
 function showTab(name, el) {
   ['meetings','protocol','calc','algo','scripts'].forEach(t => {
