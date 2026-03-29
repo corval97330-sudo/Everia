@@ -226,6 +226,37 @@ select.fi{cursor:pointer;}
     <!-- PROTOCOL TAB -->
     <div id="tabProtocol" style="display:none;">
 
+      <!-- Подсказки протокола -->
+      <div style="background:rgba(79,156,249,.07);border:1px solid rgba(79,156,249,.2);border-radius:12px;padding:14px 18px;margin-bottom:16px;">
+        <div onclick="toggleProtocolHints(this)" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-family:'Unbounded',sans-serif;font-size:10px;font-weight:700;color:var(--blue);">📖 Подсказки по заполнению протокола</span>
+          <span id="protHintsChevron" style="color:var(--dim);font-size:13px;">▼</span>
+        </div>
+        <div id="protHintsBody" style="display:none;margin-top:12px;">
+          <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--blue);text-transform:uppercase;margin-bottom:8px;">Анализ предыдущего периода</div>
+          <div style="font-size:12px;color:var(--dim);line-height:1.8;margin-bottom:10px;">
+            <strong style="color:var(--text);">Воронка — План</strong> — цифры на месяц, которые запланировали на прошлой РИВ исходя из целей по доходу. Если план не обсуждался — оставляем пустой.<br>
+            <strong style="color:var(--text);">Воронка — Факт</strong> — данные из мониторинга, накопительным итогом.<br>
+            <strong style="color:var(--text);">Звонок</strong> = любой результативный разговор с итогом назначенной встречи или отказа. Если клиент просит перезвонить — не считаем.<br>
+            <strong style="color:var(--text);">2-я встреча</strong> — любая последующая встреча с тем же клиентом после первой. Сервисные встречи считаем отдельно.<br>
+            <strong style="color:var(--text);">Пополнение базы</strong> — кол-во имён из любых источников. В базе должно хватать на запланированное количество результативных звонков.
+          </div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--blue);text-transform:uppercase;margin-bottom:8px;">Работа с портфелем</div>
+          <div style="font-size:12px;color:var(--dim);line-height:1.8;margin-bottom:10px;">
+            <strong style="color:var(--text);">Начисления</strong> — сколько было, сколько прозвонил, кто обозначил трудности, кому назначена встреча.<br>
+            <strong style="color:var(--text);">Фин. изменения</strong> — кому предлагал, кто принял/не принял, какие действия дальше.<br>
+            <strong style="color:var(--text);">УР 1-го года</strong> — высокий УР говорит о некачественных продажах или о намеренных расторжениях. Найти причину — иначе ситуация повторится.<br>
+            <strong style="color:var(--text);">Вручение полисов</strong> — вручил? Работал с Памяткой ЦБ? Взял рекомендации?
+          </div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--blue);text-transform:uppercase;margin-bottom:8px;">Зоны достижений и роста</div>
+          <div style="font-size:12px;color:var(--dim);line-height:1.8;">
+            <strong style="color:var(--text);">Достижения</strong> — конкретная связка: сделал действие → получил результат. Пример: «Ты научился/ась отрабатывать возражения при взятии рекомендаций → воронка выросла с 3 до 5».<br>
+            <strong style="color:var(--text);">Зоны роста</strong> — конкретно и измеримо. Пример: «Планировалось 3 ТС — проведено 2, назначены 3 встречи, состоялась 1. Что нужно, чтобы встреч было больше?»<br>
+            <strong style="color:var(--text);">В конце РИВ</strong> — обязательно покажи агенту, что будет, если договорённости будут соблюдены: новый статус, доход, конкурс, поездка.
+          </div>
+        </div>
+      </div>
+
       <div class="formCard">
         <div class="formTitle"><div class="stepNum">1</div>Общая информация</div>
         <div class="fg2">
@@ -869,6 +900,15 @@ function resetForm() {
   selectedMood = '';
   const al = document.getElementById('actionsList');
   al.innerHTML = '<div class="actionItem"><input type="text" placeholder="Задача 1..."><button class="rmBtn" onclick="removeAction(this)">×</button></div>';
+}
+
+// TOGGLE PROTOCOL HINTS
+function toggleProtocolHints(el) {
+  const body = document.getElementById('protHintsBody');
+  const ch = document.getElementById('protHintsChevron');
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  if (ch) ch.style.transform = isOpen ? '' : 'rotate(180deg)';
 }
 
 // TOGGLE KPI
