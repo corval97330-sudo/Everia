@@ -1227,6 +1227,7 @@ function addAg() {
   if (!name) return;
   if (AGENTS.find(a => a.name === name)) { alert('Уже есть!'); return; }
   AGENTS.push({ name: name, role: 'Агент', pin: '1234' });
+  saveAgents(AGENTS);
   refreshAgentSelect();
   document.getElementById('newAgName').value = '';
   openMgr();
@@ -1235,6 +1236,7 @@ function delAg(btn) {
   const name = btn.getAttribute('data-name');
   if (!confirm('Удалить ' + name + '?')) return;
   AGENTS = AGENTS.filter(a => a.name !== name);
+  saveAgents(AGENTS);
   refreshAgentSelect();
   openMgr();
 }
