@@ -75,6 +75,8 @@ body {
 .riv     .app-icon { background: rgba(201,168,76,0.12); }
 .monitor .app-icon { background: rgba(62,207,142,0.12); }
 .monitor-agent .app-icon { background: rgba(79,156,249,0.12); }
+.app-card.library::before { background: linear-gradient(90deg, #8b6cf7, #c9a84c); }
+.library .app-icon { background: rgba(139,108,247,0.12); }
 .app-card.monitor-agent::before { background: linear-gradient(90deg, #4f9cf9, #3ecf8e); }
 
 .reminder-badge {
@@ -210,6 +212,17 @@ body {
         <div class="app-info">
           <div class="app-name">Мониторинг</div>
           <div class="app-desc">Сводка команды, рейтинг, серии</div>
+        </div>
+        <div class="app-arrow">→</div>
+      </div>
+    </a>
+
+    <a class="app-card library" href="library.html" target="_blank">
+      <div class="card-inner">
+        <div class="app-icon">📖</div>
+        <div class="app-info">
+          <div class="app-name">Библиотека скриптов</div>
+          <div class="app-desc">ВИВ, РИВ, интервью, ПТ, рекрутинг, портфель</div>
         </div>
         <div class="app-arrow">→</div>
       </div>
