@@ -74,6 +74,32 @@ body {
 .viv     .app-icon { background: rgba(139,108,247,0.12); }
 .riv     .app-icon { background: rgba(201,168,76,0.12); }
 .monitor .app-icon { background: rgba(62,207,142,0.12); }
+.monitor-agent .app-icon { background: rgba(79,156,249,0.12); }
+.app-card.monitor-agent::before { background: linear-gradient(90deg, #4f9cf9, #3ecf8e); }
+
+.reminder-badge {
+  position: absolute;
+  top: 12px; right: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  animation: pulse 2s ease-in-out infinite;
+}
+.reminder-badge.today {
+  background: rgba(245,96,96,0.15);
+  color: #f56060;
+  border: 1px solid rgba(245,96,96,0.3);
+}
+.reminder-badge.soon {
+  background: rgba(245,166,35,0.15);
+  color: #f5a623;
+  border: 1px solid rgba(245,166,35,0.3);
+}
+@keyframes pulse {
+  0%,100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
 
 .app-info { flex: 1; }
 .app-name { font-family: "Unbounded", sans-serif; font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
@@ -167,11 +193,12 @@ body {
     </a>
 
     <a class="app-card riv" href="riv.html" target="_blank">
+      <div id="rivReminder"></div>
       <div class="card-inner">
         <div class="app-icon">📋</div>
         <div class="app-info">
           <div class="app-name">РИВ</div>
-          <div class="app-desc">Регулярная встреча с агентом, протокол, аналитика</div>
+          <div class="app-desc" id="rivDesc">Регулярная встреча с агентом, протокол, аналитика</div>
         </div>
         <div class="app-arrow">→</div>
       </div>
@@ -188,10 +215,68 @@ body {
       </div>
     </a>
 
+    <a class="app-card monitor-agent" href="monitor_agent.html" target="_blank">
+      <div class="card-inner">
+        <div class="app-icon">📝</div>
+        <div class="app-info">
+          <div class="app-name">Мой день</div>
+          <div class="app-desc">Ежедневный отчёт агента — 2 минуты</div>
+        </div>
+        <div class="app-arrow">→</div>
+      </div>
+    </a>
+
   </div>
 
   <div class="footer">Marina · Everia Life · 2026</div>
 </div>
 
+<script>
+(function() {
+  const BIN_ID = '69b4fe3ab7ec241ddc68ff70';
+  const API_KEY = '$2a$10$or/10uhY3Yz82p.8/QaAnO1IYrtaDRgEcGWgQ3mM1JkKdkKmQbTXm';
+
+  fetch('https://api.jsonbin.io/v3/b/' + BIN_ID + '/latest', {
+    headers: { 'X-Master-Key': API_KEY, 'X-Bin-Meta': 'false' }
+  })
+  .then(r => r.json())
+  .then(data => {
+    const meetings = Array.isArray(data.riv_meetings) ? data.riv_meetings : [];
+    if (!meetings.length) return;
+
+    const today = new Date(); today.setHours(0,0,0,0);
+    const upcoming = [];
+
+    meetings.forEach(m => {
+      if (!m.nextDate) return;
+      const d = new Date(m.nextDate); d.setHours(0,0,0,0);
+      const diff = Math.round((d - today) / 86400000);
+      if (diff === 1) {
+        upcoming.push({ agent: m.agent, diff, date: d });
+      }
+    });
+
+    if (!upcoming.length) return;
+
+    // Sort by soonest
+    upcoming.sort((a, b) => a.diff - b.diff);
+    const soonest = upcoming[0];
+    const badge = document.getElementById('rivReminder');
+    const desc = document.getElementById('rivDesc');
+    if (!badge) return;
+
+    // Показываем только если завтра
+    const tomorrow = upcoming.filter(m => m.diff === 1);
+    if (!tomorrow.length) return;
+
+    const names = tomorrow.map(m => m.agent.split(' ')[0]).join(', ');
+    const count = tomorrow.length;
+
+    badge.innerHTML = '<span class="reminder-badge soon">📅 Завтра ' + count + ' РИВ</span>';
+    if (desc) desc.textContent = 'Завтра: ' + names;
+  })
+  .catch(() => {});
+})();
+</script>
 </body>
 </html>
