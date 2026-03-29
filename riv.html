@@ -143,6 +143,30 @@ select.fi{cursor:pointer;}
 .emptyState{text-align:center;padding:60px 20px;color:var(--dim);}
 .emptyState div:first-child{font-size:44px;margin-bottom:14px;}
 
+/* KPI TAB */
+.kpiCard{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:12px;overflow:hidden;}
+.kpiHead{display:flex;align-items:flex-start;gap:14px;padding:16px 18px;cursor:pointer;}
+.kpiHead:hover{background:var(--surface2);}
+.kpiNum{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px;}
+.kpiTitle{flex:1;}
+.kpiName{font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;margin-bottom:3px;}
+.kpiNorm{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;display:inline-block;margin-bottom:4px;}
+.kpiProblem{font-size:12px;color:var(--dim);}
+.kpiChevron{color:var(--dim);transition:transform .2s;font-size:16px;flex-shrink:0;}
+.kpiBody{display:none;padding:0 18px 18px;}
+.kpiBody.open{display:block;}
+.kpiSection{margin-top:12px;}
+.kpiSecLabel{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.kpiItem{font-size:12px;color:var(--text);line-height:1.7;padding:4px 0;padding-left:14px;position:relative;}
+.kpiItem::before{content:'•';position:absolute;left:0;color:var(--dim);}
+.ptList{display:flex;flex-direction:column;gap:6px;margin-top:8px;}
+.ptItem{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:12px;line-height:1.5;cursor:pointer;transition:all .15s;position:relative;}
+.ptItem:hover{border-color:var(--gold);}
+.ptItem.copied{border-color:var(--green);}
+.osSec{background:rgba(79,156,249,.06);border:1px solid rgba(79,156,249,.15);border-radius:10px;padding:14px 16px;margin-top:8px;}
+.osStep{font-size:12px;line-height:1.8;color:var(--text);}
+.osStep span{color:var(--blue);font-weight:600;}
+
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .fadeIn{animation:fadeIn .3s ease;}
 </style>
@@ -181,6 +205,7 @@ select.fi{cursor:pointer;}
     <button class="tab" onclick="showTab('protocol',this)">✍️ Протокол</button>
     <button class="tab" onclick="showTab('algo',this)">🗂 Алгоритм</button>
     <button class="tab" onclick="showTab('scripts',this)">💬 Скрипты</button>
+    <button class="tab" onclick="showTab('kpi',this)">📊 KPI</button>
   </div>
 
   <div class="main">
@@ -369,6 +394,234 @@ select.fi{cursor:pointer;}
 
     </div>
 
+    <!-- KPI TAB -->
+    <div id="tabKpi" style="display:none;">
+
+      <div style="background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.2);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:var(--dim);line-height:1.6;">
+        📊 Нормы KPI и коррекция — используй при анализе агента на РИВ. Нажми на карточку чтобы раскрыть подсказки.
+      </div>
+
+      <div class="kpiCard">
+        <div class="kpiHead" onclick="toggleKpi(this)">
+          <div class="kpiNum" style="background:rgba(79,156,249,.15);color:var(--blue);">1</div>
+          <div class="kpiTitle">
+            <div class="kpiName">Звонки / Назначенные встречи</div>
+            <span class="kpiNorm" style="background:rgba(79,156,249,.12);color:var(--blue);">Норма: 2/1 — 7/1 · нижний предел 7/1</span>
+            <div class="kpiProblem">⚠️ Звонков много, встреч мало</div>
+          </div>
+          <span class="kpiChevron">▼</span>
+        </div>
+        <div class="kpiBody">
+          <div class="kpiSection">
+            <div class="kpiSecLabel" style="color:var(--red);">❌ Возможные причины</div>
+            <div style="margin-bottom:6px;font-size:10px;font-weight:600;color:var(--orange);text-transform:uppercase;letter-spacing:1px;">Технология звонка</div>
+            <div class="kpiItem">Не знает скрипт, не соблюдает структуру</div>
+            <div class="kpiItem">Ещё не имея навыка, звонит самостоятельно</div>
+            <div class="kpiItem">Не работает с возражениями</div>
+            <div class="kpiItem">Не предлагает варианты времени и места встречи</div>
+            <div class="kpiItem">Продаёт по телефону</div>
+            <div class="kpiItem">Проявляет неуверенность или давит на клиента</div>
+            <div class="kpiItem">Звонит в неправильное время или непрофильному клиенту</div>
+            <div style="margin-top:10px;margin-bottom:6px;font-size:10px;font-weight:600;color:var(--orange);text-transform:uppercase;letter-spacing:1px;">Клиентская база</div>
+            <div class="kpiItem">У новичков — плохая База 100 (холодные контакты, нерабочая база)</div>
+            <div class="kpiItem">У опытных — теплые контакты отработаны, рекомендации берутся некачественно</div>
+          </div>
+          <div class="kpiSection">
+            <div class="kpiSecLabel" style="color:var(--green);">✅ Коррекция</div>
+            <div class="kpiItem">Просмотровый ПТ — Телефонная сессия (минимум 3–5 результативных звонков)</div>
+            <div class="kpiItem">Анализируем точную причину, корректируем ошибки, просим повторить сразу в новом звонке</div>
+            <div class="kpiItem">Если ошибки серьёзные — даём ДЗ + планируем Ролевую игру</div>
+            <div class="kpiItem">Если база некачественная — пересматриваем источники поиска, проверяем навык взятия рекомендаций</div>
+          </div>
+          <div class="kpiSection">
+            <div class="kpiSecLabel" style="color:var(--purple);">🎓 Полевые тренинги</div>
+            <div class="ptList">
+              <div class="ptItem" onclick="copyQ(this)">ПТ №1 — Назначение встречи по телефону: МК агента → ПО → «Назначение встречи»<span class="copyHint">✓ скопировано</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="kpiCard">
+        <div class="kpiHead" onclick="toggleKpi(this)">
+          <div class="kpiNum" style="background:rgba(245,166,35,.15);color:var(--orange);">2</div>
+          <div class="kpiTitle">
+            <div class="kpiName">Назначенные встречи / Состоявшиеся встречи</div>
+            <span class="kpiNorm" style="background:rgba(245,166,35,.12);color:var(--orange);">Норма: 1,5/1</span>
+            <div class="kpiProblem">⚠️ Встречи назначаются, но срываются или переносятся</div>
+          </div>
+          <span class="kpiChevron">▼</span>
+        </div>
+        <div class="kpiBody">
+          <div class="kpiSection">
+            <div class="kpiSecLabel" style="color:var(--red);">❌ Возможные причины</div>
+            <div class="kpiItem">Вместо чёткой договорённости о встрече — созвон</div>
+            <div class="kpiItem">Клиент согласился под давлением агента</div>
+            <div class="kpiItem">Слишком длинный промежуток между звонком и встречей</div>
+            <div class="kpiItem">Не оставлен контактный телефон агента клиенту</div>
+            <div class="kpiItem">Не записано время встречи агентом или клиентом</div>
+            <div class="kpiItem">Встреча назначается в день звонка</div>
+          </div>
+          <div class="kpiSection">
+            <div class="kpiSecLabel" style="color:var(--green);">✅ Коррекция</div>
+            <div class="kpiItem">Использовать «вилку» времени или места встречи (звонить с планингом)</div>
+            <div class="kpiItem">Оставлять свой номер: «Если что-то изменится — перезвоните мне»</div>
+            <div class="kpiItem">Если встреча может сорваться — назначить ещё одну на то же время</div>
+            <div class="kpiItem">Повторяем ПТ Телефонная сессия до выработки навыка</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="kpiCard">
+        <div class="kpiHead" onclick="toggleKpi(this)">
+          <div class="kpiNum" style="background:rgba(62,207,142,.15);color:var(--green);">3</div>
+          <div class="kpiTitle">
+            <div class="kpiName">1-е встречи / 2-е встречи</div>
+            <span class="kpiNorm" style="background:rgba(62,207,142,.12);color:var(--green);">Норма: 1/1 — 3/1</span>
+            <div class="kpiProblem">⚠️ Вторые встречи не назначаются или клиенты не приходят</div>
+          </div>
+          <span class="kpiChevron">▼</span>
+        </div>
+        <div class="kpiBody">
+          <div class="kpiSection">
+            <div class="kpiSecLabel" style="color:var(--red);">❌ Возможные причины</div>
+            <div style="margin-bottom:6px;font-size:10px;font-weight:600;color:var(--orange);text-transform:uppercase;letter-spacing:1px;">Установление контакта</div>
+            <div class="kpiItem">Агент не расположил к себе клиента</div>
+            <div style="margin-top:8px;margin-bottom:6px;font-size:10px;font-weight:600;color:var(--orange);text-transform:uppercase;letter-spacing:1px;">Выявление потребностей (СПИН)</div>
+            <div class="kpiItem">Сразу после сбора информации начинает презентовать — нарушена технология СПИН</div>
+            <div class="kpiItem">Не отработаны возражения клиента</div>
+            <div style="margin-top:8px;margin-bottom:6px;font-size:10px;font-weight:600;color:var(--orange);text-transform:uppercase;letter-spacing:1px;">Закрытие встречи</div>
+            <div class="kpiItem">Нет чёткой договорённости о цели и времени второй встречи</div>
+            <div class="kpiItem">Агент не распознал «вежливый отказ» клиента</div>
+          </div>
+          <div class="kpiSection">
+            <div class="kpiSecLabel" style="color:var(--green);">✅ Коррекция</div>
+            <div class="kpiItem">Просмотровый ПТ «Встреча» или прослушать аудиозапись</div>
+            <div class="kpiItem">Объяснить агенту точную ошибку, показать правильный навык в РИ</div>
+            <div class="kpiItem">ДЗ — прописать СПИН-вопросы, изучить модуль в МК на ПО</div>
+          </div>
+          <div class="kpiSection">
+            <div class="kpiSecLabel" style="color:var(--purple);">🎓 Полевые тренинги</div>
+            <div class="ptList">
+              <div class="ptItem" onclick="copyQ(this)">ПТ №2 — Встреча. Установление контакта: МК агента → ПО → «Установление контакта»<span class="copyHint">✓ скопировано</span></div>
+              <div class="ptItem" onclick="copyQ(this)">ПТ №3 — Вскрытие потребностей: МК агента → ПО → «Вскрытие потребностей»<span class="copyHint">✓ скопировано</span></div>
+              <div class="ptItem" onclick="copyQ(this)">ПТ №6 — Работа с вопросами и возражениями: ПО → курс «Встреча с клиентом» + «Работа с возражениями»<span class="copyHint">✓ скопировано</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="kpiCard">
+        <div class="kpiHead" onclick="toggleKpi(this)">
+          <div class="kpiNum" style="background:rgba(139,108,247,.15);color:var(--purple);">4</div>
+          <div class="kpiTitle">
+            <div class="kpiName">2-е встречи / Заключённые договора</div>
+            <span class="kpiNorm" style="background:rgba(139,108,247,.12);color:var(--purple);">Норма: 1/1 — 2/1</span>
+            <div class="kpiProblem">⚠️ Вторых встреч много, а продаж мало</div>
+          </div>
+          <span class="kpiChevron">▼</span>
+        </div>
+        <div class="kpiBody">
+          <div class="kpiSection">
+            <div class="kpiSecLabel" style="color:var(--red);">❌ Возможные причины</div>
+            <div class="kpiItem">Реальные потребности не выявлены, на 2-й встрече агент к ним не возвращается</div>
+            <div class="kpiItem">Не отработаны истинные возражения клиента</div>
+            <div class="kpiItem">Агент только презентует — не закрывает продажу</div>
+            <div class="kpiItem">Предлагает слишком много вариантов без опоры на потребности</div>
+            <div class="kpiItem">Клиент не понимает цель 2-й встречи — агент не объяснил на первой</div>
+            <div class="kpiItem">Слишком большой промежуток между встречами — клиент забыл потребность</div>
+            <div class="kpiItem">При готовности клиента не делает шагов к закрытию (не заполняет мед. анкету, заявление)</div>
+          </div>
+          <div class="kpiSection">
+            <div class="kpiSecLabel" style="color:var(--green);">✅ Коррекция</div>
+            <div class="kpiItem">Просмотровый ПТ «Вторая встреча» или прослушать аудиозапись</div>
+            <div class="kpiItem">Показать правильный навык в РИ — как закрывать продажу</div>
+            <div class="kpiItem">ДЗ — прописать скрипты закрытия, изучить модуль в МК на ПО</div>
+          </div>
+          <div class="kpiSection">
+            <div class="kpiSecLabel" style="color:var(--purple);">🎓 Полевые тренинги</div>
+            <div class="ptList">
+              <div class="ptItem" onclick="copyQ(this)">ПТ №4.2 — Презентация конкретного решения: МК агента → ПО → «Презентация решения»<span class="copyHint">✓ скопировано</span></div>
+              <div class="ptItem" onclick="copyQ(this)">ПТ №5.1 — Закрытие продажи: МК агента → ПО → «Закрытие продажи. Взятие рекомендаций»<span class="copyHint">✓ скопировано</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="kpiCard">
+        <div class="kpiHead" onclick="toggleKpi(this)">
+          <div class="kpiNum" style="background:rgba(245,96,96,.15);color:var(--red);">5</div>
+          <div class="kpiTitle">
+            <div class="kpiName">Рекомендации / Состоявшиеся встречи</div>
+            <span class="kpiNorm" style="background:rgba(245,96,96,.12);color:var(--red);">Норма: 3/1 и более</span>
+            <div class="kpiProblem">⚠️ Встречи проводит, рекомендации не берёт</div>
+          </div>
+          <span class="kpiChevron">▼</span>
+        </div>
+        <div class="kpiBody">
+          <div class="kpiSection">
+            <div class="kpiSecLabel" style="color:var(--red);">❌ Возможные причины</div>
+            <div class="kpiItem">Не делает запрос на рекомендации в начале встречи</div>
+            <div class="kpiItem">Забывает вернуться к рекомендациям в конце</div>
+            <div class="kpiItem">Не умеет работать с возражениями при взятии рекомендаций</div>
+            <div class="kpiItem">Боится брать рекомендации / не видит их важности</div>
+            <div class="kpiItem">Переносит взятие рекомендаций на момент положительного решения клиента</div>
+            <div class="kpiItem">Не использует анкету обратной связи клиента</div>
+          </div>
+          <div class="kpiSection">
+            <div class="kpiSecLabel" style="color:var(--green);">✅ Коррекция</div>
+            <div class="kpiItem">Просмотровый ПТ «Встреча» — смотрим как берёт рекомендации</div>
+            <div class="kpiItem">Показать правильный навык в РИ — скрипт запроса рекомендаций</div>
+            <div class="kpiItem">ДЗ — написать скрипт при работе с анкетой ОС клиента</div>
+          </div>
+          <div class="kpiSection">
+            <div class="kpiSecLabel" style="color:var(--purple);">🎓 Полевые тренинги</div>
+            <div class="ptList">
+              <div class="ptItem" onclick="copyQ(this)">ПТ №5.2 — Взятие рекомендаций: МК агента → ПО → «Закрытие продажи. Взятие рекомендаций»<span class="copyHint">✓ скопировано</span></div>
+              <div class="ptItem" onclick="copyQ(this)">ПТ №7 — Вручение полиса. Взятие рекомендаций: ПО → «Вручение полиса. Работа с памяткой ЦБ»<span class="copyHint">✓ скопировано</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="kpiCard" style="border-color:rgba(79,156,249,.2);">
+        <div class="kpiHead" onclick="toggleKpi(this)">
+          <div class="kpiNum" style="background:rgba(79,156,249,.15);color:var(--blue);">ОС</div>
+          <div class="kpiTitle">
+            <div class="kpiName" style="color:var(--blue);">Обратная связь после ПТ или РИ</div>
+            <div class="kpiProblem">Структура, принципы, последовательность</div>
+          </div>
+          <span class="kpiChevron">▼</span>
+        </div>
+        <div class="kpiBody">
+          <div class="kpiSection">
+            <div class="kpiSecLabel" style="color:var(--blue);">📋 Структура ОС</div>
+            <div class="kpiItem"><strong>1. Что удалось</strong> — сильные стороны (конкретно, по тому что отрабатывали)</div>
+            <div class="kpiItem"><strong>2. Что не удалось</strong> — зоны роста (конкретно, без оценки личности)</div>
+            <div class="kpiItem"><strong>3. Что сделать</strong> — конкретные действия и сроки для коррекции</div>
+            <div class="kpiItem"><strong>4. Мотивационное завершение</strong> — агент достигнет результата, если сделает запланированное</div>
+          </div>
+          <div class="kpiSection">
+            <div class="kpiSecLabel" style="color:var(--blue);">💬 Последовательность</div>
+            <div class="osSec">
+              <div class="osStep"><span>Сначала агент:</span> Какая была цель? Удалось ли достичь? Что получилось? Что нет? Как бы сделал иначе?</div>
+              <div class="osStep" style="margin-top:8px;"><span>Затем менеджер:</span> Плюсы → Зоны роста → связка «ты сказал/а ТАК — рекомендую ВОТ ТАК — это даст ВЫГОДУ»</div>
+              <div class="osStep" style="margin-top:8px;"><span>В конце:</span> Что агент берёт в работу · ДЗ · дата проверки · дата следующего ПТ</div>
+            </div>
+          </div>
+          <div class="kpiSection">
+            <div class="kpiSecLabel" style="color:var(--blue);">⚡ Принципы</div>
+            <div class="kpiItem">Конкретно — на действия, не на личность</div>
+            <div class="kpiItem">Безоценочно — факты, не личная оценка</div>
+            <div class="kpiItem">Лаконично — 1–3 плюса и 1–3 зоны роста (плюсов ≥ зон роста)</div>
+            <div class="kpiItem">На основе записей — фиксируй в блокноте во время ПТ/РИ</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <!-- /KPI TAB -->
+
   </div>
 </div>
 
@@ -452,7 +705,7 @@ function saveCloud(cb) {
 
 // TABS
 function showTab(name, el) {
-  ['history','protocol','algo','scripts'].forEach(t => {
+  ['history','protocol','algo','scripts','kpi'].forEach(t => {
     const el2 = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
     if(el2) el2.style.display = 'none';
   });
@@ -616,6 +869,15 @@ function resetForm() {
   selectedMood = '';
   const al = document.getElementById('actionsList');
   al.innerHTML = '<div class="actionItem"><input type="text" placeholder="Задача 1..."><button class="rmBtn" onclick="removeAction(this)">×</button></div>';
+}
+
+// TOGGLE KPI
+function toggleKpi(head) {
+  const body = head.nextElementSibling;
+  const chevron = head.querySelector('.kpiChevron');
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open');
+  if (chevron) chevron.style.transform = isOpen ? '' : 'rotate(180deg)';
 }
 
 // COPY SCRIPTS
