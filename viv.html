@@ -147,7 +147,6 @@ textarea.fi{resize:vertical;min-height:70px;}
       <div class="hTitle">ВИВ — Вводная встреча</div>
     </div>
     <div class="hRight">
-      <span id="syncBadge" style="font-size:11px;font-weight:600;color:var(--green);">●</span>
       <button class="hBtn" onclick="logout()">Выйти</button>
     </div>
   </div>
@@ -301,6 +300,32 @@ textarea.fi{resize:vertical;min-height:70px;}
           <div><label class="fl">Средний договор, ₽</label><input class="fi" id="cDeal" type="number" value="23000" oninput="calcStandalone()"></div>
           <div><label class="fl">Комиссия, %</label><input class="fi" id="cComm" type="number" value="25" oninput="calcStandalone()"></div>
         </div>
+        <div class="fg2">
+          <div>
+            <label class="fl">Регулярность взносов</label>
+            <select class="fi" id="cFreq" onchange="calcStandalone()">
+              <option value="1">Годовой (×1)</option>
+              <option value="0.5">Полугодовой (×0.5)</option>
+              <option value="0.25">Квартальный (×0.25)</option>
+            </select>
+          </div>
+          <div>
+            <label class="fl">Ожидаемый бонус, ₽/мес</label>
+            <select class="fi" id="cBonus" onchange="calcStandalone()">
+              <option value="0">Без бонуса</option>
+              <option value="10000">Уровень 1 — 10 000 ₽ (ФЛ)</option>
+              <option value="12500">Уровень 1 — 12 500 ₽ (ИП)</option>
+              <option value="14000">Уровень 2 — 14 000 ₽ (ФЛ)</option>
+              <option value="16500">Уровень 2 — 16 500 ₽ (ИП)</option>
+              <option value="16000">Уровень 3 — 16 000 ₽ (ФЛ)</option>
+              <option value="18500">Уровень 3 — 18 500 ₽ (ИП)</option>
+              <option value="20000">Уровень 4 — 20 000 ₽ (ФЛ)</option>
+              <option value="24500">Уровень 4 — 24 500 ₽ (ИП)</option>
+              <option value="25000">Уровень 5 — 25 000 ₽ (ФЛ)</option>
+              <option value="30000">Уровень 5 — 30 000 ₽ (ИП)</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       <div class="card">
@@ -453,8 +478,6 @@ textarea.fi{resize:vertical;min-height:70px;}
 <script>
 const PASSWORD = 'Everia2026';
 const LKEY = 'ev_viv_v1';
-const BIN_ID = '69b4fe3ab7ec241ddc68ff70';
-const API_KEY = '$2a$10$or/10uhY3Yz82p.8/QaAnO1IYrtaDRgEcGWgQ3mM1JkKdkKmQbTXm';
 
 let meetings = [];
 
@@ -470,61 +493,14 @@ function login() {
 }
 function logout() { sessionStorage.removeItem('ev_viv'); location.reload(); }
 
-function setSyncBadge(state, text) {
-  const el = document.getElementById('syncBadge');
-  if (!el) return;
-  const colors = { ok: 'var(--green)', err: 'var(--red)', loading: 'var(--gold)' };
-  el.style.color = colors[state] || 'var(--dim)';
-  el.textContent = text || '●';
-}
-
-function localSaveViv() { try { localStorage.setItem(LKEY, JSON.stringify(meetings)); } catch(e) {} }
-function localLoadViv() { try { const d = localStorage.getItem(LKEY); return d ? JSON.parse(d) : []; } catch(e) { return []; } }
-
 function loadData() {
-  setSyncBadge('loading', '...');
-  fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-    headers: { 'X-Master-Key': API_KEY, 'X-Bin-Meta': 'false' }
-  })
-  .then(r => r.json())
-  .then(data => {
-    meetings = Array.isArray(data.viv_meetings) ? data.viv_meetings : localLoadViv();
-    localSaveViv();
-    setSyncBadge('ok', 'синхронизировано');
-    renderMeetings();
-    calcAll();
-    calcStandalone();
-  })
-  .catch(() => {
-    meetings = localLoadViv();
-    setSyncBadge('err', 'локально');
-    renderMeetings();
-    calcAll();
-    calcStandalone();
-  });
+  try { const d = localStorage.getItem(LKEY); if(d) meetings = JSON.parse(d); } catch(e) {}
+  renderMeetings();
+  calcAll();
+  calcStandalone();
 }
 
-function saveData() {
-  localSaveViv();
-  setSyncBadge('loading', '...');
-  fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-    headers: { 'X-Master-Key': API_KEY, 'X-Bin-Meta': 'false' }
-  })
-  .then(r => r.json())
-  .then(current => {
-    const updated = Object.assign({},
-      (typeof current === 'object' && !Array.isArray(current)) ? current : {},
-      { viv_meetings: meetings }
-    );
-    return fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
-      body: JSON.stringify(updated)
-    });
-  })
-  .then(() => setSyncBadge('ok', 'сохранено ☁️'))
-  .catch(() => setSyncBadge('err', 'ошибка'));
-}
+function saveData() { try { localStorage.setItem(LKEY, JSON.stringify(meetings)); } catch(e) {} }
 
 function showTab(name, el) {
   ['meetings','protocol','calc','algo','scripts'].forEach(t => {
@@ -660,14 +636,20 @@ function calcStandalone() {
   const income = +document.getElementById('cIncome').value || 0;
   const deal = +document.getElementById('cDeal').value || 23000;
   const comm = +document.getElementById('cComm').value || 25;
+  const freq = parseFloat(document.getElementById('cFreq').value) || 1;
+  const bonus = +document.getElementById('cBonus').value || 0;
 
-  const iY = Math.round(deal * comm / 100);
-  const iH = Math.round(deal / 2 * comm / 100);
-  const iQ2 = Math.round(deal / 4 * comm / 100);
+  const iY  = Math.round(deal * comm / 100);
+  const iH  = Math.round(deal * 1.02 / 2 * comm / 100);
+  const iQ2 = Math.round(deal * 1.05 / 4 * comm / 100);
 
   document.getElementById('cY').textContent = iY.toLocaleString('ru') + ' ₽';
   document.getElementById('cH').textContent = iH.toLocaleString('ru') + ' ₽';
   document.getElementById('cQ').textContent = iQ2.toLocaleString('ru') + ' ₽';
+
+  // Доход с одного договора при выбранной регулярности (с наценкой за рассрочку)
+  const freqMult = freq === 1 ? 1 : freq === 0.5 ? 1.02 : 1.05;
+  const incomePerDeal = Math.round(deal * freqMult * freq * comm / 100);
 
   if (!income) {
     document.getElementById('cFunnelResult').innerHTML = '<div style="color:var(--dim);font-size:13px;text-align:center;padding:20px">Введите желаемый доход</div>';
@@ -675,17 +657,37 @@ function calcStandalone() {
     return;
   }
 
-  const dealsNeeded = Math.ceil(income / iY);
+  // Сколько нужно договоров с учётом бонуса
+  const incomeFromDeals = Math.max(income - bonus, 0);
+  const dealsNeeded = incomeFromDeals > 0 ? Math.ceil(incomeFromDeals / incomePerDeal) : 0;
+  const totalIncome = dealsNeeded * incomePerDeal + bonus;
+
   const fp = dealsNeeded * 3;
   const rp = dealsNeeded * 2;
   const calls = fp * 5;
   const recs = fp * 4;
 
+  const freqLabels = { '1': 'годовой', '0.5': 'полугодовой', '0.25': 'квартальный' };
+  const freqLabel = freqLabels[String(freq)] || 'годовой';
+
+  const bonusRow = bonus > 0 ? `<tr style="background:rgba(201,168,76,.06)"><td>🏆 Бонус</td><td colspan="3" style="color:var(--gold);font-weight:600">+${bonus.toLocaleString('ru')} ₽/мес</td></tr>` : '';
+
   document.getElementById('cFunnelResult').innerHTML = `
     <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px">
-      <div class="calcBox" style="border-color:var(--gold)"><div class="calcLabel">Нужно договоров/мес</div><div class="calcVal">${dealsNeeded}</div></div>
-      <div class="calcBox"><div class="calcLabel">Ожидаемый доход</div><div class="calcVal">${(dealsNeeded*iY).toLocaleString('ru')} ₽</div></div>
+      <div class="calcBox" style="border-color:var(--gold)">
+        <div class="calcLabel">Нужно договоров/мес</div>
+        <div class="calcVal">${dealsNeeded}</div>
+        <div class="calcSub">${freqLabel} взнос · ${incomePerDeal.toLocaleString('ru')} ₽/дог</div>
+      </div>
+      <div class="calcBox" style="border-color:var(--green)">
+        <div class="calcLabel">Итоговый доход</div>
+        <div class="calcVal" style="color:var(--green)">${totalIncome.toLocaleString('ru')} ₽</div>
+        <div class="calcSub">${bonus > 0 ? 'комиссия + бонус' : 'только комиссия'}</div>
+      </div>
     </div>
+    ${bonus > 0 ? `<div style="background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12px;">
+      💰 Комиссия: <strong>${(dealsNeeded*incomePerDeal).toLocaleString('ru')} ₽</strong> + Бонус: <strong>${bonus.toLocaleString('ru')} ₽</strong> = <strong style="color:var(--gold)">${totalIncome.toLocaleString('ru')} ₽</strong>
+    </div>` : ''}
     <table class="iprTable">
       <tr><th>Показатель</th><th>В месяц</th><th>В неделю</th><th>В день</th></tr>
       <tr><td>📋 Договоров</td><td>${dealsNeeded}</td><td>${Math.ceil(dealsNeeded/4)}</td><td>—</td></tr>
@@ -693,12 +695,14 @@ function calcStandalone() {
       <tr><td>🤝 Первых встреч</td><td>${fp}</td><td>${Math.ceil(fp/4)}</td><td>${Math.ceil(fp/22)}</td></tr>
       <tr><td>📞 Звонков</td><td>${calls}</td><td>${Math.ceil(calls/4)}</td><td>${Math.ceil(calls/22)}</td></tr>
       <tr><td>⭐ Рекомендаций</td><td>${recs}</td><td>${Math.ceil(recs/4)}</td><td>—</td></tr>
+      ${bonusRow}
     </table>`;
 
   document.getElementById('cPlanExample').innerHTML = `
     <div class="infoBox">
-      При ${dealsNeeded} договорах в месяц (при продаже годовым взносом):<br>
-      <strong>Доход: ${(dealsNeeded*iY).toLocaleString('ru')} ₽</strong><br>
+      При ${dealsNeeded} договорах в месяц (${freqLabel} взнос):<br>
+      <strong>Комиссия: ${(dealsNeeded*incomePerDeal).toLocaleString('ru')} ₽${bonus > 0 ? ' + Бонус: ' + bonus.toLocaleString('ru') + ' ₽' : ''}</strong><br>
+      <strong style="color:var(--gold)">Итого: ${totalIncome.toLocaleString('ru')} ₽</strong><br><br>
       Нужно: ${calls} звонков → ${fp} первых встреч → ${rp} повторных → ${dealsNeeded} договоров<br>
       Рекомендации с каждой встречи (3-4 контакта) = пополнение базы
     </div>`;
