@@ -540,8 +540,9 @@ function renderMeetings() {
           <div class="calcBox"><div class="calcLabel">Следующая ИВ</div><div class="calcVal" style="font-size:14px">${m.nextDate ? new Date(m.nextDate).toLocaleDateString('ru-RU') : '—'}</div></div>
         </div>
         ${m.comment ? `<div style="font-size:13px;color:var(--dim);margin-bottom:10px">${m.comment}</div>` : ''}
-        <div style="display:flex;gap:8px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="saveBtn" onclick="loadMeeting(${i})">✏️ Открыть протокол</button>
+          <button class="saveBtn" style="background:rgba(79,156,249,.15);color:var(--blue);" onclick="printViv(${i})">📄 PDF</button>
           <button class="cancelBtn" onclick="deleteMeeting(${i})">Удалить</button>
         </div>
       </div>
@@ -587,6 +588,61 @@ function loadMeeting(i) {
   calcAll();
   showTab('protocol', null);
   document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i===1));
+}
+
+function printViv(i) {
+  const m = meetings[i];
+  if (!m) return;
+  const dateStr = m.date ? new Date(m.date).toLocaleDateString('ru-RU', {day:'numeric', month:'long', year:'numeric'}) : '—';
+  const nextDateStr = m.nextDate ? new Date(m.nextDate).toLocaleDateString('ru-RU', {day:'numeric', month:'long', year:'numeric'}) : '—';
+
+  const rows = [
+    ['Тип агента', m.type || '—'],
+    ['Дата встречи', dateStr],
+    ['Следующая ВИВ', nextDateStr],
+    ['Время работы', m.workTime || '—'],
+    ['Цель/мес (1)', m.inc1 ? Number(m.inc1).toLocaleString('ru') + ' ₽' : '—'],
+    ['Цель/мес (2)', m.inc2 ? Number(m.inc2).toLocaleString('ru') + ' ₽' : '—'],
+    ['Цель/мес (3)', m.inc3 ? Number(m.inc3).toLocaleString('ru') + ' ₽' : '—'],
+    ['Средний договор', m.avgDeal ? Number(m.avgDeal).toLocaleString('ru') + ' ₽' : '—'],
+    ['Комиссия, %', m.commPct || '—'],
+    ['Договоров/мес', m.deals || '—'],
+  ].map(([k,v]) => `<tr><td style="color:#888;width:200px;padding:6px 10px;border-bottom:1px solid #eee">${k}</td><td style="padding:6px 10px;border-bottom:1px solid #eee;font-weight:600">${v}</td></tr>`).join('');
+
+  const fields = [
+    ['Полевые тренинги (показ)', m.fieldShow],
+    ['Полевые тренинги (просмотр)', m.fieldWatch],
+    ['Совместный план', m.jointPlan],
+    ['ДОК', m.dok],
+    ['Портал обучения', m.portal],
+    ['Семинар', m.seminar],
+    ['Полевая работа', m.field],
+    ['Обратная связь', m.feedback],
+    ['Комментарий', m.comment],
+  ].filter(([k,v]) => v).map(([k,v]) => `<div style="margin-bottom:12px"><div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">${k}</div><div style="font-size:13px;line-height:1.7">${v}</div></div>`).join('');
+
+  const html = `<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8">
+  <title>ВИВ — ${m.agent || '—'} — ${dateStr}</title>
+  <style>
+    body{font-family:Arial,sans-serif;font-size:13px;color:#1a1a2e;padding:30px;max-width:700px;margin:0 auto;}
+    h1{font-size:18px;margin-bottom:4px;}
+    .sub{color:#666;font-size:12px;margin-bottom:20px;}
+    .header-bar{background:#0a0d14;color:#c9a84c;padding:10px 16px;border-radius:8px;margin-bottom:20px;display:flex;justify-content:space-between;}
+    .header-bar span{color:#e8eaf0;font-size:11px;}
+    table{width:100%;border-collapse:collapse;margin-bottom:20px;border:1px solid #eee;border-radius:8px;overflow:hidden;}
+    @media print{body{padding:10px;}}
+  </style></head><body>
+  <div class="header-bar"><strong>EVERIA LIFE · ВИВ</strong><span>${dateStr}</span></div>
+  <h1>${m.agent || '—'}</h1>
+  <div class="sub">МПП: ${m.mpp || '—'}</div>
+  <table>${rows}</table>
+  ${fields}
+  <script>window.onload=function(){window.print();}<\/script>
+  </body></html>`;
+
+  const w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
 }
 
 function deleteMeeting(i) {
