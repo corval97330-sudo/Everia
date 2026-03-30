@@ -154,6 +154,7 @@ body{background:var(--bg);color:var(--text);font-family:'Golos Text',sans-serif;
     <button class="tab active" onclick="showTab('today',this)">📅 Сегодня</button>
     <button class="tab" onclick="showTab('leaderboard',this)">🏆 Рейтинг</button>
     <button class="tab" onclick="showTab('agents',this)">👤 По агентам</button>
+    <button class="tab" onclick="showTab('manage',this)">⚙️ Список агентов</button>
   </div>
 
   <div class="main">
@@ -164,8 +165,10 @@ body{background:var(--bg);color:var(--text);font-family:'Golos Text',sans-serif;
         <div class="stat s1"><div class="statL">Отчитались</div><div class="statV" id="stReported">0</div></div>
         <div class="stat s5"><div class="statL">Не отчитались</div><div class="statV" id="stAbsent">0</div></div>
         <div class="stat s2"><div class="statL">Звонков</div><div class="statV" id="stCalls">0</div></div>
-        <div class="stat s3"><div class="statL">Встреч</div><div class="statV" id="stMeetings">0</div></div>
+        <div class="stat s3"><div class="statL">1-е встречи</div><div class="statV" id="stMeetings">0</div></div>
+        <div class="stat s4"><div class="statL">Повторные</div><div class="statV" id="stMeetings2">0</div></div>
         <div class="stat s4"><div class="statL">Договоров</div><div class="statV" id="stDeals">0</div></div>
+        <div class="stat s3"><div class="statL">Рекомендаций</div><div class="statV" id="stRecs">0</div></div>
       </div>
 
       <div class="tableWrap fadeUp">
@@ -173,12 +176,13 @@ body{background:var(--bg);color:var(--text);font-family:'Golos Text',sans-serif;
           <span>Отчёты за сегодня</span>
           <span id="todayDateLabel" style="font-size:11px;color:var(--dim);font-family:'Golos Text',sans-serif;font-weight:400;"></span>
         </div>
-        <div class="tableHead">
+        <div class="tableHead" style="grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr 40px;">
           <div class="th">Агент</div>
           <div class="th">Звонки</div>
-          <div class="th">Встречи</div>
-          <div class="th">Договора</div>
-          <div class="th">Премия</div>
+          <div class="th">1-е вст</div>
+          <div class="th">Повт</div>
+          <div class="th">Дог</div>
+          <div class="th">Рек</div>
           <div class="th"></div>
         </div>
         <div id="todayTable"></div>
@@ -218,6 +222,27 @@ body{background:var(--bg);color:var(--text);font-family:'Golos Text',sans-serif;
         <button class="periodBtn" onclick="setAgentPeriod('all',this)">Всё время</button>
       </div>
       <div id="agentCards" class="agentCards"></div>
+    </div>
+
+    <!-- MANAGE AGENTS TAB -->
+    <div id="tabManage" style="display:none;">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:16px;">
+        <div style="font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;color:var(--gold);margin-bottom:14px;">➕ Добавить агента</div>
+        <div style="display:flex;gap:8px;">
+          <input id="newAgentName" type="text" placeholder="Имя агента (Фамилия И.О.)"
+            style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Golos Text',sans-serif;font-size:13px;padding:10px 12px;outline:none;"
+            onfocus="this.style.borderColor='#c9a84c'" onblur="this.style.borderColor='#1e2640'"
+            onkeydown="if(event.key==='Enter')addAgent()">
+          <button onclick="addAgent()" style="background:var(--gold);border:none;border-radius:8px;color:#0a0d14;font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;padding:10px 16px;cursor:pointer;white-space:nowrap;">+ Добавить</button>
+        </div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+        <div style="padding:14px 18px;font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+          <span>Список агентов</span>
+          <span id="agentCount" style="font-size:11px;color:var(--dim);font-family:'Golos Text',sans-serif;font-weight:400;"></span>
+        </div>
+        <div id="agentManageList"></div>
+      </div>
     </div>
 
   </div>
@@ -268,6 +293,7 @@ function loadData() {
     agentsList = Array.isArray(d.agents) ? d.agents : [];
     setSyncBadge('ok', 'синхронизировано');
     renderAll();
+    renderAgentManageList();
   })
   .catch(() => {
     setSyncBadge('err','ошибка');
@@ -330,8 +356,10 @@ function renderToday() {
   document.getElementById('stReported').textContent = todayReports.length;
   document.getElementById('stAbsent').textContent = Math.max(0, allNames.length - todayReports.length);
   document.getElementById('stCalls').textContent = sumField(todayReports,'calls');
-  document.getElementById('stMeetings').textContent = sumField(todayReports,'meetings');
+  document.getElementById('stMeetings').textContent = sumField(todayReports,'meetings1');
+  document.getElementById('stMeetings2').textContent = sumField(todayReports,'meetings2');
   document.getElementById('stDeals').textContent = sumField(todayReports,'deals');
+  document.getElementById('stRecs').textContent = sumField(todayReports,'recs');
 
   // Table
   const tbody = document.getElementById('todayTable');
@@ -340,12 +368,13 @@ function renderToday() {
   } else {
     const sorted = [...todayReports].sort((a,b) => (b.deals||0)-(a.deals||0) || (b.premium||0)-(a.premium||0));
     tbody.innerHTML = sorted.map(r => `
-      <div class="tableRow">
+      <div class="tableRow" style="grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr 40px;">
         <div class="td tdName">${r.agentName}</div>
         <div class="td">${r.calls||0}</div>
-        <div class="td">${r.meetings||0}</div>
+        <div class="td">${r.meetings1||0}</div>
+        <div class="td">${r.meetings2||0}</div>
         <div class="td">${r.deals||0}</div>
-        <div class="td">${r.premium ? Number(r.premium).toLocaleString('ru') + ' ₽' : '—'}</div>
+        <div class="td">${r.recs||0}</div>
         <div class="td tdMood">${r.mood||''}</div>
       </div>`).join('');
   }
@@ -382,13 +411,15 @@ function renderLeaderboard() {
   const allNames = agentsList.map(a => a.name);
 
   const byAgent = {};
-  allNames.forEach(n => { byAgent[n] = { calls:0, meetings:0, deals:0, premium:0, streak: getStreak(n) }; });
+  allNames.forEach(n => { byAgent[n] = { calls:0, meetings1:0, meetings2:0, deals:0, premium:0, recs:0, streak: getStreak(n) }; });
   filtered.forEach(r => {
-    if (!byAgent[r.agentName]) byAgent[r.agentName] = { calls:0, meetings:0, deals:0, premium:0, streak:0 };
+    if (!byAgent[r.agentName]) byAgent[r.agentName] = { calls:0, meetings1:0, meetings2:0, deals:0, premium:0, recs:0, streak:0 };
     byAgent[r.agentName].calls += r.calls||0;
-    byAgent[r.agentName].meetings += r.meetings||0;
+    byAgent[r.agentName].meetings1 += r.meetings1||0;
+    byAgent[r.agentName].meetings2 += r.meetings2||0;
     byAgent[r.agentName].deals += r.deals||0;
     byAgent[r.agentName].premium += r.premium||0;
+    byAgent[r.agentName].recs += r.recs||0;
   });
 
   const sorted = Object.entries(byAgent)
@@ -413,9 +444,10 @@ function renderLeaderboard() {
       </div>
       <div class="lbNums">
         <div class="lbNum"><div class="lbNumV" style="color:var(--blue)">${a.calls}</div><div class="lbNumL">зв</div></div>
-        <div class="lbNum"><div class="lbNumV" style="color:var(--green)">${a.meetings}</div><div class="lbNumL">вст</div></div>
+        <div class="lbNum"><div class="lbNumV" style="color:var(--green)">${a.meetings1}</div><div class="lbNumL">1-е</div></div>
+        <div class="lbNum"><div class="lbNumV" style="color:var(--purple)">${a.meetings2}</div><div class="lbNumL">повт</div></div>
         <div class="lbNum"><div class="lbNumV" style="color:var(--gold)">${a.deals}</div><div class="lbNumL">дог</div></div>
-        <div class="lbNum"><div class="lbNumV" style="color:var(--orange);font-size:12px">${a.premium ? (a.premium/1000).toFixed(0)+'к' : '—'}</div><div class="lbNumL">₽</div></div>
+        <div class="lbNum"><div class="lbNumV" style="color:var(--orange)">${a.recs}</div><div class="lbNumL">рек</div></div>
       </div>
     </div>`).join('');
 }
@@ -436,9 +468,11 @@ function renderAgents() {
   const cards = allNames.map(name => {
     const records = monitoring.filter(r => r.agentName === name && r.date >= start);
     const totalCalls = sumField(records,'calls');
-    const totalMeetings = sumField(records,'meetings');
+    const totalM1 = sumField(records,'meetings1');
+    const totalM2 = sumField(records,'meetings2');
     const totalDeals = sumField(records,'deals');
     const totalPremium = sumField(records,'premium');
+    const totalRecs = sumField(records,'recs');
     const streak = getStreak(name);
     const pct = Math.min(Math.round(totalPremium / MONTHLY_GOAL * 100), 100);
     const reportedToday = monitoring.some(r => r.agentName === name && r.date === todayStr());
@@ -453,9 +487,11 @@ function renderAgents() {
       <div class="acStreak">🔥 ${streak} дней подряд</div>
       <div class="acNums">
         <div class="acNum"><div class="acNumV" style="color:var(--blue)">${totalCalls}</div><div class="acNumL">звонков</div></div>
-        <div class="acNum"><div class="acNumV" style="color:var(--green)">${totalMeetings}</div><div class="acNumL">встреч</div></div>
+        <div class="acNum"><div class="acNumV" style="color:var(--green)">${totalM1}</div><div class="acNumL">1-е вст</div></div>
+        <div class="acNum"><div class="acNumV" style="color:var(--purple)">${totalM2}</div><div class="acNumL">повторные</div></div>
         <div class="acNum"><div class="acNumV" style="color:var(--gold)">${totalDeals}</div><div class="acNumL">договоров</div></div>
-        <div class="acNum"><div class="acNumV" style="color:var(--orange);font-size:14px">${totalPremium ? totalPremium.toLocaleString('ru')+'₽' : '—'}</div><div class="acNumL">премия</div></div>
+        <div class="acNum"><div class="acNumV" style="color:var(--orange)">${totalRecs}</div><div class="acNumL">рекомендаций</div></div>
+        <div class="acNum"><div class="acNumV" style="color:var(--gold);font-size:13px">${totalPremium ? totalPremium.toLocaleString('ru')+' ₽' : '—'}</div><div class="acNumL">СГП</div></div>
       </div>
       <div class="bonusBar"><div class="bonusFill" style="width:${pct}%"></div></div>
       <div class="acGoal">${pct}% от цели 100 000 ₽</div>
@@ -467,13 +503,71 @@ function renderAgents() {
 
 // ─── TABS ────────────────────────────────────────
 function showTab(name, el) {
-  ['today','leaderboard','agents'].forEach(t => {
+  ['today','leaderboard','agents','manage'].forEach(t => {
     const el2 = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
     if(el2) el2.style.display = 'none';
   });
   document.getElementById('tab' + name.charAt(0).toUpperCase() + name.slice(1)).style.display = 'block';
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   if(el) el.classList.add('active');
+}
+
+// ─── AGENT MANAGEMENT ───────────────────────────
+function renderAgentManageList() {
+  const list = document.getElementById('agentManageList');
+  const count = document.getElementById('agentCount');
+  if (!agentsList.length) {
+    list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--dim);">Нет агентов. Добавь первого ☝️</div>';
+    if (count) count.textContent = '';
+    return;
+  }
+  if (count) count.textContent = agentsList.length + ' чел.';
+  list.innerHTML = agentsList.map((a, i) => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--border);">
+      <span style="font-size:13px;">${a.name || a}</span>
+      <button onclick="removeAgent(${i})" style="background:none;border:1px solid rgba(245,96,96,.3);border-radius:6px;color:var(--red);font-size:12px;padding:4px 10px;cursor:pointer;">Удалить</button>
+    </div>`).join('');
+}
+
+function addAgent() {
+  const inp = document.getElementById('newAgentName');
+  const name = inp.value.trim();
+  if (!name) return;
+  if (agentsList.find(a => (a.name||a) === name)) { inp.value = ''; return; }
+  agentsList.push({ name });
+  inp.value = '';
+  saveAgentsList();
+  renderAgentManageList();
+  renderAll();
+}
+
+function removeAgent(idx) {
+  if (!confirm('Удалить ' + (agentsList[idx].name||agentsList[idx]) + '?')) return;
+  agentsList.splice(idx, 1);
+  saveAgentsList();
+  renderAgentManageList();
+  renderAll();
+}
+
+function saveAgentsList() {
+  setSyncBadge('loading', '...');
+  fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+    headers: { 'X-Master-Key': API_KEY, 'X-Bin-Meta': 'false' }
+  })
+  .then(r => r.json())
+  .then(current => {
+    const updated = Object.assign({},
+      (typeof current === 'object' && !Array.isArray(current)) ? current : {},
+      { agents: agentsList }
+    );
+    return fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
+      body: JSON.stringify(updated)
+    });
+  })
+  .then(() => setSyncBadge('ok', 'сохранено'))
+  .catch(() => setSyncBadge('err', 'ошибка'));
 }
 
 // ─── INIT ────────────────────────────────────────
