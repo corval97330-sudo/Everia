@@ -132,6 +132,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
       <option value="">— Выбери своё имя —</option>
     </select>
     <button class="loginBtn" onclick="login()">Войти →</button>
+    <div style="font-size:11px;color:var(--dim);text-align:center;margin-top:10px;">Нет имени в списке? Сообщи менеджеру</div>
     <div class="loginErr" id="loginErr"></div>
   </div>
 </div>
@@ -175,12 +176,39 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
         <span class="bonusTitle">💰 Прогресс к бонусу</span>
         <div style="text-align:right">
           <div class="bonusAmt" id="bonusAmt">0 ₽</div>
-          <div class="bonusSub" id="bonusSub">этот месяц</div>
+          <div class="bonusSub" id="bonusSub">СГП этого месяца</div>
         </div>
       </div>
       <div class="bonusBar"><div class="bonusFill" id="bonusFill" style="width:0%"></div></div>
       <div class="bonusRemain" id="bonusRemain">Загрузка...</div>
     </div>
+
+    <!-- MONTHLY PLAN -->
+    <div class="formCard fadeUp" id="planBlock" style="display:none;">
+      <div style="font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;color:var(--gold);margin-bottom:14px;">📅 Мой план на месяц</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+        <div>
+          <span style="font-size:10px;font-weight:600;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;display:block;margin-bottom:6px;">Рабочих дней</span>
+          <div class="stepper"><button class="stepBtn" onclick="stepPlan('planDays',-1)">−</button><input class="stepVal" type="number" id="planDays" value="0" min="0"><button class="stepBtn" onclick="stepPlan('planDays',1)">+</button></div>
+        </div>
+        <div>
+          <span style="font-size:10px;font-weight:600;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;display:block;margin-bottom:6px;">Звонков в день</span>
+          <div class="stepper"><button class="stepBtn" onclick="stepPlan('planCalls',-1)">−</button><input class="stepVal" type="number" id="planCalls" value="0" min="0"><button class="stepBtn" onclick="stepPlan('planCalls',1)">+</button></div>
+        </div>
+        <div>
+          <span style="font-size:10px;font-weight:600;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;display:block;margin-bottom:6px;">Первых встреч в день</span>
+          <div class="stepper"><button class="stepBtn" onclick="stepPlan('planMeetings',-1)">−</button><input class="stepVal" type="number" id="planMeetings" value="0" min="0"><button class="stepBtn" onclick="stepPlan('planMeetings',1)">+</button></div>
+        </div>
+        <div>
+          <span style="font-size:10px;font-weight:600;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;display:block;margin-bottom:6px;">Рекомендаций в день</span>
+          <div class="stepper"><button class="stepBtn" onclick="stepPlan('planRecs',-1)">−</button><input class="stepVal" type="number" id="planRecs" value="0" min="0"><button class="stepBtn" onclick="stepPlan('planRecs',1)">+</button></div>
+        </div>
+      </div>
+      <button style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Golos Text',sans-serif;font-size:13px;padding:12px;cursor:pointer;" onclick="savePlan()">Сохранить план</button>
+    </div>
+
+    <!-- PLAN PROGRESS -->
+    <div id="planProgress" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 18px;margin-bottom:14px;"></div>
 
     <!-- FORM -->
     <div class="formCard fadeUp" id="reportForm">
@@ -196,11 +224,20 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
       </div>
 
       <div class="field">
-        <span class="fieldLabel">🤝 Встреч проведено</span>
+        <span class="fieldLabel">🤝 Первых встреч</span>
         <div class="stepper">
-          <button class="stepBtn" onclick="step('meetings',-1)">−</button>
-          <input class="stepVal" type="number" id="meetings" value="0" min="0">
-          <button class="stepBtn" onclick="step('meetings',1)">+</button>
+          <button class="stepBtn" onclick="step('meetings1',-1)">−</button>
+          <input class="stepVal" type="number" id="meetings1" value="0" min="0">
+          <button class="stepBtn" onclick="step('meetings1',1)">+</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="fieldLabel">🔄 Повторных встреч</span>
+        <div class="stepper">
+          <button class="stepBtn" onclick="step('meetings2',-1)">−</button>
+          <input class="stepVal" type="number" id="meetings2" value="0" min="0">
+          <button class="stepBtn" onclick="step('meetings2',1)">+</button>
         </div>
       </div>
 
@@ -214,9 +251,18 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
       </div>
 
       <div class="field">
-        <span class="fieldLabel">💵 Сумма премий, ₽</span>
+        <span class="fieldLabel">💰 СГП, ₽</span>
         <input class="premiumInp" type="number" id="premium" placeholder="0" inputmode="numeric">
-        <div class="premiumHint">Только за сегодняшние договоры</div>
+        <div class="premiumHint">Совокупная годовая премия за сегодняшние договоры</div>
+      </div>
+
+      <div class="field">
+        <span class="fieldLabel">⭐ Рекомендаций взято</span>
+        <div class="stepper">
+          <button class="stepBtn" onclick="step('recs',-1)">−</button>
+          <input class="stepVal" type="number" id="recs" value="0" min="0">
+          <button class="stepBtn" onclick="step('recs',1)">+</button>
+        </div>
       </div>
 
       <div class="field">
@@ -337,6 +383,10 @@ function showApp() {
   renderBonusProgress();
   checkTodayReport();
   updateGoalBtn();
+  renderPlanProgress();
+  // Show plan setup if no plan set
+  const plan = loadPlan();
+  if (!plan.days) document.getElementById('planBlock').style.display = 'block';
 }
 
 // ─── TODAY CHECK ────────────────────────────────
@@ -353,16 +403,18 @@ function checkTodayReport() {
   if (today && !editingTodayId) {
     alreadyDiv.style.display = 'block';
     document.getElementById('adSumText').textContent =
-      `📞 ${today.calls} зв · 🤝 ${today.meetings} вст · 📄 ${today.deals} дог · 💵 ${Number(today.premium||0).toLocaleString('ru')} ₽`;
+      `📞 ${today.calls} зв · 🤝 ${today.meetings1||0}+${today.meetings2||0} вст · 📄 ${today.deals} дог · ⭐ ${today.recs||0} рек`;
     form.style.display = 'none';
   } else {
     alreadyDiv.style.display = 'none';
     form.style.display = 'block';
     if (today && editingTodayId) {
       document.getElementById('calls').value = today.calls || 0;
-      document.getElementById('meetings').value = today.meetings || 0;
+      document.getElementById('meetings1').value = today.meetings1 || 0;
+      document.getElementById('meetings2').value = today.meetings2 || 0;
       document.getElementById('deals').value = today.deals || 0;
       document.getElementById('premium').value = today.premium || '';
+      document.getElementById('recs').value = today.recs || 0;
       document.getElementById('comment').value = today.comment || '';
     }
   }
@@ -426,12 +478,21 @@ function setMyGoal(val) {
 
 function editGoal() {
   const current = getMyGoal();
-  const val = prompt('Твой план на месяц (₽):', current);
-  if (val && !isNaN(parseInt(val)) && parseInt(val) > 0) {
-    setMyGoal(parseInt(val));
+  document.getElementById('goalInput').value = current;
+  document.getElementById('goalModal').style.display = 'flex';
+  setTimeout(() => document.getElementById('goalInput').focus(), 100);
+}
+function applyGoal() {
+  const val = parseInt(document.getElementById('goalInput').value);
+  if (val && val > 0) {
+    setMyGoal(val);
     renderBonusProgress();
     updateGoalBtn();
   }
+  closeGoalModal();
+}
+function closeGoalModal() {
+  document.getElementById('goalModal').style.display = 'none';
 }
 
 function updateGoalBtn() {
@@ -451,10 +512,80 @@ function renderBonusProgress() {
   document.getElementById('bonusAmt').textContent = total.toLocaleString('ru') + ' ₽';
   document.getElementById('bonusFill').style.width = pct + '%';
   if (remain > 0) {
-    document.getElementById('bonusRemain').innerHTML = `До цели ${goal.toLocaleString('ru')} ₽ осталось: <span>${remain.toLocaleString('ru')} ₽</span>`;
+    document.getElementById('bonusRemain').innerHTML = `До плана СГП: ${goal.toLocaleString('ru')} ₽ осталось: <span>${remain.toLocaleString('ru')} ₽</span>`;
   } else {
-    document.getElementById('bonusRemain').innerHTML = `<span>🎯 Цель ${goal.toLocaleString('ru')} ₽ достигнута! Отличная работа!</span>`;
+    document.getElementById('bonusRemain').innerHTML = `<span>🎯 План ${goal.toLocaleString('ru')} ₽ выполнен! Отличная работа!</span>`;
   }
+}
+
+// ─── PLAN ───────────────────────────────────────
+function getPlanKey() {
+  const now = new Date();
+  const mk = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+  return 'ev_plan_' + (currentAgent||'').replace(/\s+/g,'_') + '_' + mk;
+}
+function loadPlan() {
+  try { return JSON.parse(localStorage.getItem(getPlanKey())) || {}; } catch(e) { return {}; }
+}
+function savePlan() {
+  const plan = {
+    days: parseInt(document.getElementById('planDays').value)||0,
+    calls: parseInt(document.getElementById('planCalls').value)||0,
+    meetings: parseInt(document.getElementById('planMeetings').value)||0,
+    recs: parseInt(document.getElementById('planRecs').value)||0,
+  };
+  localStorage.setItem(getPlanKey(), JSON.stringify(plan));
+  document.getElementById('planBlock').style.display = 'none';
+  renderPlanProgress();
+}
+function stepPlan(field, delta) {
+  const el = document.getElementById(field);
+  el.value = Math.max(0, (parseInt(el.value)||0) + delta);
+}
+function renderPlanProgress() {
+  const plan = loadPlan();
+  const pp = document.getElementById('planProgress');
+  if (!plan.days) { pp.style.display = 'none'; return; }
+  pp.style.display = 'block';
+
+  const now = new Date();
+  const monthKey = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+  const myMonth = monitoring.filter(r => r.agentName === currentAgent && r.date && r.date.startsWith(monthKey));
+  const factCalls = myMonth.reduce((s,r)=>s+(r.calls||0),0);
+  const factM1 = myMonth.reduce((s,r)=>s+(r.meetings1||0),0);
+  const factRecs = myMonth.reduce((s,r)=>s+(r.recs||0),0);
+
+  const planCalls = plan.calls * plan.days;
+  const planM1 = plan.meetings * plan.days;
+  const planRecs = plan.recs * plan.days;
+
+  function bar(fact, total, color) {
+    const pct = total > 0 ? Math.min(Math.round(fact/total*100),100) : 0;
+    const delta = fact - total;
+    const sign = delta >= 0 ? '+' : '';
+    return `<div style="margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px;">
+        <span style="color:var(--dim)">${fact} / ${total}</span>
+        <span style="color:${delta>=0?'var(--green)':'var(--red)'};font-weight:600">${sign}${delta}</span>
+      </div>
+      <div style="background:var(--surface2);border-radius:4px;height:6px;overflow:hidden;">
+        <div style="width:${pct}%;height:100%;border-radius:4px;background:${color};transition:width .3s;"></div>
+      </div>
+    </div>`;
+  }
+
+  pp.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <span style="font-family:'Unbounded',sans-serif;font-size:10px;font-weight:700;color:var(--gold);">📅 Прогресс плана</span>
+      <button onclick="document.getElementById('planBlock').style.display='block'" style="background:none;border:1px solid var(--border);border-radius:6px;color:var(--dim);font-size:10px;padding:3px 8px;cursor:pointer;">✏️ Изменить</button>
+    </div>
+    <div style="font-size:10px;font-weight:600;letter-spacing:1px;color:var(--dim);text-transform:uppercase;margin-bottom:6px;">📞 Звонки</div>
+    ${bar(factCalls, planCalls, 'var(--blue)')}
+    <div style="font-size:10px;font-weight:600;letter-spacing:1px;color:var(--dim);text-transform:uppercase;margin-bottom:6px;">🤝 Первые встречи</div>
+    ${bar(factM1, planM1, 'var(--green)')}
+    <div style="font-size:10px;font-weight:600;letter-spacing:1px;color:var(--dim);text-transform:uppercase;margin-bottom:6px;">⭐ Рекомендации</div>
+    ${bar(factRecs, planRecs, 'var(--orange)')}
+  `;
 }
 
 // ─── FORM ───────────────────────────────────────
@@ -472,12 +603,14 @@ function setMood(emoji, btn) {
 
 function submitReport() {
   const calls = parseInt(document.getElementById('calls').value) || 0;
-  const meetings = parseInt(document.getElementById('meetings').value) || 0;
+  const meetings1 = parseInt(document.getElementById('meetings1').value) || 0;
+  const meetings2 = parseInt(document.getElementById('meetings2').value) || 0;
   const deals = parseInt(document.getElementById('deals').value) || 0;
   const premium = parseFloat(document.getElementById('premium').value) || 0;
+  const recs = parseInt(document.getElementById('recs').value) || 0;
   const comment = document.getElementById('comment').value.trim();
 
-  if (calls === 0 && meetings === 0 && deals === 0 && premium === 0) {
+  if (calls === 0 && meetings1 === 0 && meetings2 === 0 && deals === 0 && premium === 0 && recs === 0) {
     document.getElementById('submitFeedback').textContent = 'Заполни хотя бы одно поле';
     return;
   }
@@ -486,7 +619,7 @@ function submitReport() {
     id: editingTodayId || (Date.now().toString(36) + Math.random().toString(36).slice(2)),
     agentName: currentAgent,
     date: todayStr(),
-    calls, meetings, deals, premium, comment,
+    calls, meetings1, meetings2, deals, premium, recs, comment,
     mood: selectedMood,
     savedAt: new Date().toISOString()
   };
@@ -502,7 +635,7 @@ function submitReport() {
 
     let msg = '';
     if (deals > 0) msg = `${deals} договор${deals > 1 ? 'а' : ''} — отличный день!`;
-    else if (meetings > 0) msg = `${meetings} встреч${meetings > 1 ? 'и' : 'а'} — продолжай в том же духе!`;
+    else if (meetings1 > 0) msg = `${meetings1} первых встреч — продолжай в том же духе!`;
     else if (calls > 0) msg = `${calls} звонков — работа идёт!`;
     document.getElementById('sucSub').textContent = 'Отчёт сохранён.\n' + msg;
 
@@ -545,5 +678,18 @@ function saveToCloud(cb) {
   .catch(() => { if(cb) cb(); }); // still show success even if offline
 }
 </script>
+<!-- GOAL MODAL -->
+<div id="goalModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#111520;border:1px solid #1e2640;border-radius:20px;width:100%;max-width:340px;padding:28px 24px;position:relative;">
+    <div style="position:absolute;top:0;left:20%;right:20%;height:1px;background:linear-gradient(90deg,transparent,#c9a84c,transparent);"></div>
+    <div style="font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;color:#c9a84c;margin-bottom:6px;">план СГП</div>
+    <div style="font-size:12px;color:#5a6080;margin-bottom:18px;">Введи план СГП на этот месяц, ₽</div>
+    <input id="goalInput" type="number" inputmode="numeric" placeholder="100000"
+      style="width:100%;background:#0a0d14;border:1px solid #1e2640;border-radius:10px;color:#e8c97a;font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700;padding:13px 16px;outline:none;text-align:center;margin-bottom:14px;"
+      onfocus="this.style.borderColor='#c9a84c'" onblur="this.style.borderColor='#1e2640'">
+    <button onclick="applyGoal()" style="width:100%;background:linear-gradient(135deg,#c9a84c,#e8c97a);border:none;border-radius:10px;color:#0a0d14;font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;padding:13px;cursor:pointer;margin-bottom:10px;">Сохранить</button>
+    <button onclick="closeGoalModal()" style="width:100%;background:none;border:1px solid #1e2640;border-radius:10px;color:#5a6080;font-family:'Golos Text',sans-serif;font-size:13px;padding:11px;cursor:pointer;">Отмена</button>
+  </div>
+</div>
 </body>
 </html>
