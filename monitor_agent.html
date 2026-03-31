@@ -128,7 +128,8 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
     <div class="loginLogo">EVERIA LIFE</div>
     <div class="loginTitle">Мой день</div>
     <div class="loginSub">Ежедневный отчёт за 2 минуты</div>
-    <select class="loginSel" id="agentSel">
+    <div id="loadingHint" style="font-size:12px;color:var(--gold);text-align:center;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:6px;"><span id="loadingDots">⏳ Загружаю список агентов...</span></div>
+    <select class="loginSel" id="agentSel" disabled style="opacity:0.5;">
       <option value="">— Выбери своё имя —</option>
     </select>
     <button class="loginBtn" onclick="login()">Войти →</button>
@@ -360,14 +361,19 @@ function loadAgentsAndInit() {
 
 function populateAgentSelect() {
   const sel = document.getElementById('agentSel');
+  const hint = document.getElementById('loadingHint');
   const names = agentsList.length
     ? agentsList.map(a => a.name).sort()
-    : ['Тест агент']; // fallback if BIN empty
+    : ['Тест агент'];
   names.forEach(n => {
     const opt = document.createElement('option');
     opt.value = n; opt.textContent = n;
     sel.appendChild(opt);
   });
+  // Убираем загрузку, включаем список
+  sel.disabled = false;
+  sel.style.opacity = '1';
+  if (hint) hint.style.display = 'none';
 }
 
 function showApp() {
