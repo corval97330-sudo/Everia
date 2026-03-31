@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Инструкция — Мой день</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;900&family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0d14;
+    --surface: #111520;
+    --border: #1e2640;
+    --gold: #c9a84c;
+    --gold2: #e8c97a;
+    --text: #e8eaf0;
+    --dim: #5a6080;
+    --green: #3ecf8e;
+    --blue: #4f9cf9;
+    --orange: #f5a623;
+    --red: #f56060;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Golos Text', sans-serif;
+    min-height: 100vh;
+    padding: 24px 16px 48px;
+  }
+
+  .wrapper { max-width: 480px; margin: 0 auto; }
+
+  /* HEADER */
+  .header {
+    text-align: center;
+    margin-bottom: 32px;
+    padding-top: 8px;
+  }
+  .logo {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: var(--gold);
+    margin-bottom: 10px;
+    opacity: 0.8;
+  }
+  .title {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 22px;
+    font-weight: 900;
+    background: linear-gradient(135deg, #fff 0%, var(--gold2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.3;
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    font-size: 13px;
+    color: var(--dim);
+  }
+
+  /* STEP CARD */
+  .step {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+  .step::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .step.s1::before { background: var(--blue); }
+  .step.s2::before { background: var(--gold); }
+  .step.s3::before { background: var(--green); }
+  .step.s4::before { background: var(--orange); }
+  .step.s5::before { background: var(--red); }
+  .step.s6::before { background: linear-gradient(90deg, var(--gold), var(--green)); }
+
+  .step-top {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 12px;
+  }
+  .step-num {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 14px;
+    font-weight: 900;
+    flex-shrink: 0;
+  }
+  .s1 .step-num { background: rgba(79,156,249,.15); color: var(--blue); }
+  .s2 .step-num { background: rgba(201,168,76,.15); color: var(--gold); }
+  .s3 .step-num { background: rgba(62,207,142,.15); color: var(--green); }
+  .s4 .step-num { background: rgba(245,166,35,.15); color: var(--orange); }
+  .s5 .step-num { background: rgba(245,96,96,.15); color: var(--red); }
+  .s6 .step-num { background: rgba(201,168,76,.1); color: var(--gold2); }
+
+  .step-title {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+  .step-icon { font-size: 20px; }
+
+  .step-body {
+    font-size: 13px;
+    line-height: 1.75;
+    color: #c8cad8;
+  }
+
+  /* HIGHLIGHT BOX */
+  .highlight {
+    background: rgba(201,168,76,.08);
+    border: 1px solid rgba(201,168,76,.2);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--gold2);
+    line-height: 1.6;
+  }
+
+  /* FIELDS LIST */
+  .fields {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .field-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,.04);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  .field-emoji { font-size: 16px; flex-shrink: 0; }
+
+  /* STREAK BLOCK */
+  .streak-block {
+    background: rgba(245,166,35,.08);
+    border: 1px solid rgba(245,166,35,.2);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .streak-fire { font-size: 28px; }
+  .streak-text { font-size: 12px; color: var(--orange); line-height: 1.6; }
+  .streak-text strong { font-family: 'Unbounded', sans-serif; font-size: 13px; }
+
+  /* LINK BOX */
+  .link-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .link-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: var(--dim);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .link-url {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 11px;
+    color: var(--gold);
+    word-break: break-all;
+    line-height: 1.6;
+    background: rgba(201,168,76,.08);
+    border-radius: 8px;
+    padding: 10px 14px;
+    display: block;
+    margin-bottom: 8px;
+  }
+  .link-hint { font-size: 12px; color: var(--dim); }
+
+  /* FAQ */
+  .faq-item {
+    border-bottom: 1px solid var(--border);
+    padding: 12px 0;
+  }
+  .faq-item:last-child { border-bottom: none; }
+  .faq-q {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 5px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .faq-q::before { content: '❓'; flex-shrink: 0; }
+  .faq-a {
+    font-size: 12px;
+    color: var(--dim);
+    line-height: 1.6;
+    padding-left: 24px;
+  }
+
+  /* FOOTER */
+  .footer {
+    text-align: center;
+    margin-top: 32px;
+    font-size: 11px;
+    color: var(--dim);
+    letter-spacing: 1px;
+    opacity: 0.6;
+  }
+
+  /* DIVIDER */
+  .section-label {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--dim);
+    text-transform: uppercase;
+    text-align: center;
+    margin: 24px 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-label::before,
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <div class="header">
+    <div class="logo">EVERIA LIFE</div>
+    <div class="title">«Мой день»<br>Инструкция</div>
+    <div class="subtitle">Ежедневный отчёт за 2 минуты</div>
+  </div>
+
+  <!-- LINK -->
+  <div class="link-box">
+    <div class="link-label">Ссылка для входа</div>
+    <span class="link-url">corval97330-sudo.github.io/Everia/monitor_agent.html</span>
+    <div class="link-hint">📌 Сохрани в закладки — будешь заходить каждый день</div>
+  </div>
+
+  <div class="section-label">Как это работает</div>
+
+  <!-- STEP 1 -->
+  <div class="step s1">
+    <div class="step-top">
+      <div class="step-num">1</div>
+      <div>
+        <div class="step-title">Открой ссылку и выбери своё имя</div>
+      </div>
+      <div class="step-icon">👤</div>
+    </div>
+    <div class="step-body">
+      Нажми на список и выбери своё имя. Подожди 2–3 секунды — пока список загружается, ты увидишь надпись «Загружаю список агентов...». Это нормально!
+    </div>
+    <div class="highlight">
+      💡 Браузер запомнит тебя. В следующий раз — просто открой ссылку и сразу попадёшь в форму.
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step s2">
+    <div class="step-top">
+      <div class="step-num">2</div>
+      <div>
+        <div class="step-title">Установи свой план на месяц</div>
+      </div>
+      <div class="step-icon">🎯</div>
+    </div>
+    <div class="step-body">
+      При первом входе появится форма плана. Укажи:
+    </div>
+    <div class="fields">
+      <div class="field-item"><span class="field-emoji">📅</span>Сколько рабочих дней в этом месяце</div>
+      <div class="field-item"><span class="field-emoji">📞</span>Сколько звонков планируешь делать в день</div>
+      <div class="field-item"><span class="field-emoji">🤝</span>Сколько первых встреч в день</div>
+      <div class="field-item"><span class="field-emoji">⭐</span>Сколько рекомендаций в день</div>
+    </div>
+    <div class="highlight">
+      💡 В шапке приложения есть кнопка «план СГП» — укажи туда свою цель по сумме договоров на месяц в рублях.
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="step s3">
+    <div class="step-top">
+      <div class="step-num">3</div>
+      <div>
+        <div class="step-title">Каждый рабочий день заполняй отчёт</div>
+      </div>
+      <div class="step-icon">📋</div>
+    </div>
+    <div class="step-body">
+      В конце рабочего дня открой приложение и заполни 7 полей:
+    </div>
+    <div class="fields">
+      <div class="field-item"><span class="field-emoji">📞</span>Сколько звонков сделал/а</div>
+      <div class="field-item"><span class="field-emoji">🤝</span>Сколько первых встреч провёл/а</div>
+      <div class="field-item"><span class="field-emoji">🔄</span>Сколько повторных встреч провёл/а</div>
+      <div class="field-item"><span class="field-emoji">📄</span>Сколько договоров заключил/а</div>
+      <div class="field-item"><span class="field-emoji">💰</span>Сумма СГП по договорам сегодня, ₽</div>
+      <div class="field-item"><span class="field-emoji">⭐</span>Сколько рекомендаций взял/а</div>
+      <div class="field-item"><span class="field-emoji">😊</span>Своё настроение</div>
+    </div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="step s4">
+    <div class="step-top">
+      <div class="step-num">4</div>
+      <div>
+        <div class="step-title">Нажми «Сохранить отчёт»</div>
+      </div>
+      <div class="step-icon">✅</div>
+    </div>
+    <div class="step-body">
+      После нажатия сразу появится экран с поздравлением — отчёт сохранён! Данные автоматически уходят менеджеру.
+    </div>
+    <div class="highlight">
+      💡 Достаточно заполнить хотя бы одно поле — не обязательно всё сразу.
+    </div>
+  </div>
+
+  <!-- STEP 5 — STREAK -->
+  <div class="step s5">
+    <div class="step-top">
+      <div class="step-num">5</div>
+      <div>
+        <div class="step-title">Следи за своей серией и прогрессом</div>
+      </div>
+      <div class="step-icon">📊</div>
+    </div>
+    <div class="step-body">
+      На главном экране ты видишь:
+    </div>
+    <div class="streak-block">
+      <div class="streak-fire">🔥</div>
+      <div class="streak-text">
+        <strong>Серия дней подряд</strong><br>
+        Как в Duolingo — чем дольше не прерываешь, тем круче результат. Кто заполняет регулярно весь месяц — участвует в розыгрыше подарка-сюрприза 🎁
+      </div>
+    </div>
+    <div class="highlight" style="margin-top:10px;">
+      📊 Прогресс-бары показывают: идёшь ли ты в темпе плана по звонкам, встречам и рекомендациям. Зелёный = план выполнен, красный = отстаёшь.
+    </div>
+  </div>
+
+  <div class="section-label">Частые вопросы</div>
+
+  <div class="step s6">
+    <div class="faq-item">
+      <div class="faq-q">Нет моего имени в списке</div>
+      <div class="faq-a">Сообщи менеджеру — она добавит тебя в список.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Список не загружается</div>
+      <div class="faq-a">Проверь интернет и обнови страницу. Если не помогает — включи VPN.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Забыл/а заполнить вчера</div>
+      <div class="faq-a">Ничего страшного — просто заполни сегодня. Серия прервётся, но данные за сегодня сохранятся.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Ошибся/ась при заполнении</div>
+      <div class="faq-a">Открой приложение снова — если сегодня уже заполнял/а, увидишь кнопку «Изменить». Нажми и исправь.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Зачем это нужно мне?</div>
+      <div class="faq-a">Твои данные помогают тебе самому/самой видеть, почему в одни месяцы заработок выше, а в другие — нет. Это твоя личная статистика.</div>
+    </div>
+  </div>
+
+  <div class="footer">Everia Life · Marina · 2026</div>
+
+</div>
+</body>
+</html>
