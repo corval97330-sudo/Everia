@@ -629,23 +629,26 @@ function submitReport() {
   monitoring.push(record);
   editingTodayId = null;
 
-  saveToCloud(() => {
-    const streak = parseInt(document.getElementById('streakNum').textContent) || 0;
-    document.getElementById('sucStreakNum').textContent = streak + (record ? 1 : streak);
+  // Сохраняем локально сразу
+  try { localStorage.setItem('ev_mon_data', JSON.stringify({ monitoring, agents: agentsList })); } catch(e) {}
 
-    let msg = '';
-    if (deals > 0) msg = `${deals} договор${deals > 1 ? 'а' : ''} — отличный день!`;
-    else if (meetings1 > 0) msg = `${meetings1} первых встреч — продолжай в том же духе!`;
-    else if (calls > 0) msg = `${calls} звонков — работа идёт!`;
-    document.getElementById('sucSub').textContent = 'Отчёт сохранён.\n' + msg;
+  // Показываем успех немедленно — не ждём облако
+  const streak = parseInt(document.getElementById('streakNum').textContent) || 0;
+  document.getElementById('sucStreakNum').textContent = streak + 1;
+  let msg = '';
+  if (deals > 0) msg = `${deals} договор${deals > 1 ? 'а' : ''} — отличный день!`;
+  else if (meetings1 > 0) msg = `${meetings1} первых встреч — продолжай в том же духе!`;
+  else if (calls > 0) msg = `${calls} звонков — работа идёт!`;
+  document.getElementById('sucSub').textContent = 'Отчёт сохранён. ' + msg;
+  document.getElementById('app').style.display = 'none';
+  const ss = document.getElementById('successScreen');
+  ss.style.display = 'flex';
+  ss.style.flexDirection = 'column';
+  renderStreak();
+  renderBonusProgress();
 
-    document.getElementById('app').style.display = 'none';
-    const ss = document.getElementById('successScreen');
-    ss.style.display = 'flex';
-    ss.style.flexDirection = 'column';
-    renderStreak();
-    renderBonusProgress();
-  });
+  // Синхронизируем в облако в фоне (не блокируем UI)
+  saveToCloud(null);
 }
 
 function backToApp() {
@@ -656,9 +659,7 @@ function backToApp() {
 
 // ─── CLOUD SAVE ─────────────────────────────────
 function saveToCloud(cb) {
-  // save locally first
-  try { localStorage.setItem('ev_mon_data', JSON.stringify({ monitoring, agents: agentsList })); } catch(e) {}
-
+  // Локально уже сохранено до вызова этой функции
   fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
     headers: { 'X-Master-Key': API_KEY, 'X-Bin-Meta': 'false' }
   })
@@ -675,7 +676,7 @@ function saveToCloud(cb) {
     });
   })
   .then(() => { if(cb) cb(); })
-  .catch(() => { if(cb) cb(); }); // still show success even if offline
+  .catch(() => { if(cb) cb(); });
 }
 </script>
 <!-- GOAL MODAL -->
