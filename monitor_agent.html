@@ -143,7 +143,10 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
   <div class="appHeader">
     <div>
       <div class="ahName" id="ahName">—</div>
-      <div class="ahDate" id="ahDate">—</div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <div class="ahDate" id="ahDate">—</div>
+        <div id="syncBadge" style="display:none;font-size:10px;padding:2px 7px;border-radius:10px;"></div>
+      </div>
     </div>
     <div style="display:flex;align-items:center;gap:8px;">
       <button onclick="editGoal()" style="background:none;border:1px solid var(--border);border-radius:6px;color:var(--dim);font-size:11px;padding:5px 10px;cursor:pointer;" id="goalBtn">🎯 —</button>
@@ -182,6 +185,17 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
       </div>
       <div class="bonusBar"><div class="bonusFill" id="bonusFill" style="width:0%"></div></div>
       <div class="bonusRemain" id="bonusRemain">Загрузка...</div>
+    </div>
+
+    <!-- SYNC BUTTON -->
+    <div id="syncBlock" style="display:none;background:rgba(245,96,96,.08);border:1px solid rgba(245,96,96,.25);border-radius:14px;padding:14px 18px;margin-bottom:14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--red);">⚠️ Данные не синхронизированы</div>
+          <div style="font-size:11px;color:var(--dim);margin-top:3px;">Включи VPN и нажми кнопку</div>
+        </div>
+        <button onclick="manualSync()" id="syncBtn" style="background:var(--red);border:none;border-radius:8px;color:#fff;font-family:'Unbounded',sans-serif;font-size:10px;font-weight:700;padding:8px 14px;cursor:pointer;white-space:nowrap;flex-shrink:0;">🔄 Синхр.</button>
+      </div>
     </div>
 
     <!-- MONTHLY PLAN -->
@@ -297,6 +311,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
     <div class="sucStreakNum" id="sucStreakNum">1</div>
     <div class="sucStreakLbl">🔥 дней подряд</div>
   </div>
+  <div id="syncStatus" style="font-size:12px;color:var(--dim);margin-bottom:16px;">⏳ Синхронизация...</div>
   <button class="sucBackBtn" onclick="backToApp()">← Вернуться</button>
 </div>
 
@@ -390,6 +405,7 @@ function showApp() {
   checkTodayReport();
   updateGoalBtn();
   renderPlanProgress();
+  checkSyncBlock();
   // Show plan setup if no plan set
   const plan = loadPlan();
   if (!plan.days) document.getElementById('planBlock').style.display = 'block';
@@ -489,13 +505,20 @@ function editGoal() {
   setTimeout(() => document.getElementById('goalInput').focus(), 100);
 }
 function applyGoal() {
-  const val = parseInt(document.getElementById('goalInput').value);
-  if (val && val > 0) {
-    setMyGoal(val);
-    renderBonusProgress();
-    updateGoalBtn();
+  const raw = document.getElementById('goalInput').value;
+  const val = parseInt(raw);
+  if (!raw || !val || val <= 0) {
+    document.getElementById('goalInput').style.borderColor = '#f56060';
+    setTimeout(() => document.getElementById('goalInput').style.borderColor = '#1e2640', 1000);
+    return;
   }
-  closeGoalModal();
+  setMyGoal(val);
+  renderBonusProgress();
+  updateGoalBtn();
+  // Show confirmation
+  const btn = document.querySelector('#goalModal button');
+  if (btn) { btn.textContent = '✅ Сохранено!'; btn.style.background = 'var(--green)'; }
+  setTimeout(() => closeGoalModal(), 700);
 }
 function closeGoalModal() {
   document.getElementById('goalModal').style.display = 'none';
@@ -594,6 +617,26 @@ function renderPlanProgress() {
   `;
 }
 
+// ─── MANUAL SYNC ────────────────────────────────
+function checkSyncBlock() {
+  const pending = localStorage.getItem('ev_sync_pending');
+  const block = document.getElementById('syncBlock');
+  if (block) block.style.display = pending === '1' ? 'block' : 'none';
+}
+
+function manualSync() {
+  const btn = document.getElementById('syncBtn');
+  if (btn) { btn.textContent = '⏳'; btn.disabled = true; }
+  saveToCloud(() => {
+    localStorage.removeItem('ev_sync_pending');
+    checkSyncBlock();
+    if (btn) { btn.textContent = '✅ Готово!'; btn.style.background = 'var(--green)'; }
+    setTimeout(() => {
+      if (btn) { btn.textContent = '🔄 Синхр.'; btn.style.background = 'var(--red)'; btn.disabled = false; }
+    }, 2000);
+  });
+}
+
 // ─── FORM ───────────────────────────────────────
 function step(field, delta) {
   const el = document.getElementById(field);
@@ -664,8 +707,28 @@ function backToApp() {
 }
 
 // ─── CLOUD SAVE ─────────────────────────────────
+function setSyncBadge(status, text) {
+  const badge = document.getElementById('syncBadge');
+  const ss = document.getElementById('syncStatus');
+  const styles = {
+    loading: 'background:rgba(79,156,249,.15);color:var(--blue)',
+    ok:      'background:rgba(62,207,142,.15);color:var(--green)',
+    err:     'background:rgba(245,96,96,.15);color:var(--red)',
+  };
+  if (badge) {
+    badge.style.display = 'inline-block';
+    badge.style.cssText += ';' + styles[status];
+    badge.textContent = text;
+  }
+  if (ss) {
+    if (status === 'loading') ss.textContent = '⏳ Синхронизация с облаком...';
+    if (status === 'ok')      ss.textContent = '✅ Данные сохранены в облаке';
+    if (status === 'err')     ss.textContent = '⚠️ Сохранено на телефоне · без интернета';
+  }
+}
+
 function saveToCloud(cb) {
-  // Локально уже сохранено до вызова этой функции
+  setSyncBadge('loading', '...');
   fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
     headers: { 'X-Master-Key': API_KEY, 'X-Bin-Meta': 'false' }
   })
@@ -681,8 +744,18 @@ function saveToCloud(cb) {
       body: JSON.stringify(updated)
     });
   })
-  .then(() => { if(cb) cb(); })
-  .catch(() => { if(cb) cb(); });
+  .then(() => {
+    setSyncBadge('ok', '✅');
+    localStorage.removeItem('ev_sync_pending');
+    checkSyncBlock();
+    if(cb) cb();
+  })
+  .catch(() => {
+    setSyncBadge('err', '⚠️');
+    localStorage.setItem('ev_sync_pending', '1');
+    checkSyncBlock();
+    if(cb) cb();
+  });
 }
 </script>
 <!-- GOAL MODAL -->
