@@ -545,17 +545,30 @@ async function bLoadFromCloud() {
       bAgents = d.agents;
       bNextId = bAgents.reduce((m,a)=>Math.max(m,a.id),0)+1;
       document.getElementById('bLoadDefaultsBtn').style.display='none';
-    } else { bAgents = []; }
+    }
+    // Если BIN пустой — НЕ затираем bAgents, оставляем как есть
     setSyncStatus('ok','Синхронизировано');
-  } catch(e) { setSyncStatus('err','Ошибка загрузки'); bAgents=[]; }
+  } catch(e) {
+    setSyncStatus('err','Нет связи — данные из кэша');
+    // При ошибке сети — загружаем из localStorage если есть
+    try {
+      const lc = localStorage.getItem('ev_desktop_backup');
+      if (lc && bAgents.length === 0) {
+        bAgents = JSON.parse(lc);
+        bNextId = bAgents.reduce((m,a)=>Math.max(m,a.id),0)+1;
+      }
+    } catch(e2) {}
+  }
   bRender();
 }
 async function bSaveToCloud() {
   setSyncStatus('loading','Сохранение...');
+  // Всегда сохраняем локальную копию перед отправкой в облако
+  try { localStorage.setItem('ev_desktop_backup', JSON.stringify(bAgents)); } catch(e2) {}
   try {
     await fetch(API_URL,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':API_KEY},body:JSON.stringify({agents:bAgents})});
     setSyncStatus('ok','Сохранено');
-  } catch(e){setSyncStatus('err','Ошибка сохранения');}
+  } catch(e){setSyncStatus('err','Сохранено локально');}
 }
 function bScheduleSave(){if(bSaveTimer)clearTimeout(bSaveTimer);bSaveTimer=setTimeout(bSaveToCloud,1200);}
 function bActiveQ(){return((today.getMonth()+bQOff)%12+12)%12;}
