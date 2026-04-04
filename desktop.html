@@ -339,7 +339,11 @@ body{background:var(--bg);color:var(--text);font-family:'Raleway',sans-serif;min
           <div class="bqlabel" id="bqlabel"></div>
           <button class="bqbtn" onclick="shiftQ(1)">›</button>
         </div>
-        <div class="sync-status"><div class="sync-dot" id="syncDot"></div><span id="syncText">—</span></div>
+        <div class="sync-status" style="display:flex;align-items:center;gap:8px;">
+          <div class="sync-dot" id="syncDot"></div>
+          <span id="syncText">—</span>
+          <button id="manualSyncBtn" onclick="manualSyncDesktop()" style="display:none;background:var(--rose);border:none;border-radius:6px;color:#fff;font-size:11px;font-weight:700;padding:3px 10px;cursor:pointer;font-family:'Raleway',sans-serif;">🔄 Синхр.</button>
+        </div>
       </div>
       <div class="bonus-ref">
         <div class="ref-title">Уровни бонуса · ≥2 выполненных месяца из 3 · уровень по итогу квартала</div>
@@ -534,7 +538,16 @@ function bLoadDefaults() {
 function setSyncStatus(state,text) {
   document.getElementById('syncDot').className='sync-dot '+state;
   document.getElementById('syncText').textContent=text;
+  const btn = document.getElementById('manualSyncBtn');
+  if (btn) btn.style.display = state === 'err' ? 'inline-block' : 'none';
 }
+async function manualSyncDesktop() {
+  const btn = document.getElementById('manualSyncBtn');
+  if (btn) { btn.textContent = '⏳'; btn.disabled = true; }
+  await bSaveToCloud();
+  if (btn) { btn.textContent = '🔄 Синхр.'; btn.disabled = false; }
+}
+
 async function bLoadFromCloud() {
   setSyncStatus('loading','Загрузка...');
   try {
